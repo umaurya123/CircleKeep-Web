@@ -3007,7 +3007,7 @@ fun SettingsScreen(viewModel: FriendViewModel) {
             TextButton(
                 onClick = {
                     val intent = Intent(Intent.ACTION_SENDTO).apply {
-                        data = Uri.parse("mailto:support@circlekeep.com")
+                        data = Uri.parse("mailto:CircleKeepApp@gmail.com")
                         putExtra(Intent.EXTRA_SUBJECT, "CircleKeep Feedback")
                     }
                     context.startActivity(Intent.createChooser(intent, "Send Feedback"))
