@@ -79,7 +79,15 @@ class FriendViewModel(
             friends.filter {
                 val matchesQuery = it.friend.firstName.contains(query, ignoreCase = true) ||
                         it.friend.lastName.contains(query, ignoreCase = true) ||
-                        it.friend.groups.any { group -> group.contains(query, ignoreCase = true) }
+                        it.friend.groups.any { group -> group.contains(query, ignoreCase = true) } ||
+                        it.friend.partnerFirstName.contains(query, ignoreCase = true) ||
+                        it.friend.partnerLastName.contains(query, ignoreCase = true) ||
+                        it.children.any { child ->
+                            child.firstName.contains(query, ignoreCase = true) ||
+                            child.lastName.contains(query, ignoreCase = true) ||
+                            child.partnerFirstName.contains(query, ignoreCase = true) ||
+                            child.partnerLastName.contains(query, ignoreCase = true)
+                        }
                 
                 val matchesGroup = selectedGroup == null || it.friend.groups.any { group -> group.trim().equals(selectedGroup.trim(), ignoreCase = true) }
                 
@@ -321,6 +329,14 @@ class FriendViewModel(
                 
                 backup.friendsWithChildren.forEach { fwc ->
                     android.util.Log.d("FriendViewModel", "Checking duplicate for: ${fwc.friend.firstName} ${fwc.friend.lastName}")
+
+                    // Create any missing groups mentioned in the friend record
+                    fwc.friend.groups.forEach { groupName ->
+                        if (groupName.isNotBlank()) {
+                            friendRepository.addGroup(groupName)
+                        }
+                    }
+
                     // Duplicate check: Same First, Middle, Last Name
                     val isDuplicate = existingFriends.any { 
                         (it.friend.firstName.trim().equals(fwc.friend.firstName.trim(), ignoreCase = true)) &&

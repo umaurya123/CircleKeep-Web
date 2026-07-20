@@ -30,6 +30,9 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -175,8 +178,39 @@ fun calculateAge(dobString: String?): Int? {
 @OptIn(ExperimentalMaterial3AdaptiveApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun CircleKeepApp() {
+    val context = LocalContext.current
     val backStack = rememberNavBackStack(Destination.Home)
     val viewModel: FriendViewModel = viewModel(factory = FriendViewModel.Factory)
+
+    // Handle back button on top-level screens to prevent accidental exit
+    var lastBackPressTime by remember { mutableLongStateOf(0L) }
+    val currentDestination = backStack.last() as Destination
+    val isTopLevelDestination = backStack.size == 1 && (
+            currentDestination is Destination.Home ||
+            currentDestination is Destination.Favorites ||
+            currentDestination is Destination.Groups ||
+            currentDestination is Destination.Settings
+    )
+    
+    androidx.activity.compose.BackHandler(enabled = isTopLevelDestination) {
+        val currentTime = System.currentTimeMillis()
+        if (currentTime - lastBackPressTime < 2000) {
+            (context as? Activity)?.finish()
+        } else {
+            lastBackPressTime = currentTime
+            android.widget.Toast.makeText(context, "Press back again to exit", android.widget.Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    // Custom back logic to ensure we always go back through the stack or to Home
+    val onBack: () -> Unit = {
+        if (backStack.size > 1) {
+            backStack.removeLastOrNull()
+        } else if (backStack.last() !is Destination.Home) {
+            backStack.clear()
+            backStack.add(Destination.Home)
+        }
+    }
     
     val windowAdaptiveInfo = currentWindowAdaptiveInfo()
     val directive = remember(windowAdaptiveInfo) {
@@ -196,10 +230,14 @@ fun CircleKeepApp() {
                     friendCount = friends.size,
                     favoriteCount = friends.count { it.friend.isFavorite },
                     onNavigate = { destination ->
-                        if (destination is Destination.Home) {
+                        if (destination is Destination.Home && backStack.last() is Destination.Home) {
+                            viewModel.onSearchQueryChange("")
                             viewModel.onSelectedGroupChange(null)
                         }
                         if (backStack.last() != destination) {
+                            if (destination is Destination.Home) {
+                                viewModel.onSelectedGroupChange(null)
+                            }
                             backStack.clear()
                             backStack.add(destination)
                         }
@@ -211,7 +249,7 @@ fun CircleKeepApp() {
             NavDisplay(
                 backStack = backStack,
                 modifier = Modifier.padding(innerPadding),
-                onBack = { backStack.removeLastOrNull() },
+                onBack = onBack,
                 entryDecorators = listOf(
                     rememberSaveableStateHolderNavEntryDecorator(),
                     rememberViewModelStoreNavEntryDecorator()
@@ -269,7 +307,7 @@ fun CircleKeepApp() {
                                 backStack.removeLastOrNull()
                             },
                             onTogglePin = { friend -> viewModel.togglePin(friend) },
-                            onBackClick = { backStack.removeLastOrNull() }
+                            onBackClick = onBack
                         )
                     }
                     entry<Destination.AddFriend>(
@@ -285,9 +323,9 @@ fun CircleKeepApp() {
                             isPaid = isPaid,
                             onSave = { friend, children ->
                                 viewModel.saveFriend(friend, children)
-                                backStack.removeLastOrNull()
+                                onBack()
                             },
-                            onCancel = { backStack.removeLastOrNull() }
+                            onCancel = onBack
                         )
                     }
                     entry<Destination.EditFriend>(
@@ -308,9 +346,9 @@ fun CircleKeepApp() {
                                 isPaid = isPaid,
                                 onSave = { friend, children ->
                                     viewModel.saveFriend(friend, children)
-                                    backStack.removeLastOrNull()
+                                    onBack()
                                 },
-                                onCancel = { backStack.removeLastOrNull() }
+                                onCancel = onBack
                             )
                         }
                     }
@@ -594,16 +632,11 @@ fun FriendItem(
         },
         supportingContent = {
             Column {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    if (friend.cellPhone.isNotBlank()) {
-                        Text(friend.cellPhone, style = MaterialTheme.typography.bodySmall)
-                        if (friend.groups.isNotEmpty()) {
-                            Text(" • ", style = MaterialTheme.typography.bodySmall)
-                        }
-                    }
-                    if (friend.groups.isNotEmpty()) {
-                        Text(friend.groups.joinToString(", "), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.secondary)
-                    }
+                if (friend.cellPhone.isNotBlank()) {
+                    Text(friend.cellPhone, style = MaterialTheme.typography.bodySmall)
+                }
+                if (friend.groups.isNotEmpty()) {
+                    Text(friend.groups.joinToString(", "), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.secondary)
                 }
                 
                 val importantDates = buildString {
@@ -702,7 +735,7 @@ fun FriendDetailScreen(
 ) {
     val context = LocalContext.current
     var showDeleteDialog by remember { mutableStateOf(false) }
-    
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -1187,6 +1220,7 @@ fun AddEditFriendScreen(
     var petName by remember { mutableStateOf(initialFriend?.petName ?: "") }
     var petImageUri by remember { mutableStateOf(initialFriend?.petImageUri) }
     
+    var focusNewChildTrigger by remember { mutableStateOf(false) }
     var showMore by remember { mutableStateOf(false) }
 
     val isEmailValid = email.isBlank() || android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
@@ -1480,6 +1514,17 @@ fun AddEditFriendScreen(
         }
     )
 
+    LaunchedEffect(focusNewChildTrigger) {
+        if (focusNewChildTrigger && children.isNotEmpty()) {
+            // item 0: Profile/Core fields
+            // item 1: Show More toggle
+            // item 2: Partner section
+            // item 3: Children Header
+            // items: Children records (starting at index 4)
+            listState.animateScrollToItem(children.size + 4)
+        }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -1640,30 +1685,54 @@ fun AddEditFriendScreen(
                         value = firstName, 
                         onValueChange = { firstName = it }, 
                         label = { Text(stringResource(R.string.first_name)) }, 
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .onFocusChanged { if (!it.isFocused) firstName = firstName.trim() },
                         keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words)
                     )
                     OutlinedTextField(
                         value = middleName, 
                         onValueChange = { middleName = it }, 
                         label = { Text(stringResource(R.string.middle_name)) }, 
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .onFocusChanged { if (!it.isFocused) middleName = middleName.trim() },
                         keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words)
                     )
                     OutlinedTextField(
                         value = lastName, 
                         onValueChange = { lastName = it }, 
                         label = { Text(stringResource(R.string.last_name)) }, 
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .onFocusChanged { if (!it.isFocused) lastName = lastName.trim() },
                         keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words)
                     )
-                    OutlinedTextField(value = cellPhone, onValueChange = { cellPhone = it }, label = { Text(stringResource(R.string.cell_phone)) }, modifier = Modifier.fillMaxWidth(), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone))
-                    OutlinedTextField(value = officePhone, onValueChange = { officePhone = it }, label = { Text(stringResource(R.string.office_phone)) }, modifier = Modifier.fillMaxWidth(), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone))
+                    OutlinedTextField(
+                        value = cellPhone, 
+                        onValueChange = { cellPhone = it }, 
+                        label = { Text(stringResource(R.string.cell_phone)) }, 
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .onFocusChanged { if (!it.isFocused) cellPhone = cellPhone.trim() },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone)
+                    )
+                    OutlinedTextField(
+                        value = officePhone, 
+                        onValueChange = { officePhone = it }, 
+                        label = { Text(stringResource(R.string.office_phone)) }, 
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .onFocusChanged { if (!it.isFocused) officePhone = officePhone.trim() },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone)
+                    )
                     OutlinedTextField(
                         value = address, 
                         onValueChange = { address = it }, 
                         label = { Text(stringResource(R.string.address)) }, 
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .onFocusChanged { if (!it.isFocused) address = address.trim() },
                         keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words)
                     )
                     
@@ -1752,28 +1821,36 @@ fun AddEditFriendScreen(
                             value = companyName, 
                             onValueChange = { companyName = it }, 
                             label = { Text(stringResource(R.string.company_name)) }, 
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .onFocusChanged { if (!it.isFocused) companyName = companyName.trim() },
                             keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words)
                         )
                         OutlinedTextField(
                             value = collegeSchoolName, 
                             onValueChange = { collegeSchoolName = it }, 
                             label = { Text(stringResource(R.string.college_name)) },
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .onFocusChanged { if (!it.isFocused) collegeSchoolName = collegeSchoolName.trim() },
                             keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words)
                         )
                         OutlinedTextField(
                             value = siblings, 
                             onValueChange = { siblings = it }, 
                             label = { Text(stringResource(R.string.siblings)) }, 
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .onFocusChanged { if (!it.isFocused) siblings = siblings.trim() },
                             keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words)
                         )
                         OutlinedTextField(
                             value = email, 
                             onValueChange = { email = it }, 
                             label = { Text(stringResource(R.string.email)) }, 
-                            modifier = Modifier.fillMaxWidth(), 
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .onFocusChanged { if (!it.isFocused) email = email.trim() }, 
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                             isError = !isEmailValid,
                             supportingText = { if (!isEmailValid) Text("Invalid email format") }
@@ -1782,14 +1859,18 @@ fun AddEditFriendScreen(
                             value = workEmail, 
                             onValueChange = { workEmail = it }, 
                             label = { Text("Work Email") }, 
-                            modifier = Modifier.fillMaxWidth(), 
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .onFocusChanged { if (!it.isFocused) workEmail = workEmail.trim() }, 
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
                         )
                         OutlinedTextField(
                             value = notes, 
                             onValueChange = { notes = it }, 
                             label = { Text(stringResource(R.string.notes)) }, 
-                            modifier = Modifier.fillMaxWidth(), 
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .onFocusChanged { if (!it.isFocused) notes = notes.trim() }, 
                             minLines = 2,
                             keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences)
                         )
@@ -1797,7 +1878,9 @@ fun AddEditFriendScreen(
                             value = petName,
                             onValueChange = { petName = it },
                             label = { Text(stringResource(R.string.pet_name)) },
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .onFocusChanged { if (!it.isFocused) petName = petName.trim() },
                             keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words)
                         )
                         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -1887,7 +1970,16 @@ fun AddEditFriendScreen(
                 item {
                     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                         Text(stringResource(R.string.children), style = MaterialTheme.typography.titleLarge)
-                        TextButton(onClick = { children.add(Child(friendId = initialFriend?.id ?: 0L, firstName = "", lastName = "", collegeSchoolName = "")) }) {
+                        TextButton(onClick = {
+                            val lastChildEmpty = children.lastOrNull()?.let { 
+                                it.firstName.isBlank() && it.lastName.isBlank() 
+                            } ?: false
+                            
+                            if (children.isEmpty() || !lastChildEmpty) {
+                                children.add(Child(friendId = initialFriend?.id ?: 0L, firstName = "", lastName = "", collegeSchoolName = ""))
+                                focusNewChildTrigger = true
+                            }
+                        }) {
                             Icon(Icons.Rounded.Add, contentDescription = null)
                             Text("Add Child")
                         }
@@ -1898,9 +1990,13 @@ fun AddEditFriendScreen(
                     ChildItemEdit(
                         child = children[index],
                         initiallyExpanded = children[index].id == scrollToChildId,
+                        shouldAutoFocus = index == children.size - 1 && focusNewChildTrigger,
                         onChildChange = { children[index] = it },
                         onDelete = { children.removeAt(index) }
                     )
+                    if (index == children.size - 1 && focusNewChildTrigger) {
+                        SideEffect { focusNewChildTrigger = false }
+                    }
                 }
             }
             
@@ -1998,11 +2094,19 @@ fun AddEditFriendScreen(
 fun ChildItemEdit(
     child: Child,
     initiallyExpanded: Boolean = false,
+    shouldAutoFocus: Boolean = false,
     onChildChange: (Child) -> Unit,
     onDelete: () -> Unit
 ) {
     val context = LocalContext.current
     var showMore by remember { mutableStateOf(initiallyExpanded) }
+    val focusRequester = remember { FocusRequester() }
+
+    LaunchedEffect(shouldAutoFocus) {
+        if (shouldAutoFocus) {
+            focusRequester.requestFocus()
+        }
+    }
     
     val cropLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult(),
@@ -2101,28 +2205,37 @@ fun ChildItemEdit(
                 value = child.firstName, 
                 onValueChange = { onChildChange(child.copy(firstName = it)) }, 
                 label = { Text(stringResource(R.string.first_name)) }, 
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .focusRequester(focusRequester)
+                    .onFocusChanged { if (!it.isFocused) onChildChange(child.copy(firstName = child.firstName.trim())) },
                 keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words)
             )
             OutlinedTextField(
                 value = child.middleName, 
                 onValueChange = { onChildChange(child.copy(middleName = it)) }, 
                 label = { Text(stringResource(R.string.middle_name)) }, 
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .onFocusChanged { if (!it.isFocused) onChildChange(child.copy(middleName = child.middleName.trim())) },
                 keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words)
             )
             OutlinedTextField(
                 value = child.lastName, 
                 onValueChange = { onChildChange(child.copy(lastName = it)) }, 
                 label = { Text(stringResource(R.string.last_name)) }, 
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .onFocusChanged { if (!it.isFocused) onChildChange(child.copy(lastName = child.lastName.trim())) },
                 keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words)
             )
             OutlinedTextField(
                 value = child.phoneNumber, 
                 onValueChange = { onChildChange(child.copy(phoneNumber = it)) }, 
                 label = { Text(stringResource(R.string.cell_phone)) }, 
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .onFocusChanged { if (!it.isFocused) onChildChange(child.copy(phoneNumber = child.phoneNumber.trim())) },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone)
             )
             
@@ -2131,7 +2244,9 @@ fun ChildItemEdit(
                     value = child.collegeSchoolName, 
                     onValueChange = { onChildChange(child.copy(collegeSchoolName = it)) },
                     label = { Text(stringResource(R.string.college_name)) }, 
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .onFocusChanged { if (!it.isFocused) onChildChange(child.copy(collegeSchoolName = child.collegeSchoolName.trim())) },
                     keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words)
                 )
                 DatePickerField(
@@ -2655,28 +2770,36 @@ fun PartnerSectionEdit(
                 value = partnerFirstName,
                 onValueChange = onPartnerFirstNameChange,
                 label = { Text(stringResource(R.string.first_name)) },
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .onFocusChanged { if (!it.isFocused) onPartnerFirstNameChange(partnerFirstName.trim()) },
                 keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words)
             )
             OutlinedTextField(
                 value = partnerMiddleName,
                 onValueChange = onPartnerMiddleNameChange,
                 label = { Text(stringResource(R.string.middle_name)) },
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .onFocusChanged { if (!it.isFocused) onPartnerMiddleNameChange(partnerMiddleName.trim()) },
                 keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words)
             )
             OutlinedTextField(
                 value = partnerLastName,
                 onValueChange = onPartnerLastNameChange,
                 label = { Text(stringResource(R.string.last_name)) },
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .onFocusChanged { if (!it.isFocused) onPartnerLastNameChange(partnerLastName.trim()) },
                 keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words)
             )
             OutlinedTextField(
                 value = partnerPhone,
                 onValueChange = onPartnerPhoneChange,
                 label = { Text(stringResource(R.string.partner_phone)) },
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .onFocusChanged { if (!it.isFocused) onPartnerPhoneChange(partnerPhone.trim()) },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone)
             )
 
@@ -2714,21 +2837,27 @@ fun PartnerSectionEdit(
                     value = partnerSiblings,
                     onValueChange = onPartnerSiblingsChange,
                     label = { Text(stringResource(R.string.siblings)) },
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .onFocusChanged { if (!it.isFocused) onPartnerSiblingsChange(partnerSiblings.trim()) },
                     keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words)
                 )
                 OutlinedTextField(
                     value = partnerCompanyName,
                     onValueChange = onPartnerCompanyNameChange,
                     label = { Text(stringResource(R.string.company_name)) },
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .onFocusChanged { if (!it.isFocused) onPartnerCompanyNameChange(partnerCompanyName.trim()) },
                     keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words)
                 )
                 OutlinedTextField(
                     value = partnerCollegeSchoolName,
                     onValueChange = onPartnerCollegeSchoolNameChange,
                     label = { Text(stringResource(R.string.college_name)) },
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .onFocusChanged { if (!it.isFocused) onPartnerCollegeSchoolNameChange(partnerCollegeSchoolName.trim()) },
                     keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words)
                 )
             }
