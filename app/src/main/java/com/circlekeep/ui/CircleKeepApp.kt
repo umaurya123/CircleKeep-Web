@@ -1329,15 +1329,33 @@ fun AddEditFriendScreen(
                             
                             val nameIndex = c.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME)
                             val name = if (nameIndex >= 0) c.getString(nameIndex) else ""
+                            
+                            var importedFirstName = ""
+                            var importedMiddleName = ""
+                            var importedLastName = ""
+                            var importedCellPhone = ""
+                            var importedOfficePhone = ""
+                            var importedEmail = ""
+                            var importedWorkEmail = ""
+                            var importedAddress = ""
+                            var importedCompanyName = ""
+                            var importedNotes = ""
+                            var importedDateOfBirth = ""
+                            var importedBirthDay = ""
+                            var importedBirthMonth = ""
+                            var importedAnniversaryDate = ""
+                            var importedAnniversaryDay = ""
+                            var importedAnniversaryMonth = ""
+
                             if (name.isNotBlank()) {
                                 val parts = name.split(" ")
-                                firstName = parts.firstOrNull() ?: ""
-                                lastName = if (parts.size > 1) parts.last() else ""
-                                middleName = if (parts.size > 2) parts.subList(1, parts.size - 1).joinToString(" ") else ""
+                                importedFirstName = parts.firstOrNull() ?: ""
+                                importedLastName = if (parts.size > 1) parts.last() else ""
+                                importedMiddleName = if (parts.size > 2) parts.subList(1, parts.size - 1).joinToString(" ") else ""
                             }
                             
                             contactId?.let { cid ->
-                                // Structured Name splitting if available
+                                // Structured Name
                                 context.contentResolver.query(
                                     ContactsContract.Data.CONTENT_URI,
                                     null,
@@ -1349,9 +1367,9 @@ fun AddEditFriendScreen(
                                         val fnIdx = sn.getColumnIndex(ContactsContract.CommonDataKinds.StructuredName.GIVEN_NAME)
                                         val mnIdx = sn.getColumnIndex(ContactsContract.CommonDataKinds.StructuredName.MIDDLE_NAME)
                                         val lnIdx = sn.getColumnIndex(ContactsContract.CommonDataKinds.StructuredName.FAMILY_NAME)
-                                        if (fnIdx >= 0) sn.getString(fnIdx)?.let { firstName = it }
-                                        if (mnIdx >= 0) sn.getString(mnIdx)?.let { middleName = it }
-                                        if (lnIdx >= 0) sn.getString(lnIdx)?.let { lastName = it }
+                                        if (fnIdx >= 0) sn.getString(fnIdx)?.let { importedFirstName = it }
+                                        if (mnIdx >= 0) sn.getString(mnIdx)?.let { importedMiddleName = it }
+                                        if (lnIdx >= 0) sn.getString(lnIdx)?.let { importedLastName = it }
                                     }
                                 }
 
@@ -1370,9 +1388,9 @@ fun AddEditFriendScreen(
                                         val type = if (typeIdx >= 0) pc.getInt(typeIdx) else -1
                                         if (number.isNotBlank()) {
                                             when (type) {
-                                                ContactsContract.CommonDataKinds.Phone.TYPE_MOBILE -> cellPhone = number
-                                                ContactsContract.CommonDataKinds.Phone.TYPE_WORK -> officePhone = number
-                                                else -> if (cellPhone.isBlank()) cellPhone = number
+                                                ContactsContract.CommonDataKinds.Phone.TYPE_MOBILE -> importedCellPhone = number
+                                                ContactsContract.CommonDataKinds.Phone.TYPE_WORK -> importedOfficePhone = number
+                                                else -> if (importedCellPhone.isBlank()) importedCellPhone = number
                                             }
                                         }
                                     }
@@ -1393,9 +1411,9 @@ fun AddEditFriendScreen(
                                         val type = if (typeIdx >= 0) ec.getInt(typeIdx) else -1
                                         if (addr.isNotBlank()) {
                                             when (type) {
-                                                ContactsContract.CommonDataKinds.Email.TYPE_HOME -> email = addr
-                                                ContactsContract.CommonDataKinds.Email.TYPE_WORK -> workEmail = addr
-                                                else -> if (email.isBlank()) email = addr
+                                                ContactsContract.CommonDataKinds.Email.TYPE_HOME -> importedEmail = addr
+                                                ContactsContract.CommonDataKinds.Email.TYPE_WORK -> importedWorkEmail = addr
+                                                else -> if (importedEmail.isBlank()) importedEmail = addr
                                             }
                                         }
                                     }
@@ -1411,7 +1429,7 @@ fun AddEditFriendScreen(
                                 )?.use { ac ->
                                     val addrIdx = ac.getColumnIndex(ContactsContract.CommonDataKinds.StructuredPostal.FORMATTED_ADDRESS)
                                     if (ac.moveToFirst() && addrIdx >= 0) {
-                                        address = ac.getString(addrIdx) ?: ""
+                                        importedAddress = ac.getString(addrIdx) ?: ""
                                     }
                                 }
 
@@ -1425,7 +1443,7 @@ fun AddEditFriendScreen(
                                 )?.use { oc ->
                                     val compIdx = oc.getColumnIndex(ContactsContract.CommonDataKinds.Organization.COMPANY)
                                     if (oc.moveToFirst() && compIdx >= 0) {
-                                        companyName = oc.getString(compIdx) ?: ""
+                                        importedCompanyName = oc.getString(compIdx) ?: ""
                                     }
                                 }
 
@@ -1439,11 +1457,11 @@ fun AddEditFriendScreen(
                                 )?.use { nc ->
                                     val noteIdx = nc.getColumnIndex(ContactsContract.CommonDataKinds.Note.NOTE)
                                     if (nc.moveToFirst() && noteIdx >= 0) {
-                                        notes = nc.getString(noteIdx) ?: ""
+                                        importedNotes = nc.getString(noteIdx) ?: ""
                                     }
                                 }
 
-                                // Events (Birthday & Anniversary)
+                                // Events
                                 context.contentResolver.query(
                                     ContactsContract.Data.CONTENT_URI,
                                     null,
@@ -1459,23 +1477,108 @@ fun AddEditFriendScreen(
                                         if (date.isNotBlank()) {
                                             when (type) {
                                                 ContactsContract.CommonDataKinds.Event.TYPE_BIRTHDAY -> {
-                                                    dateOfBirth = date
+                                                    importedDateOfBirth = date
                                                     parseDateToDayMonth(date)?.let { (d, m) ->
-                                                        birthDay = d
-                                                        birthMonth = m
+                                                        importedBirthDay = d
+                                                        importedBirthMonth = m
                                                     }
                                                 }
                                                 ContactsContract.CommonDataKinds.Event.TYPE_ANNIVERSARY -> {
-                                                    anniversaryDate = date
+                                                    importedAnniversaryDate = date
                                                     parseDateToDayMonth(date)?.let { (d, m) ->
-                                                        anniversaryDay = d
-                                                        anniversaryMonth = m
+                                                        importedAnniversaryDay = d
+                                                        importedAnniversaryMonth = m
                                                     }
                                                 }
                                             }
                                         }
                                     }
                                 }
+                            }
+
+                            // Show selection dialog
+                            val options = mutableListOf<String>().apply {
+                                add("Main Profile")
+                                add("Partner Section")
+                                children.forEachIndexed { i, child ->
+                                    add("Child ${i + 1}: ${if (child.firstName.isNotBlank()) child.firstName else "Empty"}")
+                                    add("Child ${i + 1}'s Partner")
+                                }
+                            }
+
+                            (context as? androidx.activity.ComponentActivity)?.let { activity ->
+                                val builder = android.app.AlertDialog.Builder(activity)
+                                builder.setTitle("Where to import data?")
+                                builder.setItems(options.toTypedArray()) { _, which ->
+                                    when (which) {
+                                        0 -> { // Main Profile
+                                            firstName = importedFirstName
+                                            middleName = importedMiddleName
+                                            lastName = importedLastName
+                                            cellPhone = importedCellPhone
+                                            officePhone = importedOfficePhone
+                                            email = importedEmail
+                                            workEmail = importedWorkEmail
+                                            address = importedAddress
+                                            companyName = importedCompanyName
+                                            notes = importedNotes
+                                            dateOfBirth = importedDateOfBirth
+                                            birthDay = importedBirthDay
+                                            birthMonth = importedBirthMonth
+                                            anniversaryDate = importedAnniversaryDate
+                                            anniversaryDay = importedAnniversaryDay
+                                            anniversaryMonth = importedAnniversaryMonth
+                                        }
+                                        1 -> { // Partner Section
+                                            partnerFirstName = importedFirstName
+                                            partnerMiddleName = importedMiddleName
+                                            partnerLastName = importedLastName
+                                            partnerPhone = importedCellPhone
+                                            partnerEmail = importedEmail
+                                            partnerWorkEmail = importedWorkEmail
+                                            partnerCompanyName = importedCompanyName
+                                            partnerDateOfBirth = importedDateOfBirth
+                                            partnerBirthDay = importedBirthDay
+                                            partnerBirthMonth = importedBirthMonth
+                                        }
+                                        else -> {
+                                            val childIndex = (which - 2) / 2
+                                            val isPartner = (which - 2) % 2 != 0
+                                            if (childIndex < children.size) {
+                                                val child = children[childIndex]
+                                                if (isPartner) {
+                                                    children[childIndex] = child.copy(
+                                                        partnerFirstName = importedFirstName,
+                                                        partnerMiddleName = importedMiddleName,
+                                                        partnerLastName = importedLastName,
+                                                        partnerPhone = importedCellPhone,
+                                                        partnerEmail = importedEmail,
+                                                        partnerWorkEmail = importedWorkEmail,
+                                                        partnerDateOfBirth = importedDateOfBirth,
+                                                        partnerBirthDay = importedBirthDay,
+                                                        partnerBirthMonth = importedBirthMonth,
+                                                        anniversaryDate = importedAnniversaryDate,
+                                                        anniversaryDay = importedAnniversaryDay,
+                                                        anniversaryMonth = importedAnniversaryMonth
+                                                    )
+                                                } else {
+                                                    children[childIndex] = child.copy(
+                                                        firstName = importedFirstName,
+                                                        middleName = importedMiddleName,
+                                                        lastName = importedLastName,
+                                                        phoneNumber = importedCellPhone,
+                                                        email = importedEmail,
+                                                        workEmail = importedWorkEmail,
+                                                        dateOfBirth = importedDateOfBirth,
+                                                        birthDay = importedBirthDay,
+                                                        birthMonth = importedBirthMonth
+                                                    )
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                builder.show()
                             }
                         }
                     }
@@ -2893,6 +2996,9 @@ fun GroupsScreen(
     onDeleteGroup: (Group) -> Unit,
     onRenameGroup: (String, String) -> Unit
 ) {
+    val viewModel: FriendViewModel = viewModel(factory = FriendViewModel.Factory)
+    val friends by viewModel.friendsState.collectAsState()
+
     var showAddDialog by remember { mutableStateOf(false) }
     var showEditDialog by remember { mutableStateOf(false) }
     var groupToEdit by remember { mutableStateOf<Group?>(null) }
@@ -2919,9 +3025,10 @@ fun GroupsScreen(
         } else {
             LazyColumn(modifier = Modifier.padding(padding)) {
                 items(groups) { group ->
+                    val count = friends.count { it.friend.groups.contains(group.name) }
                     ListItem(
                         modifier = Modifier.clickable { onGroupClick(group.name) },
-                        headlineContent = { Text(group.name) },
+                        headlineContent = { Text("${group.name} ($count)") },
                         leadingContent = { Icon(Icons.Rounded.Group, contentDescription = null) },
                         trailingContent = {
                             Row {
