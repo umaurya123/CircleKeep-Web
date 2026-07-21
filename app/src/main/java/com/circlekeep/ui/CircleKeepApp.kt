@@ -10,7 +10,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.selection.selectable
@@ -18,11 +17,13 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.automirrored.rounded.Notes
 import androidx.compose.material.icons.automirrored.rounded.Sort
+import androidx.compose.material.icons.automirrored.rounded.ViewList
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
-import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
 import androidx.compose.material3.adaptive.layout.calculatePaneScaffoldDirective
 import androidx.compose.material3.adaptive.navigation3.ListDetailSceneStrategy
 import androidx.compose.material3.adaptive.navigation3.rememberListDetailSceneStrategy
@@ -41,6 +42,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavKey
@@ -60,12 +62,12 @@ import com.circlekeep.viewmodel.SortOrder
 import com.yalantis.ucrop.UCrop
 import kotlinx.coroutines.launch
 import java.io.File
-import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
+import kotlin.time.Duration.Companion.seconds
 
 fun parseDate(dateString: String?): Date? {
     if (dateString.isNullOrBlank()) return null
@@ -102,7 +104,7 @@ fun parseDate(dateString: String?): Date? {
                 }
                 return date
             }
-        } catch (e: Exception) { }
+        } catch (_: Exception) { }
     }
     val styles = listOf(java.text.DateFormat.SHORT, java.text.DateFormat.MEDIUM, java.text.DateFormat.LONG)
     for (style in styles) {
@@ -124,7 +126,7 @@ fun parseDate(dateString: String?): Date? {
                 }
                 return date
             }
-        } catch (e: Exception) { }
+        } catch (_: Exception) { }
     }
     return null
 }
@@ -212,7 +214,7 @@ fun CircleKeepApp() {
         }
     }
     
-    val windowAdaptiveInfo = currentWindowAdaptiveInfo()
+    val windowAdaptiveInfo = currentWindowAdaptiveInfoV2()
     val directive = remember(windowAdaptiveInfo) {
         calculatePaneScaffoldDirective(windowAdaptiveInfo)
             .copy(horizontalPartitionSpacerSize = 0.dp)
@@ -471,7 +473,7 @@ fun FriendListScreen(
                 title = {
                     if (selectedGroup != null) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text("${selectedGroup} (${friends.size})", style = MaterialTheme.typography.titleLarge)
+                            Text("$selectedGroup (${friends.size})", style = MaterialTheme.typography.titleLarge)
                             IconButton(onClick = { onSelectedGroupChange(null) }) {
                                 Icon(Icons.Rounded.Close, contentDescription = "Clear Filter")
                             }
@@ -494,7 +496,7 @@ fun FriendListScreen(
                 actions = {
                     IconButton(onClick = onToggleInline) {
                         Icon(
-                            imageVector = if (showInlineData) Icons.Rounded.ViewStream else Icons.Rounded.ViewList,
+                            imageVector = if (showInlineData) Icons.Rounded.ViewStream else Icons.AutoMirrored.Rounded.ViewList,
                             contentDescription = stringResource(R.string.toggle_inline)
                         )
                     }
@@ -607,7 +609,10 @@ fun FriendItem(
         modifier = Modifier.clickable(onClick = onClick),
         headlineContent = { 
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(displayName)
+                Text(
+                    text = displayName,
+                    fontWeight = FontWeight.Bold // Add this line
+                )
                 if (friend.isPinned) {
                     Icon(Icons.Rounded.PushPin, contentDescription = "Pinned", modifier = Modifier.size(16.dp).padding(start = 4.dp), tint = MaterialTheme.colorScheme.primary)
                 }
@@ -660,7 +665,7 @@ fun FriendItem(
                     if (friend.partnerFirstName.isNotBlank()) {
                         Spacer(Modifier.height(2.dp))
                         val partnerTypeStr = if (friend.partnerType == "Fiance") stringResource(R.string.fiance) else friend.partnerType
-                        val label = if (partnerTypeStr.isNotBlank()) partnerTypeStr else stringResource(R.string.partner_name)
+                        val label = partnerTypeStr.ifBlank { stringResource(R.string.partner_name) }
                         val partnerDisplayName = buildString {
                             append(friend.partnerFirstName)
                             if (friend.partnerMiddleName.isNotBlank()) append(" ${friend.partnerMiddleName}")
@@ -748,12 +753,12 @@ fun FriendDetailScreen(
                 actions = {
                     if (friendWithChildren != null) {
                         IconButton(onClick = { 
-                            friendWithChildren?.friend?.let { onTogglePin(it) }
+                            onTogglePin(friendWithChildren.friend)
                         }) {
-                            Icon(Icons.Rounded.PushPin, contentDescription = "Pin", tint = if (friendWithChildren?.friend?.isPinned == true) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant)
+                            Icon(Icons.Rounded.PushPin, contentDescription = "Pin", tint = if (friendWithChildren.friend.isPinned) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                         IconButton(onClick = { 
-                            friendWithChildren?.friend?.let { onEditClick(it.id, null) }
+                            onEditClick(friendWithChildren.friend.id, null)
                         }) {
                             Icon(Icons.Rounded.Edit, contentDescription = stringResource(R.string.edit_friend))
                         }
@@ -783,9 +788,9 @@ fun FriendDetailScreen(
                             modifier = Modifier.size(80.dp).clip(CircleShape),
                             color = MaterialTheme.colorScheme.surfaceVariant
                         ) {
-                            if (friendWithChildren!!.friend.imageUri != null) {
+                            if (friendWithChildren.friend.imageUri != null) {
                                 AsyncImage(
-                                    model = friendWithChildren!!.friend.imageUri,
+                                    model = friendWithChildren.friend.imageUri,
                                     contentDescription = null,
                                     modifier = Modifier.fillMaxSize(),
                                     contentScale = ContentScale.Crop
@@ -798,22 +803,22 @@ fun FriendDetailScreen(
                         Column {
                             Text(
                                 text = buildString {
-                                    append(friendWithChildren!!.friend.firstName)
-                                    if (friendWithChildren!!.friend.middleName.isNotBlank()) append(" ${friendWithChildren!!.friend.middleName}")
-                                    if (friendWithChildren!!.friend.lastName.isNotBlank()) append(" ${friendWithChildren!!.friend.lastName}")
+                                    append(friendWithChildren.friend.firstName)
+                                    if (friendWithChildren.friend.middleName.isNotBlank()) append(" ${friendWithChildren.friend.middleName}")
+                                    if (friendWithChildren.friend.lastName.isNotBlank()) append(" ${friendWithChildren.friend.lastName}")
                                 },
                                 style = MaterialTheme.typography.headlineMedium
                             )
-                            if (friendWithChildren!!.friend.companyName.isNotBlank()) {
+                            if (friendWithChildren.friend.companyName.isNotBlank()) {
                                 Text(
-                                    text = friendWithChildren!!.friend.companyName,
+                                    text = friendWithChildren.friend.companyName,
                                     style = MaterialTheme.typography.titleMedium,
                                     color = MaterialTheme.colorScheme.primary
                                 )
                             }
-                            if (friendWithChildren!!.friend.collegeSchoolName.isNotBlank()) {
+                            if (friendWithChildren.friend.collegeSchoolName.isNotBlank()) {
                                 Text(
-                                    text = friendWithChildren!!.friend.collegeSchoolName,
+                                    text = friendWithChildren.friend.collegeSchoolName,
                                     style = MaterialTheme.typography.titleSmall,
                                     color = MaterialTheme.colorScheme.secondary
                                 )
@@ -823,57 +828,57 @@ fun FriendDetailScreen(
                 }
 
                 item {
-                    DetailRow(Icons.Rounded.LocationOn, friendWithChildren!!.friend.address, onClick = {
-                        val gmmIntentUri = Uri.parse("geo:0,0?q=${Uri.encode(friendWithChildren!!.friend.address)}")
+                    DetailRow(Icons.Rounded.LocationOn, friendWithChildren.friend.address, onClick = {
+                        val gmmIntentUri = "geo:0,0?q=${Uri.encode(friendWithChildren.friend.address)}".toUri()
                         val mapIntent = Intent(Intent.ACTION_VIEW, gmmIntentUri)
                         mapIntent.setPackage("com.google.android.apps.maps")
                         context.startActivity(mapIntent)
                     })
-                    DetailRow(Icons.Rounded.Phone, friendWithChildren!!.friend.cellPhone, onClick = {
-                        val intent = Intent(Intent.ACTION_DIAL, Uri.parse("tel:${friendWithChildren!!.friend.cellPhone}"))
+                    DetailRow(Icons.Rounded.Phone, friendWithChildren.friend.cellPhone, onClick = {
+                        val intent = Intent(Intent.ACTION_DIAL, "tel:${friendWithChildren.friend.cellPhone}".toUri())
                         context.startActivity(intent)
                     })
-                    DetailRow(Icons.Rounded.Work, friendWithChildren!!.friend.officePhone, onClick = {
-                        val intent = Intent(Intent.ACTION_DIAL, Uri.parse("tel:${friendWithChildren!!.friend.officePhone}"))
+                    DetailRow(Icons.Rounded.Work, friendWithChildren.friend.officePhone, onClick = {
+                        val intent = Intent(Intent.ACTION_DIAL, "tel:${friendWithChildren.friend.officePhone}".toUri())
                         context.startActivity(intent)
                     })
-                    DetailRow(Icons.Rounded.Email, friendWithChildren!!.friend.email, onClick = {
+                    DetailRow(Icons.Rounded.Email, friendWithChildren.friend.email, onClick = {
                         val intent = Intent(Intent.ACTION_SENDTO).apply {
-                            data = Uri.parse("mailto:${friendWithChildren!!.friend.email}")
+                            data = "mailto:${friendWithChildren.friend.email}".toUri()
                         }
                         context.startActivity(Intent.createChooser(intent, "Send Email"))
                     })
-                    DetailRow(Icons.Rounded.Cake, formatDisplayDate(friendWithChildren!!.friend.dateOfBirth), label = buildString {
+                    DetailRow(Icons.Rounded.Cake, formatDisplayDate(friendWithChildren.friend.dateOfBirth), label = buildString {
                         append(stringResource(R.string.dob))
-                        calculateAge(friendWithChildren!!.friend.dateOfBirth)?.let { append(" ($it yrs)") }
+                        calculateAge(friendWithChildren.friend.dateOfBirth)?.let { append(" ($it yrs)") }
                     })
-                    if (friendWithChildren!!.friend.dateOfBirth.isBlank() && friendWithChildren!!.friend.birthDay.isNotBlank() && friendWithChildren!!.friend.birthMonth.isNotBlank()) {
+                    if (friendWithChildren.friend.dateOfBirth.isBlank() && friendWithChildren.friend.birthDay.isNotBlank() && friendWithChildren.friend.birthMonth.isNotBlank()) {
                         DetailRow(
                             icon = Icons.Rounded.Cake,
-                            text = formatPartialDate(friendWithChildren!!.friend.birthDay, friendWithChildren!!.friend.birthMonth),
+                            text = formatPartialDate(friendWithChildren.friend.birthDay, friendWithChildren.friend.birthMonth),
                             label = stringResource(R.string.birthday)
                         )
                     }
-                    DetailRow(Icons.Rounded.Favorite, formatDisplayDate(friendWithChildren!!.friend.anniversaryDate), label = buildString {
+                    DetailRow(Icons.Rounded.Favorite, formatDisplayDate(friendWithChildren.friend.anniversaryDate), label = buildString {
                         append(stringResource(R.string.marriage_date))
-                        calculateAge(friendWithChildren!!.friend.anniversaryDate)?.let { append(" ($it yrs)") }
+                        calculateAge(friendWithChildren.friend.anniversaryDate)?.let { append(" ($it yrs)") }
                     })
-                    if (friendWithChildren!!.friend.anniversaryDate.isBlank() && friendWithChildren!!.friend.anniversaryDay.isNotBlank() && friendWithChildren!!.friend.anniversaryMonth.isNotBlank()) {
+                    if (friendWithChildren.friend.anniversaryDate.isBlank() && friendWithChildren.friend.anniversaryDay.isNotBlank() && friendWithChildren.friend.anniversaryMonth.isNotBlank()) {
                         DetailRow(
                             icon = Icons.Rounded.Favorite,
-                            text = formatPartialDate(friendWithChildren!!.friend.anniversaryDay, friendWithChildren!!.friend.anniversaryMonth),
+                            text = formatPartialDate(friendWithChildren.friend.anniversaryDay, friendWithChildren.friend.anniversaryMonth),
                             label = stringResource(R.string.marriage_day)
                         )
                     }
-                    DetailRow(Icons.Rounded.People, friendWithChildren!!.friend.siblings, label = stringResource(R.string.siblings))
-                    DetailRow(Icons.Rounded.Group, friendWithChildren!!.friend.groups.joinToString(", "))
+                    DetailRow(Icons.Rounded.People, friendWithChildren.friend.siblings, label = stringResource(R.string.siblings))
+                    DetailRow(Icons.Rounded.Group, friendWithChildren.friend.groups.joinToString(", "))
                     
-                    if (friendWithChildren!!.friend.petName.isNotBlank()) {
-                        DetailRow(Icons.Rounded.Pets, friendWithChildren!!.friend.petName, label = stringResource(R.string.pet_name))
-                        if (friendWithChildren!!.friend.petImageUri != null) {
+                    if (friendWithChildren.friend.petName.isNotBlank()) {
+                        DetailRow(Icons.Rounded.Pets, friendWithChildren.friend.petName, label = stringResource(R.string.pet_name))
+                        if (friendWithChildren.friend.petImageUri != null) {
                             Card(modifier = Modifier.padding(start = 44.dp, top = 4.dp, bottom = 8.dp).size(100.dp)) {
                                 AsyncImage(
-                                    model = friendWithChildren!!.friend.petImageUri,
+                                    model = friendWithChildren.friend.petImageUri,
                                     contentDescription = null,
                                     modifier = Modifier.fillMaxSize(),
                                     contentScale = ContentScale.Crop
@@ -882,18 +887,18 @@ fun FriendDetailScreen(
                         }
                     }
 
-                    DetailRow(Icons.Rounded.Notes, friendWithChildren!!.friend.notes)
+                    DetailRow(Icons.AutoMirrored.Rounded.Notes, friendWithChildren.friend.notes)
                 }
 
-                if (friendWithChildren!!.friend.partnerFirstName.isNotBlank()) {
+                if (friendWithChildren.friend.partnerFirstName.isNotBlank()) {
                     item {
                         Spacer(Modifier.height(16.dp))
-                        val partnerTypeStr = if (friendWithChildren!!.friend.partnerType == "Fiance") stringResource(R.string.fiance) else friendWithChildren!!.friend.partnerType
-                        val partnerHeader = if (partnerTypeStr.isNotBlank()) partnerTypeStr else stringResource(R.string.partner)
+                        val partnerTypeStr = if (friendWithChildren.friend.partnerType == "Fiance") stringResource(R.string.fiance) else friendWithChildren.friend.partnerType
+                        val partnerHeader = partnerTypeStr.ifBlank { stringResource(R.string.partner) }
                         
                         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                             Text(partnerHeader, style = MaterialTheme.typography.titleLarge)
-                            IconButton(onClick = { onEditClick(friendWithChildren!!.friend.id, -1L) }) {
+                            IconButton(onClick = { onEditClick(friendWithChildren.friend.id, -1L) }) {
                                 Icon(Icons.Rounded.Edit, contentDescription = stringResource(R.string.edit_friend))
                             }
                         }
@@ -904,9 +909,9 @@ fun FriendDetailScreen(
                                         modifier = Modifier.size(60.dp).clip(CircleShape),
                                         color = MaterialTheme.colorScheme.surfaceVariant
                                     ) {
-                                        if (friendWithChildren!!.friend.partnerImageUri != null) {
+                                        if (friendWithChildren.friend.partnerImageUri != null) {
                                             AsyncImage(
-                                                model = friendWithChildren!!.friend.partnerImageUri,
+                                                model = friendWithChildren.friend.partnerImageUri,
                                                 contentDescription = null,
                                                 modifier = Modifier.fillMaxSize(),
                                                 contentScale = ContentScale.Crop
@@ -918,53 +923,53 @@ fun FriendDetailScreen(
                                     Spacer(Modifier.width(16.dp))
                                     Column {
                                         val partnerDisplayName = buildString {
-                                            append(friendWithChildren!!.friend.partnerFirstName)
-                                            if (friendWithChildren!!.friend.partnerMiddleName.isNotBlank()) append(" ${friendWithChildren!!.friend.partnerMiddleName}")
-                                            if (friendWithChildren!!.friend.partnerLastName.isNotBlank()) append(" ${friendWithChildren!!.friend.partnerLastName}")
+                                            append(friendWithChildren.friend.partnerFirstName)
+                                            if (friendWithChildren.friend.partnerMiddleName.isNotBlank()) append(" ${friendWithChildren.friend.partnerMiddleName}")
+                                            if (friendWithChildren.friend.partnerLastName.isNotBlank()) append(" ${friendWithChildren.friend.partnerLastName}")
                                         }
                                         Text(
                                             text = partnerDisplayName,
                                             style = MaterialTheme.typography.titleLarge
                                         )
-                                        if (friendWithChildren!!.friend.partnerPhone.isNotBlank()) {
-                                            DetailRow(Icons.Rounded.Phone, friendWithChildren!!.friend.partnerPhone, onClick = {
-                                                val intent = Intent(Intent.ACTION_DIAL, Uri.parse("tel:${friendWithChildren!!.friend.partnerPhone}"))
+                                        if (friendWithChildren.friend.partnerPhone.isNotBlank()) {
+                                            DetailRow(Icons.Rounded.Phone, friendWithChildren.friend.partnerPhone, onClick = {
+                                                val intent = Intent(Intent.ACTION_DIAL, "tel:${friendWithChildren.friend.partnerPhone}".toUri())
                                                 context.startActivity(intent)
                                             })
                                         }
                                     }
                                 }
-                                if (friendWithChildren!!.friend.partnerDateOfBirth.isNotBlank()) {
+                                if (friendWithChildren.friend.partnerDateOfBirth.isNotBlank()) {
                                     DetailRow(
                                         icon = Icons.Rounded.Cake,
-                                        text = formatDisplayDate(friendWithChildren!!.friend.partnerDateOfBirth),
+                                        text = formatDisplayDate(friendWithChildren.friend.partnerDateOfBirth),
                                         label = buildString {
                                             append(stringResource(R.string.dob))
-                                            calculateAge(friendWithChildren!!.friend.partnerDateOfBirth)?.let { append(" ($it yrs)") }
+                                            calculateAge(friendWithChildren.friend.partnerDateOfBirth)?.let { append(" ($it yrs)") }
                                         }
                                     )
-                                } else if (friendWithChildren!!.friend.partnerBirthDay.isNotBlank() && friendWithChildren!!.friend.partnerBirthMonth.isNotBlank()) {
+                                } else if (friendWithChildren.friend.partnerBirthDay.isNotBlank() && friendWithChildren.friend.partnerBirthMonth.isNotBlank()) {
                                     DetailRow(
                                         icon = Icons.Rounded.Cake,
-                                        text = formatPartialDate(friendWithChildren!!.friend.partnerBirthDay, friendWithChildren!!.friend.partnerBirthMonth),
+                                        text = formatPartialDate(friendWithChildren.friend.partnerBirthDay, friendWithChildren.friend.partnerBirthMonth),
                                         label = stringResource(R.string.birthday)
                                     )
                                 }
-                                if (friendWithChildren!!.friend.partnerSiblings.isNotBlank()) {
-                                    DetailRow(Icons.Rounded.People, friendWithChildren!!.friend.partnerSiblings, label = stringResource(R.string.siblings))
+                                if (friendWithChildren.friend.partnerSiblings.isNotBlank()) {
+                                    DetailRow(Icons.Rounded.People, friendWithChildren.friend.partnerSiblings, label = stringResource(R.string.siblings))
                                 }
                             }
                         }
                     }
                 }
                 
-                if (friendWithChildren!!.children.isNotEmpty()) {
+                if (friendWithChildren.children.isNotEmpty()) {
                     item {
                         Spacer(Modifier.height(16.dp))
                         Text(stringResource(R.string.children), style = MaterialTheme.typography.titleLarge)
                         HorizontalDivider(Modifier.padding(vertical = 8.dp))
                     }
-                    items(friendWithChildren!!.children) { child ->
+                    items(friendWithChildren.children) { child ->
                         Card(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
                             Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -994,7 +999,7 @@ fun FriendDetailScreen(
                                         style = MaterialTheme.typography.titleMedium,
                                         modifier = Modifier.weight(1f)
                                     )
-                                    IconButton(onClick = { onEditClick(friendWithChildren!!.friend.id, child.id) }) {
+                                    IconButton(onClick = { onEditClick(friendWithChildren.friend.id, child.id) }) {
                                         Icon(Icons.Rounded.Edit, contentDescription = stringResource(R.string.edit_friend))
                                     }
                                 }
@@ -1003,7 +1008,7 @@ fun FriendDetailScreen(
                                 }
                                 if (child.phoneNumber.isNotBlank()) {
                                     DetailRow(Icons.Rounded.Phone, child.phoneNumber, onClick = {
-                                        val intent = Intent(Intent.ACTION_DIAL, Uri.parse("tel:${child.phoneNumber}"))
+                                        val intent = Intent(Intent.ACTION_DIAL, "tel:${child.phoneNumber}".toUri())
                                         context.startActivity(intent)
                                     })
                                 }
@@ -1042,7 +1047,7 @@ fun FriendDetailScreen(
                                     }
                                     
                                     val partnerTypeStr = if (child.partnerType == "Fiance") stringResource(R.string.fiance) else child.partnerType
-                                    val partnerLabel = if (partnerTypeStr.isNotBlank()) partnerTypeStr else "Partner"
+                                    val partnerLabel = partnerTypeStr.ifBlank { "Partner" }
                                     
                                     val childPartnerDisplayName = buildString {
                                         append(child.partnerFirstName)
@@ -1060,7 +1065,7 @@ fun FriendDetailScreen(
                                     )
                                     if (child.partnerPhone.isNotBlank()) {
                                         DetailRow(Icons.Rounded.Phone, child.partnerPhone, onClick = {
-                                            val intent = Intent(Intent.ACTION_DIAL, Uri.parse("tel:${child.partnerPhone}"))
+                                            val intent = Intent(Intent.ACTION_DIAL, "tel:${child.partnerPhone}".toUri())
                                             context.startActivity(intent)
                                         })
                                     }
@@ -1113,7 +1118,7 @@ fun FriendDetailScreen(
             confirmButton = {
                 TextButton(
                     onClick = {
-                        friendWithChildren?.friend?.let { onDeleteClick(it) }
+                        onDeleteClick(friendWithChildren.friend)
                         showDeleteDialog = false
                     }
                 ) {
@@ -1259,9 +1264,9 @@ fun AddEditFriendScreen(
     val friendImageLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent(),
         onResult = { uri ->
-            uri?.let {
-                val destinationUri = Uri.fromFile(File(context.cacheDir, "crop_${System.currentTimeMillis()}.jpg"))
-                val uCrop = UCrop.of(it, destinationUri)
+            uri?.let { selectedUri ->
+                val destinationUri = File(context.cacheDir, "crop_${System.currentTimeMillis()}.jpg").toUri()
+                val uCrop = UCrop.of(selectedUri, destinationUri)
                     .withAspectRatio(1f, 1f)
                     .withMaxResultSize(500, 500)
                 
@@ -1291,9 +1296,9 @@ fun AddEditFriendScreen(
     val partnerImageLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent(),
         onResult = { uri ->
-            uri?.let {
-                val destinationUri = Uri.fromFile(File(context.cacheDir, "crop_partner_${System.currentTimeMillis()}.jpg"))
-                val uCrop = UCrop.of(it, destinationUri)
+            uri?.let { selectedUri ->
+                val destinationUri = File(context.cacheDir, "crop_partner_${System.currentTimeMillis()}.jpg").toUri()
+                val uCrop = UCrop.of(selectedUri, destinationUri)
                     .withAspectRatio(1f, 1f)
                     .withMaxResultSize(500, 500)
                 
@@ -1305,9 +1310,9 @@ fun AddEditFriendScreen(
     val friendPetImageLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent(),
         onResult = { uri ->
-            uri?.let {
-                val destinationUri = Uri.fromFile(File(context.cacheDir, "crop_pet_${System.currentTimeMillis()}.jpg"))
-                val uCrop = UCrop.of(it, destinationUri)
+            uri?.let { selectedUri ->
+                val destinationUri = File(context.cacheDir, "crop_pet_${System.currentTimeMillis()}.jpg").toUri()
+                val uCrop = UCrop.of(selectedUri, destinationUri)
                     .withAspectRatio(1f, 1f)
                     .withMaxResultSize(500, 500)
                 
@@ -1355,7 +1360,7 @@ fun AddEditFriendScreen(
                             }
                             
                             contactId?.let { cid ->
-                                // Structured Name
+                                // structured Name
                                 context.contentResolver.query(
                                     ContactsContract.Data.CONTENT_URI,
                                     null,
@@ -1367,9 +1372,9 @@ fun AddEditFriendScreen(
                                         val fnIdx = sn.getColumnIndex(ContactsContract.CommonDataKinds.StructuredName.GIVEN_NAME)
                                         val mnIdx = sn.getColumnIndex(ContactsContract.CommonDataKinds.StructuredName.MIDDLE_NAME)
                                         val lnIdx = sn.getColumnIndex(ContactsContract.CommonDataKinds.StructuredName.FAMILY_NAME)
-                                        if (fnIdx >= 0) sn.getString(fnIdx)?.let { importedFirstName = it }
-                                        if (mnIdx >= 0) sn.getString(mnIdx)?.let { importedMiddleName = it }
-                                        if (lnIdx >= 0) sn.getString(lnIdx)?.let { importedLastName = it }
+                                        if (fnIdx >= 0) sn.getString(fnIdx)?.let { name -> importedFirstName = name }
+                                        if (mnIdx >= 0) sn.getString(mnIdx)?.let { name -> importedMiddleName = name }
+                                        if (lnIdx >= 0) sn.getString(lnIdx)?.let { name -> importedLastName = name }
                                     }
                                 }
 
@@ -1404,16 +1409,16 @@ fun AddEditFriendScreen(
                                     arrayOf(cid),
                                     null
                                 )?.use { ec ->
-                                    val addrIdx = ec.getColumnIndex(ContactsContract.CommonDataKinds.Email.ADDRESS)
+                                    val addressIdx = ec.getColumnIndex(ContactsContract.CommonDataKinds.Email.ADDRESS)
                                     val typeIdx = ec.getColumnIndex(ContactsContract.CommonDataKinds.Email.TYPE)
                                     while (ec.moveToNext()) {
-                                        val addr = if (addrIdx >= 0) ec.getString(addrIdx) ?: "" else ""
+                                        val emailAddr = if (addressIdx >= 0) ec.getString(addressIdx) ?: "" else ""
                                         val type = if (typeIdx >= 0) ec.getInt(typeIdx) else -1
-                                        if (addr.isNotBlank()) {
+                                        if (emailAddr.isNotBlank()) {
                                             when (type) {
-                                                ContactsContract.CommonDataKinds.Email.TYPE_HOME -> importedEmail = addr
-                                                ContactsContract.CommonDataKinds.Email.TYPE_WORK -> importedWorkEmail = addr
-                                                else -> if (importedEmail.isBlank()) importedEmail = addr
+                                                ContactsContract.CommonDataKinds.Email.TYPE_HOME -> importedEmail = emailAddr
+                                                ContactsContract.CommonDataKinds.Email.TYPE_WORK -> importedWorkEmail = emailAddr
+                                                else -> if (importedEmail.isBlank()) importedEmail = emailAddr
                                             }
                                         }
                                     }
@@ -1441,9 +1446,9 @@ fun AddEditFriendScreen(
                                     arrayOf(cid, ContactsContract.CommonDataKinds.Organization.CONTENT_ITEM_TYPE),
                                     null
                                 )?.use { oc ->
-                                    val compIdx = oc.getColumnIndex(ContactsContract.CommonDataKinds.Organization.COMPANY)
-                                    if (oc.moveToFirst() && compIdx >= 0) {
-                                        importedCompanyName = oc.getString(compIdx) ?: ""
+                                    val companyIdx = oc.getColumnIndex(ContactsContract.CommonDataKinds.Organization.COMPANY)
+                                    if (oc.moveToFirst() && companyIdx >= 0) {
+                                        importedCompanyName = oc.getString(companyIdx) ?: ""
                                     }
                                 }
 
@@ -1501,7 +1506,7 @@ fun AddEditFriendScreen(
                                 add("Main Profile")
                                 add("Partner Section")
                                 children.forEachIndexed { i, child ->
-                                    add("Child ${i + 1}: ${if (child.firstName.isNotBlank()) child.firstName else "Empty"}")
+                                    add("Child ${i + 1}: ${child.firstName.ifBlank { "Empty" }}")
                                     add("Child ${i + 1}'s Partner")
                                 }
                             }
@@ -1703,7 +1708,7 @@ fun AddEditFriendScreen(
                                     scope.launch {
                                         for (i in 10 downTo 1) {
                                             saveDelaySeconds = i
-                                            kotlinx.coroutines.delay(1000)
+                                            kotlinx.coroutines.delay(1.seconds)
                                         }
                                         onSave(friend, children.toList())
                                     }
@@ -2223,9 +2228,9 @@ fun ChildItemEdit(
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent(),
         onResult = { uri -> 
-            uri?.let {
-                val destinationUri = Uri.fromFile(File(context.cacheDir, "crop_child_${System.currentTimeMillis()}.jpg"))
-                val uCrop = UCrop.of(it, destinationUri)
+            uri?.let { selectedUri ->
+                val destinationUri = File(context.cacheDir, "crop_child_${System.currentTimeMillis()}.jpg").toUri()
+                val uCrop = UCrop.of(selectedUri, destinationUri)
                     .withAspectRatio(1f, 1f)
                     .withMaxResultSize(500, 500)
                 
@@ -2246,9 +2251,9 @@ fun ChildItemEdit(
     val partnerImageLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent(),
         onResult = { uri ->
-            uri?.let {
-                val destinationUri = Uri.fromFile(File(context.cacheDir, "crop_child_partner_${System.currentTimeMillis()}.jpg"))
-                val uCrop = UCrop.of(it, destinationUri)
+            uri?.let { selectedUri ->
+                val destinationUri = File(context.cacheDir, "crop_child_partner_${System.currentTimeMillis()}.jpg").toUri()
+                val uCrop = UCrop.of(selectedUri, destinationUri)
                     .withAspectRatio(1f, 1f)
                     .withMaxResultSize(500, 500)
                 
@@ -2571,9 +2576,9 @@ fun ChildItemEdit(
                     val petLauncher = rememberLauncherForActivityResult(
                         contract = ActivityResultContracts.GetContent(),
                         onResult = { uri ->
-                            uri?.let {
-                                val destinationUri = Uri.fromFile(File(context.cacheDir, "crop_child_pet_${System.currentTimeMillis()}.jpg"))
-                                val uCrop = UCrop.of(it, destinationUri)
+                            uri?.let { selectedUri ->
+                                val destinationUri = File(context.cacheDir, "crop_child_pet_${System.currentTimeMillis()}.jpg").toUri()
+                                val uCrop = UCrop.of(selectedUri, destinationUri)
                                     .withAspectRatio(1f, 1f)
                                     .withMaxResultSize(500, 500)
                                 cropPetLauncher.launch(uCrop.getIntent(context))
@@ -3243,7 +3248,7 @@ fun SettingsScreen(viewModel: FriendViewModel) {
             TextButton(
                 onClick = {
                     val intent = Intent(Intent.ACTION_SENDTO).apply {
-                        data = Uri.parse("mailto:CircleKeepApp@gmail.com")
+                        data = "mailto:CircleKeepApp@gmail.com".toUri()
                         putExtra(Intent.EXTRA_SUBJECT, "CircleKeep Feedback")
                     }
                     context.startActivity(Intent.createChooser(intent, "Send Feedback"))
@@ -3259,7 +3264,7 @@ fun SettingsScreen(viewModel: FriendViewModel) {
             
             ListItem(
                 headlineContent = { Text("App Version") },
-                supportingContent = { Text("1.2.0") }
+                supportingContent = { Text("1.1.0") }
             )
             HorizontalDivider()
             ListItem(
