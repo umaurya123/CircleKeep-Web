@@ -117,6 +117,11 @@ class FriendViewModel(
         _sortOrder.value = order
     }
 
+    fun clearFilters() {
+        _searchQuery.value = ""
+        _selectedGroup.value = null
+    }
+
     fun toggleInlineData() {
         _showInlineData.value = !_showInlineData.value
     }

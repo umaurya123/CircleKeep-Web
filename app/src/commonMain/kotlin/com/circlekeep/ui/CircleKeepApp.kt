@@ -42,19 +42,29 @@ fun CircleKeepApp() {
     }
 
     CompositionLocalProvider(LocalPlatformUI provides platformUI) {
+        val navBackStackEntry by navController.currentBackStackEntryAsState()
+        val currentRoute = navBackStackEntry?.destination?.route ?: ""
+        
+        val barDestination = when {
+            currentRoute.contains("Favorites") -> Destination.Favorites
+            currentRoute.contains("Groups") -> Destination.Groups
+            currentRoute.contains("Settings") -> Destination.Settings
+            else -> Destination.Home
+        }
+
         Column(modifier = Modifier.fillMaxSize()) {
             Scaffold(
                 modifier = Modifier.weight(1f),
                 bottomBar = {
                     val friends by viewModel.friendsState.collectAsState()
-                    // Re-calculating the current destination for the bottom bar
-                    // This is a bit tricky with type-safe navigation if we want exact matching.
-                    // For simplicity, we'll use a placeholder or just pass the controller.
                     CircleKeepBottomBar(
-                        currentDestination = Destination.Home, // Placeholder
+                        currentDestination = barDestination,
                         friendCount = friends.size,
                         favoriteCount = friends.count { it.friend.isFavorite },
                         onNavigate = { destination ->
+                            if (destination == Destination.Home && barDestination == Destination.Home) {
+                                viewModel.clearFilters()
+                            }
                             navController.navigate(destination) {
                                 popUpTo(Destination.Home) { saveState = true }
                                 launchSingleTop = true
