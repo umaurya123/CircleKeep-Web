@@ -90,7 +90,9 @@ fun FriendDetailScreen(
                                     contentScale = ContentScale.Crop
                                 )
                             } else {
-                                Icon(Icons.Rounded.Person, contentDescription = null, modifier = Modifier.padding(16.dp))
+                                com.circlekeep.ui.components.PlaceholderAvatar(
+                                    name = friendWithChildren.friend.firstName + " " + friendWithChildren.friend.lastName
+                                )
                             }
                         }
                         Spacer(Modifier.width(16.dp))
@@ -203,7 +205,9 @@ fun FriendDetailScreen(
                                                 contentScale = ContentScale.Crop
                                             )
                                         } else {
-                                            Icon(Icons.Rounded.Person, contentDescription = null, modifier = Modifier.padding(12.dp))
+                                            com.circlekeep.ui.components.PlaceholderAvatar(
+                                                name = friendWithChildren.friend.partnerFirstName + " " + friendWithChildren.friend.partnerLastName
+                                            )
                                         }
                                     }
                                     Spacer(Modifier.width(16.dp))
@@ -270,7 +274,9 @@ fun FriendDetailScreen(
                                                 contentScale = ContentScale.Crop
                                             )
                                         } else {
-                                            Icon(Icons.Rounded.Person, contentDescription = null, modifier = Modifier.padding(8.dp))
+                                            com.circlekeep.ui.components.PlaceholderAvatar(
+                                                name = child.firstName + " " + child.lastName
+                                            )
                                         }
                                     }
                                     Spacer(Modifier.width(12.dp))

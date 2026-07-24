@@ -76,7 +76,7 @@ fun FriendItem(
                         contentScale = ContentScale.Crop
                     )
                 } else {
-                    Icon(Icons.Rounded.Person, contentDescription = null, modifier = Modifier.padding(8.dp))
+                    PlaceholderAvatar(name = friend.firstName + " " + friend.lastName)
                 }
             }
         },
