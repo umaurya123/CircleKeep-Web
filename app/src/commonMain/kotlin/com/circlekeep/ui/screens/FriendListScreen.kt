@@ -141,6 +141,11 @@ fun FriendListScreen(
                     onToggleFavorite = { onToggleFavorite(friendWithChildren.friend) },
                     onTogglePin = { onTogglePin(friendWithChildren.friend) }
                 )
+                HorizontalDivider(
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                    thickness = 0.5.dp,
+                    color = MaterialTheme.colorScheme.outlineVariant
+                )
             }
         }
     }
