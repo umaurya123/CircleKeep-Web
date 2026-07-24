@@ -22,12 +22,10 @@ fun PlaceholderAvatar(
     val initials = name.trim().split(Regex("\\s+"))
         .filter { it.isNotBlank() }
         .let { parts ->
-            if (parts.size >= 2) {
-                "${parts.first().take(1)}${parts.last().take(1)}"
-            } else if (parts.isNotEmpty()) {
-                parts.first().take(2)
-            } else {
-                "?"
+            when {
+                parts.size >= 2 -> "${parts.first().take(1)}${parts.last().take(1)}"
+                parts.isNotEmpty() -> parts.first().take(if (parts.first().length >= 2) 2 else 1)
+                else -> "?"
             }
         }.uppercase()
 

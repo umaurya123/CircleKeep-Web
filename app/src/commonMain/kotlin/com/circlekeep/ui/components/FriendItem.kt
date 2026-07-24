@@ -76,7 +76,7 @@ fun FriendItem(
                         contentScale = ContentScale.Crop
                     )
                 } else {
-                    PlaceholderAvatar(name = friend.firstName + " " + friend.lastName)
+                    PlaceholderAvatar(name = "${friend.firstName} ${friend.middleName} ${friend.lastName}")
                 }
             }
         },

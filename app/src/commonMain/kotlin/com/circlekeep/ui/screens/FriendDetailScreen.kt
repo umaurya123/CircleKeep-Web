@@ -91,7 +91,7 @@ fun FriendDetailScreen(
                                 )
                             } else {
                                 com.circlekeep.ui.components.PlaceholderAvatar(
-                                    name = friendWithChildren.friend.firstName + " " + friendWithChildren.friend.lastName
+                                    name = "${friendWithChildren.friend.firstName} ${friendWithChildren.friend.middleName} ${friendWithChildren.friend.lastName}"
                                 )
                             }
                         }
@@ -206,7 +206,7 @@ fun FriendDetailScreen(
                                             )
                                         } else {
                                             com.circlekeep.ui.components.PlaceholderAvatar(
-                                                name = friendWithChildren.friend.partnerFirstName + " " + friendWithChildren.friend.partnerLastName
+                                                name = "${friendWithChildren.friend.partnerFirstName} ${friendWithChildren.friend.partnerMiddleName} ${friendWithChildren.friend.partnerLastName}"
                                             )
                                         }
                                     }
@@ -275,7 +275,7 @@ fun FriendDetailScreen(
                                             )
                                         } else {
                                             com.circlekeep.ui.components.PlaceholderAvatar(
-                                                name = child.firstName + " " + child.lastName
+                                                name = "${child.firstName} ${child.middleName} ${child.lastName}"
                                             )
                                         }
                                     }
