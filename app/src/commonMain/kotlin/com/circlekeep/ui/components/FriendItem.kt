@@ -18,7 +18,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import coil3.compose.AsyncImage
+import coil3.compose.SubcomposeAsyncImage
 import com.circlekeep.data.FriendWithChildren
 import com.circlekeep.viewmodel.SortOrder
 
@@ -68,15 +68,17 @@ fun FriendItem(
                 modifier = Modifier.size(40.dp).clip(CircleShape),
                 color = MaterialTheme.colorScheme.surfaceVariant
             ) {
-                if (!friend.imageUri.isNullOrBlank()) {
-                    AsyncImage(
+                val name = "${friend.firstName} ${friend.middleName} ${friend.lastName}"
+                if (!friend.imageUri.isNullOrBlank() && friend.imageUri != "null") {
+                    SubcomposeAsyncImage(
                         model = friend.imageUri,
                         contentDescription = null,
                         modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop
+                        contentScale = ContentScale.Crop,
+                        error = { PlaceholderAvatar(name = name) }
                     )
                 } else {
-                    PlaceholderAvatar(name = "${friend.firstName} ${friend.middleName} ${friend.lastName}")
+                    PlaceholderAvatar(name = name)
                 }
             }
         },

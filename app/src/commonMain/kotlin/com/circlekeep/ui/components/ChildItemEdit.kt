@@ -20,6 +20,7 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import coil3.compose.SubcomposeAsyncImage
 import com.circlekeep.DatePickerField
 import com.circlekeep.data.Child
 import com.circlekeep.getPlatform
@@ -60,15 +61,17 @@ fun ChildItemEdit(
                             .clickable { onSelectImage() },
                         color = MaterialTheme.colorScheme.surfaceVariant
                     ) {
-                        if (!child.imageUri.isNullOrBlank()) {
-                            AsyncImage(
+                        val name = "${child.firstName} ${child.middleName} ${child.lastName}"
+                        if (!child.imageUri.isNullOrBlank() && child.imageUri != "null") {
+                            SubcomposeAsyncImage(
                                 model = child.imageUri,
                                 contentDescription = null,
                                 modifier = Modifier.fillMaxSize(),
-                                contentScale = ContentScale.Crop
+                                contentScale = ContentScale.Crop,
+                                error = { PlaceholderAvatar(name = name) }
                             )
                         } else {
-                            PlaceholderAvatar(name = "${child.firstName} ${child.middleName} ${child.lastName}")
+                            PlaceholderAvatar(name = name)
                         }
                     }
                     Spacer(Modifier.width(12.dp))
@@ -219,10 +222,17 @@ fun ChildItemEdit(
                         modifier = Modifier.size(40.dp).clip(CircleShape).clickable { onSelectPartnerImage() },
                         color = MaterialTheme.colorScheme.surfaceVariant
                     ) {
-                        if (!child.partnerImageUri.isNullOrBlank()) {
-                            AsyncImage(model = child.partnerImageUri, contentDescription = null, modifier = Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
+                        val name = "${child.partnerFirstName} ${child.partnerMiddleName} ${child.partnerLastName}"
+                        if (!child.partnerImageUri.isNullOrBlank() && child.partnerImageUri != "null") {
+                            SubcomposeAsyncImage(
+                                model = child.partnerImageUri,
+                                contentDescription = null,
+                                modifier = Modifier.fillMaxSize(),
+                                contentScale = ContentScale.Crop,
+                                error = { PlaceholderAvatar(name = name) }
+                            )
                         } else {
-                            PlaceholderAvatar(name = "${child.partnerFirstName} ${child.partnerMiddleName} ${child.partnerLastName}")
+                            PlaceholderAvatar(name = name)
                         }
                     }
                     Spacer(Modifier.width(12.dp))

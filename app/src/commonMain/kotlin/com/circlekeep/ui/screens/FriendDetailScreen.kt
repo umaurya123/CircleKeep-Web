@@ -15,7 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
-import coil3.compose.AsyncImage
+import coil3.compose.SubcomposeAsyncImage
 import com.circlekeep.LocalPlatformUI
 import com.circlekeep.data.Friend
 import com.circlekeep.data.FriendWithChildren
@@ -82,17 +82,17 @@ fun FriendDetailScreen(
                             modifier = Modifier.size(80.dp).clip(CircleShape),
                             color = MaterialTheme.colorScheme.surfaceVariant
                         ) {
-                            if (!friendWithChildren.friend.imageUri.isNullOrBlank()) {
-                                AsyncImage(
+                            val name = "${friendWithChildren.friend.firstName} ${friendWithChildren.friend.middleName} ${friendWithChildren.friend.lastName}"
+                            if (!friendWithChildren.friend.imageUri.isNullOrBlank() && friendWithChildren.friend.imageUri != "null") {
+                                SubcomposeAsyncImage(
                                     model = friendWithChildren.friend.imageUri,
                                     contentDescription = null,
                                     modifier = Modifier.fillMaxSize(),
-                                    contentScale = ContentScale.Crop
+                                    contentScale = ContentScale.Crop,
+                                    error = { com.circlekeep.ui.components.PlaceholderAvatar(name = name) }
                                 )
                             } else {
-                                com.circlekeep.ui.components.PlaceholderAvatar(
-                                    name = "${friendWithChildren.friend.firstName} ${friendWithChildren.friend.middleName} ${friendWithChildren.friend.lastName}"
-                                )
+                                com.circlekeep.ui.components.PlaceholderAvatar(name = name)
                             }
                         }
                         Spacer(Modifier.width(16.dp))
@@ -197,17 +197,17 @@ fun FriendDetailScreen(
                                         modifier = Modifier.size(60.dp).clip(CircleShape),
                                         color = MaterialTheme.colorScheme.surfaceVariant
                                     ) {
-                                        if (!friendWithChildren.friend.partnerImageUri.isNullOrBlank()) {
-                                            AsyncImage(
+                                        val name = "${friendWithChildren.friend.partnerFirstName} ${friendWithChildren.friend.partnerMiddleName} ${friendWithChildren.friend.partnerLastName}"
+                                        if (!friendWithChildren.friend.partnerImageUri.isNullOrBlank() && friendWithChildren.friend.partnerImageUri != "null") {
+                                            SubcomposeAsyncImage(
                                                 model = friendWithChildren.friend.partnerImageUri,
                                                 contentDescription = null,
                                                 modifier = Modifier.fillMaxSize(),
-                                                contentScale = ContentScale.Crop
+                                                contentScale = ContentScale.Crop,
+                                                error = { com.circlekeep.ui.components.PlaceholderAvatar(name = name) }
                                             )
                                         } else {
-                                            com.circlekeep.ui.components.PlaceholderAvatar(
-                                                name = "${friendWithChildren.friend.partnerFirstName} ${friendWithChildren.friend.partnerMiddleName} ${friendWithChildren.friend.partnerLastName}"
-                                            )
+                                            com.circlekeep.ui.components.PlaceholderAvatar(name = name)
                                         }
                                     }
                                     Spacer(Modifier.width(16.dp))
@@ -266,17 +266,17 @@ fun FriendDetailScreen(
                                         modifier = Modifier.size(40.dp).clip(CircleShape),
                                         color = MaterialTheme.colorScheme.surfaceVariant
                                     ) {
-                                        if (!child.imageUri.isNullOrBlank()) {
-                                            AsyncImage(
+                                        val name = "${child.firstName} ${child.middleName} ${child.lastName}"
+                                        if (!child.imageUri.isNullOrBlank() && child.imageUri != "null") {
+                                            SubcomposeAsyncImage(
                                                 model = child.imageUri,
                                                 contentDescription = null,
                                                 modifier = Modifier.fillMaxSize(),
-                                                contentScale = ContentScale.Crop
+                                                contentScale = ContentScale.Crop,
+                                                error = { com.circlekeep.ui.components.PlaceholderAvatar(name = name) }
                                             )
                                         } else {
-                                            com.circlekeep.ui.components.PlaceholderAvatar(
-                                                name = "${child.firstName} ${child.middleName} ${child.lastName}"
-                                            )
+                                            com.circlekeep.ui.components.PlaceholderAvatar(name = name)
                                         }
                                     }
                                     Spacer(Modifier.width(12.dp))

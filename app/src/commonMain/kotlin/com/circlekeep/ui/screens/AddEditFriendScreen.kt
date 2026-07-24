@@ -21,6 +21,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import coil3.compose.SubcomposeAsyncImage
 import com.circlekeep.*
 import com.circlekeep.data.Child
 import com.circlekeep.data.Friend
@@ -274,12 +275,13 @@ fun AddEditFriendScreen(
                                     .clickable { mainImagePickerTrigger = true },
                                 color = MaterialTheme.colorScheme.surfaceVariant
                             ) {
-                                if (!imageUri.isNullOrBlank()) {
-                                    coil3.compose.AsyncImage(
+                                if (!imageUri.isNullOrBlank() && imageUri != "null") {
+                                    SubcomposeAsyncImage(
                                         model = imageUri,
                                         contentDescription = null,
                                         modifier = Modifier.fillMaxSize(),
-                                        contentScale = ContentScale.Crop
+                                        contentScale = ContentScale.Crop,
+                                        error = { com.circlekeep.ui.components.PlaceholderAvatar(name = "$firstName $middleName $lastName") }
                                     )
                                 } else {
                                     com.circlekeep.ui.components.PlaceholderAvatar(name = "$firstName $middleName $lastName")
@@ -484,12 +486,13 @@ fun AddEditFriendScreen(
                                     .clickable { petImagePickerTrigger = true },
                                 color = MaterialTheme.colorScheme.surfaceVariant
                             ) {
-                                if (petImageUri != null) {
-                                    coil3.compose.AsyncImage(
+                                if (!petImageUri.isNullOrBlank() && petImageUri != "null") {
+                                    SubcomposeAsyncImage(
                                         model = petImageUri,
                                         contentDescription = null,
                                         modifier = Modifier.fillMaxSize(),
-                                        contentScale = ContentScale.Crop
+                                        contentScale = ContentScale.Crop,
+                                        error = { Icon(Icons.Rounded.Pets, contentDescription = null, modifier = Modifier.padding(12.dp)) }
                                     )
                                 } else {
                                     Icon(Icons.Rounded.Pets, contentDescription = null, modifier = Modifier.padding(12.dp))

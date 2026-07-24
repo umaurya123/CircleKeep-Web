@@ -3,6 +3,7 @@ package com.circlekeep.ui.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -11,7 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.dp
 
 @Composable
 fun PlaceholderAvatar(
@@ -29,7 +30,12 @@ fun PlaceholderAvatar(
             }
         }.uppercase()
 
-    val textColor = if (backgroundColor.luminance() > 0.5f) Color.Black else Color.White
+    // Use a slightly lower threshold for dark text to ensure better contrast on vibrant colors
+    val textColor = if (backgroundColor.luminance() > 0.45f) {
+        Color(0xFF1D1B20) // Near black
+    } else {
+        Color.White
+    }
 
     Box(
         modifier = modifier
@@ -39,6 +45,7 @@ fun PlaceholderAvatar(
     ) {
         Text(
             text = initials,
+            modifier = Modifier.padding(4.dp),
             style = MaterialTheme.typography.titleMedium.copy(
                 color = textColor,
                 fontWeight = FontWeight.Bold
@@ -50,25 +57,26 @@ fun PlaceholderAvatar(
 @Composable
 private fun rememberBackgroundColor(name: String): Color {
     val colors = listOf(
-        Color(0xFFEF5350), // Red
-        Color(0xFFEC407A), // Pink
-        Color(0xFFAB47BC), // Purple
-        Color(0xFF7E57C2), // Deep Purple
-        Color(0xFF5C6BC0), // Indigo
-        Color(0xFF42A5F5), // Blue
-        Color(0xFF29B6F6), // Light Blue
-        Color(0xFF26C6DA), // Cyan
-        Color(0xFF26A69A), // Teal
-        Color(0xFF66BB6A), // Green
-        Color(0xFF9CCC65), // Light Green
-        Color(0xFFD4E157), // Lime
-        Color(0xFFFFEE58), // Yellow
-        Color(0xFFFFCA28), // Amber
-        Color(0xFFFFA726), // Orange
-        Color(0xFFFF7043), // Deep Orange
+        Color(0xFFEF5350), // Red 400
+        Color(0xFFEC407A), // Pink 400
+        Color(0xFFAB47BC), // Purple 400
+        Color(0xFF7E57C2), // Deep Purple 400
+        Color(0xFF5C6BC0), // Indigo 400
+        Color(0xFF42A5F5), // Blue 400
+        Color(0xFF29B6F6), // Light Blue 400
+        Color(0xFF26C6DA), // Cyan 400
+        Color(0xFF26A69A), // Teal 400
+        Color(0xFF66BB6A), // Green 400
+        Color(0xFF9CCC65), // Light Green 400
+        Color(0xFFD4E157), // Lime 400
+        Color(0xFFFFEE58), // Yellow 400
+        Color(0xFFFFCA28), // Amber 400
+        Color(0xFFFFA726), // Orange 400
+        Color(0xFFFF7043), // Deep Orange 400
     )
     
+    // Ensure index is always positive even for Int.MIN_VALUE
     val hash = name.trim().lowercase().hashCode()
-    val index = kotlin.math.abs(hash) % colors.size
+    val index = (hash and 0x7FFFFFFF) % colors.size
     return colors[index]
 }

@@ -17,6 +17,7 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import coil3.compose.SubcomposeAsyncImage
 import com.circlekeep.getPlatform
 import com.circlekeep.DatePickerField
 
@@ -63,15 +64,17 @@ fun PartnerSectionEdit(
                         .clickable { onSelectImage() },
                     color = MaterialTheme.colorScheme.surfaceVariant
                 ) {
-                    if (!partnerImageUri.isNullOrBlank()) {
-                        AsyncImage(
+                    val name = "$partnerFirstName $partnerMiddleName $partnerLastName"
+                    if (!partnerImageUri.isNullOrBlank() && partnerImageUri != "null") {
+                        SubcomposeAsyncImage(
                             model = partnerImageUri,
                             contentDescription = null,
                             modifier = Modifier.fillMaxSize(),
-                            contentScale = ContentScale.Crop
+                            contentScale = ContentScale.Crop,
+                            error = { PlaceholderAvatar(name = name) }
                         )
                     } else {
-                        PlaceholderAvatar(name = "$partnerFirstName $partnerMiddleName $partnerLastName")
+                        PlaceholderAvatar(name = name)
                     }
                 }
                 Spacer(Modifier.width(12.dp))
