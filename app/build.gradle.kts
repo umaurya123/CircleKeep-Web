@@ -112,6 +112,9 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            ndk {
+                debugSymbolLevel = "FULL"
+            }
             manifestPlaceholders["admobAppId"] = "ca-app-pub-YOUR_PROD_APP_ID" // TODO: Replace
             buildConfigField("String", "BANNER_AD_UNIT_ID", "\"ca-app-pub-YOUR_PROD_BANNER_ID\"") // TODO: Replace
             buildConfigField("String", "INTERSTITIAL_AD_UNIT_ID", "\"ca-app-pub-YOUR_PROD_INTERSTITIAL_ID\"") // TODO: Replace
