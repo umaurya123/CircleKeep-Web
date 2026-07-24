@@ -9,6 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 
@@ -18,10 +19,19 @@ fun PlaceholderAvatar(
     modifier: Modifier = Modifier
 ) {
     val backgroundColor = rememberBackgroundColor(name)
-    val initials = name.split(" ")
+    val initials = name.trim().split(Regex("\\s+"))
         .filter { it.isNotBlank() }
-        .take(2)
-        .joinToString("") { it.take(1).uppercase() }
+        .let { parts ->
+            if (parts.size >= 2) {
+                "${parts.first().take(1)}${parts.last().take(1)}"
+            } else if (parts.isNotEmpty()) {
+                parts.first().take(2)
+            } else {
+                "?"
+            }
+        }.uppercase()
+
+    val textColor = if (backgroundColor.luminance() > 0.5f) Color.Black else Color.White
 
     Box(
         modifier = modifier
@@ -32,9 +42,8 @@ fun PlaceholderAvatar(
         Text(
             text = initials,
             style = MaterialTheme.typography.titleMedium.copy(
-                color = Color.White,
-                fontWeight = FontWeight.Bold,
-                fontSize = (modifier.hashCode().let { 16 }).sp // Adjust based on size if needed
+                color = textColor,
+                fontWeight = FontWeight.Bold
             )
         )
     }
@@ -61,7 +70,7 @@ private fun rememberBackgroundColor(name: String): Color {
         Color(0xFFFF7043), // Deep Orange
     )
     
-    val hash = name.hashCode()
+    val hash = name.trim().lowercase().hashCode()
     val index = kotlin.math.abs(hash) % colors.size
     return colors[index]
 }
