@@ -60,7 +60,7 @@ fun ChildItemEdit(
                             .clickable { onSelectImage() },
                         color = MaterialTheme.colorScheme.surfaceVariant
                     ) {
-                        if (child.imageUri != null) {
+                        if (!child.imageUri.isNullOrBlank()) {
                             AsyncImage(
                                 model = child.imageUri,
                                 contentDescription = null,
@@ -68,7 +68,7 @@ fun ChildItemEdit(
                                 contentScale = ContentScale.Crop
                             )
                         } else {
-                            Icon(Icons.Rounded.Person, contentDescription = null, modifier = Modifier.padding(8.dp))
+                            PlaceholderAvatar(name = "${child.firstName} ${child.middleName} ${child.lastName}")
                         }
                     }
                     Spacer(Modifier.width(12.dp))
@@ -219,10 +219,10 @@ fun ChildItemEdit(
                         modifier = Modifier.size(40.dp).clip(CircleShape).clickable { onSelectPartnerImage() },
                         color = MaterialTheme.colorScheme.surfaceVariant
                     ) {
-                        if (child.partnerImageUri != null) {
+                        if (!child.partnerImageUri.isNullOrBlank()) {
                             AsyncImage(model = child.partnerImageUri, contentDescription = null, modifier = Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
                         } else {
-                            Icon(Icons.Rounded.Person, contentDescription = null, modifier = Modifier.padding(8.dp))
+                            PlaceholderAvatar(name = "${child.partnerFirstName} ${child.partnerMiddleName} ${child.partnerLastName}")
                         }
                     }
                     Spacer(Modifier.width(12.dp))

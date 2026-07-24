@@ -63,7 +63,7 @@ fun PartnerSectionEdit(
                         .clickable { onSelectImage() },
                     color = MaterialTheme.colorScheme.surfaceVariant
                 ) {
-                    if (partnerImageUri != null) {
+                    if (!partnerImageUri.isNullOrBlank()) {
                         AsyncImage(
                             model = partnerImageUri,
                             contentDescription = null,
@@ -71,7 +71,7 @@ fun PartnerSectionEdit(
                             contentScale = ContentScale.Crop
                         )
                     } else {
-                        Icon(Icons.Rounded.Person, contentDescription = null, modifier = Modifier.padding(12.dp))
+                        PlaceholderAvatar(name = "$partnerFirstName $partnerMiddleName $partnerLastName")
                     }
                 }
                 Spacer(Modifier.width(12.dp))

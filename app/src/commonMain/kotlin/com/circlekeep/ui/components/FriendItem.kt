@@ -68,7 +68,7 @@ fun FriendItem(
                 modifier = Modifier.size(40.dp).clip(CircleShape),
                 color = MaterialTheme.colorScheme.surfaceVariant
             ) {
-                if (friend.imageUri != null) {
+                if (!friend.imageUri.isNullOrBlank()) {
                     AsyncImage(
                         model = friend.imageUri,
                         contentDescription = null,

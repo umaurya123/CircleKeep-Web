@@ -274,7 +274,7 @@ fun AddEditFriendScreen(
                                     .clickable { mainImagePickerTrigger = true },
                                 color = MaterialTheme.colorScheme.surfaceVariant
                             ) {
-                                if (imageUri != null) {
+                                if (!imageUri.isNullOrBlank()) {
                                     coil3.compose.AsyncImage(
                                         model = imageUri,
                                         contentDescription = null,
@@ -282,7 +282,7 @@ fun AddEditFriendScreen(
                                         contentScale = ContentScale.Crop
                                     )
                                 } else {
-                                    Icon(Icons.Rounded.Person, contentDescription = null, modifier = Modifier.padding(16.dp))
+                                    com.circlekeep.ui.components.PlaceholderAvatar(name = "$firstName $middleName $lastName")
                                 }
                             }
                             Row {

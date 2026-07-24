@@ -82,7 +82,7 @@ fun FriendDetailScreen(
                             modifier = Modifier.size(80.dp).clip(CircleShape),
                             color = MaterialTheme.colorScheme.surfaceVariant
                         ) {
-                            if (friendWithChildren.friend.imageUri != null) {
+                            if (!friendWithChildren.friend.imageUri.isNullOrBlank()) {
                                 AsyncImage(
                                     model = friendWithChildren.friend.imageUri,
                                     contentDescription = null,
@@ -197,7 +197,7 @@ fun FriendDetailScreen(
                                         modifier = Modifier.size(60.dp).clip(CircleShape),
                                         color = MaterialTheme.colorScheme.surfaceVariant
                                     ) {
-                                        if (friendWithChildren.friend.partnerImageUri != null) {
+                                        if (!friendWithChildren.friend.partnerImageUri.isNullOrBlank()) {
                                             AsyncImage(
                                                 model = friendWithChildren.friend.partnerImageUri,
                                                 contentDescription = null,
@@ -266,7 +266,7 @@ fun FriendDetailScreen(
                                         modifier = Modifier.size(40.dp).clip(CircleShape),
                                         color = MaterialTheme.colorScheme.surfaceVariant
                                     ) {
-                                        if (child.imageUri != null) {
+                                        if (!child.imageUri.isNullOrBlank()) {
                                             AsyncImage(
                                                 model = child.imageUri,
                                                 contentDescription = null,
