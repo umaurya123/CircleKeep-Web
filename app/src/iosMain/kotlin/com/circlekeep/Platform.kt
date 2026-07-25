@@ -1,6 +1,8 @@
 package com.circlekeep
 
 import platform.UIKit.UIDevice
+import platform.Foundation.NSDate
+import platform.Foundation.timeIntervalSince1970
 
 class IOSPlatform: Platform {
     override val name: String = UIDevice.currentDevice.systemName() + " " + UIDevice.currentDevice.systemVersion
@@ -35,7 +37,7 @@ class IOSPlatform: Platform {
         return true
     }
 
-    override fun currentTimeMillis(): Long = (platform.Foundation.NSDate().timeIntervalSince1970 * 1000).toLong()
+    override fun currentTimeMillis(): Long = (NSDate().timeIntervalSince1970 * 1000).toLong()
 }
 
 actual fun getPlatform(): Platform = IOSPlatform()
