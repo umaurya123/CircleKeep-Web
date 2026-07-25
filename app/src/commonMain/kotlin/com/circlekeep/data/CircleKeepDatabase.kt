@@ -14,7 +14,6 @@ abstract class CircleKeepDatabase : RoomDatabase() {
 }
 
 // The Room compiler generates the implementation of this class
-@Suppress("NO_ACTUAL_FOR_EXPECT")
 expect object AppDatabaseConstructor : RoomDatabaseConstructor<CircleKeepDatabase> {
     override fun initialize(): CircleKeepDatabase
 }

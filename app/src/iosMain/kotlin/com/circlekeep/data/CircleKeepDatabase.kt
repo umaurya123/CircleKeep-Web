@@ -12,5 +12,6 @@ fun getDatabaseBuilder(): RoomDatabase.Builder<CircleKeepDatabase> {
     )
 }
 
-@Suppress("NO_ACTUAL_FOR_EXPECT")
-actual object AppDatabaseConstructor : androidx.room.RoomDatabaseConstructor<CircleKeepDatabase>
+actual object AppDatabaseConstructor : androidx.room.RoomDatabaseConstructor<CircleKeepDatabase> {
+    actual override fun initialize(): CircleKeepDatabase = CircleKeepDatabase_Impl()
+}
