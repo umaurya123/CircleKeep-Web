@@ -36,7 +36,11 @@ private val userPreferencesRepository: UserPreferencesRepository by lazy {
     val path = (documentDirectory.path!! + "/circlekeep.preferences_pb")
     UserPreferencesRepository(
         PreferenceDataStoreFactory.create(
-            produceFile = { path }
+            storage = androidx.datastore.core.okio.OkioStorage(
+                fileSystem = okio.FileSystem.SYSTEM,
+                producePath = { path.toPath() },
+                serializer = androidx.datastore.preferences.core.PreferencesSerializer
+            )
         )
     )
 }
