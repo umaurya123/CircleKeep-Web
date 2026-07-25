@@ -4,7 +4,6 @@ package com.circlekeep.data
 import android.content.Context
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import androidx.room.RoomDatabaseConstructor
 
 fun getDatabaseBuilder(context: Context): RoomDatabase.Builder<CircleKeepDatabase> {
     val dbFile = context.getDatabasePath("circle_keep_database")
@@ -12,8 +11,4 @@ fun getDatabaseBuilder(context: Context): RoomDatabase.Builder<CircleKeepDatabas
         context = context,
         name = dbFile.absolutePath
     )
-}
-
-actual object AppDatabaseConstructor : RoomDatabaseConstructor<CircleKeepDatabase> {
-    actual override fun initialize(): CircleKeepDatabase = CircleKeepDatabase_Impl()
 }

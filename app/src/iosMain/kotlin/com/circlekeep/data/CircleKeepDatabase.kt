@@ -8,10 +8,6 @@ fun getDatabaseBuilder(): RoomDatabase.Builder<CircleKeepDatabase> {
     val dbFile = NSHomeDirectory() + "/circle_keep_database.db"
     return Room.databaseBuilder<CircleKeepDatabase>(
         name = dbFile,
-        factory = { AppDatabaseConstructor.initialize() }
+        factory = {  AppDatabaseConstructor.initialize() }
     )
-}
-
-actual object AppDatabaseConstructor : androidx.room.RoomDatabaseConstructor<CircleKeepDatabase> {
-    actual override fun initialize(): CircleKeepDatabase = CircleKeepDatabase_Impl()
 }
