@@ -124,6 +124,7 @@ android {
             initWith(getByName("release"))
             matchingFallbacks.add("release")
             
+            // Enabled ads for Beta variant by keeping placeholders (which we set to Test IDs for safety)
             manifestPlaceholders["admobAppId"] = "ca-app-pub-3940256099942544~3347511713" // Test App ID
             buildConfigField("String", "BANNER_AD_UNIT_ID", "\"ca-app-pub-3940256099942544/6300978111\"") // Test Banner
             buildConfigField("String", "INTERSTITIAL_AD_UNIT_ID", "\"ca-app-pub-3940256099942544/1033173712\"") // Test Interstitial

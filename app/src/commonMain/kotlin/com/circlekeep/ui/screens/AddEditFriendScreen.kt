@@ -248,13 +248,13 @@ fun AddEditFriendScreen(
                                 )
                                 
                                 if (friendCount >= 15 && !isPaid) {
-                                    isSaving = true
-                                    scope.launch {
-                                        for (i in 10 downTo 1) {
-                                            saveDelaySeconds = i
-                                            delay(1.seconds)
-                                        }
-                                        platformUI.showInterstitialAd {
+                                    platformUI.showInterstitialAd {
+                                        isSaving = true
+                                        scope.launch {
+                                            for (i in 5 downTo 1) {
+                                                saveDelaySeconds = i
+                                                delay(1.seconds)
+                                            }
                                             onSave(friend, children.toList())
                                         }
                                     }
@@ -716,12 +716,18 @@ fun AddEditFriendScreen(
                         verticalArrangement = Arrangement.Center
                     ) {
                         CircularProgressIndicator(
-                            progress = { (10f - saveDelaySeconds.toFloat()) / 10f },
+                            progress = { (5f - saveDelaySeconds.toFloat()) / 5f },
                             modifier = Modifier.size(80.dp),
                             strokeWidth = 8.dp
                         )
                         Spacer(Modifier.height(16.dp))
                         Text("Saving in $saveDelaySeconds seconds...", style = MaterialTheme.typography.titleMedium)
+                        Spacer(Modifier.height(8.dp))
+                        Text(
+                            "Purchase Pro version to skip ads and saving delay!",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.secondary
+                        )
                     }
                 }
             }
