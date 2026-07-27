@@ -8,6 +8,7 @@ interface PlatformUI {
     fun dialPhone(phoneNumber: String)
     fun sendEmail(email: String)
     fun showToast(message: String)
+    fun showInterstitialAd(onAdDismissed: () -> Unit)
     fun exitApp()
 }
 

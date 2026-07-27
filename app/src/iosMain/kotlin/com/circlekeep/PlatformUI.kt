@@ -51,6 +51,10 @@ class IOSPlatformUI : PlatformUI {
         }
     }
 
+    override fun showInterstitialAd(onAdDismissed: () -> Unit) {
+        onAdDismissed()
+    }
+
     override fun exitApp() {}
 }
 

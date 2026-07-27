@@ -49,6 +49,7 @@ fun AddEditFriendScreen(
     onCancel: () -> Unit
 ) {
     val platform = getPlatform()
+    val platformUI = LocalPlatformUI.current
     val scope = rememberCoroutineScope()
     var saveDelaySeconds by remember { mutableIntStateOf(0) }
     var isSaving by remember { mutableStateOf(false) }
@@ -246,14 +247,16 @@ fun AddEditFriendScreen(
                                     notes = notes
                                 )
                                 
-                                if (friendCount > 15 && !isPaid) {
+                                if (friendCount >= 15 && !isPaid) {
                                     isSaving = true
                                     scope.launch {
                                         for (i in 10 downTo 1) {
                                             saveDelaySeconds = i
                                             delay(1.seconds)
                                         }
-                                        onSave(friend, children.toList())
+                                        platformUI.showInterstitialAd {
+                                            onSave(friend, children.toList())
+                                        }
                                     }
                                 } else {
                                     onSave(friend, children.toList())

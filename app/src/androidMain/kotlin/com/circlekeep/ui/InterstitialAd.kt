@@ -7,7 +7,7 @@ import com.google.android.gms.ads.LoadAdError
 import com.google.android.gms.ads.interstitial.InterstitialAd
 import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
 
-fun loadInterstitialAd(context: Context, onAdLoaded: (InterstitialAd) -> Unit) {
+fun loadInterstitialAd(context: Context, onAdResult: (InterstitialAd?) -> Unit) {
     val adRequest = AdRequest.Builder().build()
     InterstitialAd.load(
         context,
@@ -15,11 +15,11 @@ fun loadInterstitialAd(context: Context, onAdLoaded: (InterstitialAd) -> Unit) {
         adRequest,
         object : InterstitialAdLoadCallback() {
             override fun onAdFailedToLoad(adError: LoadAdError) {
-                // Handle failure
+                onAdResult(null)
             }
 
             override fun onAdLoaded(interstitialAd: InterstitialAd) {
-                onAdLoaded(interstitialAd)
+                onAdResult(interstitialAd)
             }
         }
     )

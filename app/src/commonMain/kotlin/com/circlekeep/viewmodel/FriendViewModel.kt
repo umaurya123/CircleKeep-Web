@@ -58,6 +58,15 @@ class FriendViewModel(
                 initialValue = emptyList()
             )
 
+    val totalFriendCount: StateFlow<Int> =
+        friendRepository.getAllFriendsStream()
+            .map { it.size }
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5_000),
+                initialValue = 0
+            )
+
     val friendsState: StateFlow<List<FriendWithChildren>> =
         combine(
             friendRepository.getAllFriendsStream(),

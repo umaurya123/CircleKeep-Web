@@ -46,6 +46,20 @@ class AndroidPlatformUI(private val context: android.content.Context) : Platform
         Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
     }
 
+    override fun showInterstitialAd(onAdDismissed: () -> Unit) {
+        val activity = context as? Activity ?: run {
+            onAdDismissed()
+            return
+        }
+        com.circlekeep.ui.loadInterstitialAd(context) { ad ->
+            if (ad != null) {
+                com.circlekeep.ui.showInterstitialAd(activity, ad, onAdDismissed)
+            } else {
+                onAdDismissed()
+            }
+        }
+    }
+
     override fun exitApp() {
         (context as? Activity)?.finish()
     }

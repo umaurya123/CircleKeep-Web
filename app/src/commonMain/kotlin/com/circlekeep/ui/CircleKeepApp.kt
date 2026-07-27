@@ -139,12 +139,12 @@ fun CircleKeepApp() {
                         }
                         composable<Destination.AddFriend> {
                             val groups by viewModel.groupsState.collectAsState()
-                            val friends by viewModel.friendsState.collectAsState()
+                            val totalFriends by viewModel.totalFriendCount.collectAsState()
                             val isPaid by viewModel.isPaidState.collectAsState()
 
                             AddEditFriendScreen(
                                 availableGroups = groups.map { it.name },
-                                friendCount = friends.size,
+                                friendCount = totalFriends,
                                 isPaid = isPaid,
                                 onSave = { friend, children ->
                                     viewModel.saveFriend(friend, children)
@@ -156,7 +156,7 @@ fun CircleKeepApp() {
                         composable<Destination.EditFriend> { backStackEntry ->
                             val edit: Destination.EditFriend = backStackEntry.toRoute()
                             val groups by viewModel.groupsState.collectAsState()
-                            val friends by viewModel.friendsState.collectAsState()
+                            val totalFriends by viewModel.totalFriendCount.collectAsState()
                             val isPaid by viewModel.isPaidState.collectAsState()
                             val friendWithChildren by viewModel.getFriend(edit.friendId).collectAsState(initial = null)
                             
@@ -166,7 +166,7 @@ fun CircleKeepApp() {
                                     initialChildren = data.children,
                                     scrollToChildId = edit.childId,
                                     availableGroups = groups.map { it.name },
-                                    friendCount = friends.size,
+                                    friendCount = totalFriends,
                                     isPaid = isPaid,
                                     onSave = { friend, children ->
                                         viewModel.saveFriend(friend, children)
