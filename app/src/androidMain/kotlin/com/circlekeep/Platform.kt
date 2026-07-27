@@ -73,7 +73,7 @@ class AndroidPlatform(private val context: Context) : Platform {
         val d = day.toIntOrNull() ?: return false
         if (d !in 1..31) return false
         
-        val m = month.toIntOrNull() ?: return true // Valid if month not selected yet
+        val m = month.toIntOrNull() ?: return true 
         
         if (m !in 1..12) return false
         
@@ -87,6 +87,8 @@ class AndroidPlatform(private val context: Context) : Platform {
     }
 
     override fun currentTimeMillis(): Long = System.currentTimeMillis()
+
+    override val buildVariant: String = BuildConfig.BUILD_TYPE
 
     private fun parseDate(dateString: String?): java.util.Date? {
         if (dateString.isNullOrBlank()) return null
@@ -147,8 +149,6 @@ class AndroidPlatform(private val context: Context) : Platform {
     }
 }
 
-// Note: In a real app, you'd use a dependency injection framework 
-// or a global provider to set this context.
 private var androidPlatform: Platform? = null
 
 fun initPlatform(context: Context) {
@@ -165,4 +165,5 @@ actual fun getPlatform(): Platform = androidPlatform ?: object : Platform {
     override fun parseDateToDayMonth(dateString: String): Pair<String, String>? = null
     override fun isDayValidForMonth(day: String, month: String): Boolean = true
     override fun currentTimeMillis(): Long = System.currentTimeMillis()
+    override val buildVariant: String = "Unknown"
 }

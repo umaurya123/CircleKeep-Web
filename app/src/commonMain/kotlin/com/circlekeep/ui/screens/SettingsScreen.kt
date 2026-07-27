@@ -22,6 +22,7 @@ fun SettingsScreen(viewModel: FriendViewModel) {
     val themePreference by viewModel.themeState.collectAsState()
     val isPaid by viewModel.isPaidState.collectAsState()
     val platformUI = LocalPlatformUI.current
+    val platform = com.circlekeep.getPlatform()
     
     var importTrigger by remember { mutableStateOf(false) }
     var importData by remember { mutableStateOf<String?>(null) }
@@ -56,7 +57,12 @@ fun SettingsScreen(viewModel: FriendViewModel) {
 
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text("Settings") })
+            TopAppBar(title = {
+                Column {
+                    Text("CircleKeep", style = MaterialTheme.typography.titleLarge)
+                    Text("Settings", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            })
         }
     ) { padding ->
         Column(modifier = Modifier.padding(padding).padding(16.dp)) {
@@ -131,7 +137,7 @@ fun SettingsScreen(viewModel: FriendViewModel) {
             
             ListItem(
                 headlineContent = { Text("App Version") },
-                supportingContent = { Text("1.2.0") }
+                supportingContent = { Text("1.2.0 (${platform.buildVariant})") }
             )
             HorizontalDivider()
             ListItem(

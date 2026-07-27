@@ -116,9 +116,9 @@ android {
             ndk {
                 debugSymbolLevel = "FULL"
             }
-            manifestPlaceholders["admobAppId"] = "ca-app-pub-YOUR_PROD_APP_ID" // TODO: Replace
-            buildConfigField("String", "BANNER_AD_UNIT_ID", "\"ca-app-pub-YOUR_PROD_BANNER_ID\"") // TODO: Replace
-            buildConfigField("String", "INTERSTITIAL_AD_UNIT_ID", "\"ca-app-pub-YOUR_PROD_INTERSTITIAL_ID\"") // TODO: Replace
+            manifestPlaceholders["admobAppId"] = "ca-app-pub-9985549354765338~3888239696" // Actual for the production
+            buildConfigField("String", "BANNER_AD_UNIT_ID", "\"ca-app-pub-9985549354765338/9989659328\"") // Actual for the production
+            buildConfigField("String", "INTERSTITIAL_AD_UNIT_ID", "\"ca-app-pub-9985549354765338/3719764440\"") // Actual for the production
         }
         create("beta") {
             initWith(getByName("release"))

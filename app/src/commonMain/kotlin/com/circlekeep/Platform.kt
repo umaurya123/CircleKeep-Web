@@ -10,6 +10,7 @@ interface Platform {
     fun parseDateToDayMonth(dateString: String): Pair<String, String>?
     fun isDayValidForMonth(day: String, month: String): Boolean
     fun currentTimeMillis(): Long
+    val buildVariant: String
 }
 
 expect fun getPlatform(): Platform

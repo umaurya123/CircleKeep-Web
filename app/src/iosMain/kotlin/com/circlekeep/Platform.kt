@@ -71,13 +71,15 @@ class IOSPlatform: Platform {
         val maxDays = when (m) {
             1, 3, 5, 7, 8, 10, 12 -> 31
             4, 6, 9, 11 -> 30
-            2 -> 29 // Simplified leap year check
+            2 -> 29 
             else -> 0
         }
         return d in 1..maxDays
     }
 
     override fun currentTimeMillis(): Long = (NSDate().timeIntervalSince1970 * 1000).toLong()
+
+    override val buildVariant: String = "Release"
 
     private fun parseDate(dateString: String?): NSDate? {
         if (dateString.isNullOrBlank()) return null
