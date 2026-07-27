@@ -55,11 +55,17 @@ fun CircleKeepApp() {
                 else -> Destination.Home
             }
 
-            Column(modifier = Modifier.fillMaxSize()) {
-                Scaffold(
-                    modifier = Modifier.weight(1f),
-                    bottomBar = {
-                        val friends by viewModel.friendsState.collectAsState()
+        Column(modifier = Modifier.fillMaxSize()) {
+            Scaffold(
+                modifier = Modifier.fillMaxSize(),
+                bottomBar = {
+                    val friends by viewModel.friendsState.collectAsState()
+                    val isPaid by viewModel.isPaidState.collectAsState()
+                    
+                    Column {
+                        if (!isPaid) {
+                            BannerAdView()
+                        }
                         CircleKeepBottomBar(
                             currentDestination = barDestination,
                             friendCount = friends.size,
@@ -75,15 +81,16 @@ fun CircleKeepApp() {
                                 }
                             }
                         )
-                    },
-                    contentWindowInsets = WindowInsets(0, 0, 0, 0)
-                ) { innerPadding ->
-                    NavHost(
-                        navController = navController,
-                        startDestination = Destination.Home,
-                        modifier = Modifier.padding(innerPadding)
-                    ) {
-                        composable<Destination.Home> {
+                    }
+                },
+                contentWindowInsets = WindowInsets(0, 0, 0, 0)
+            ) { innerPadding ->
+                NavHost(
+                    navController = navController,
+                    startDestination = Destination.Home,
+                    modifier = Modifier.padding(innerPadding)
+                ) {
+                    composable<Destination.Home> {
                             val friends by viewModel.friendsState.collectAsState()
                             val searchQuery by viewModel.searchQuery.collectAsState()
                             val selectedGroup by viewModel.selectedGroup.collectAsState()
@@ -214,10 +221,6 @@ fun CircleKeepApp() {
                             SettingsScreen(viewModel = viewModel)
                         }
                     }
-                }
-                val isPaid by viewModel.isPaidState.collectAsState()
-                if (!isPaid) {
-                    BannerAdView()
                 }
             }
         }

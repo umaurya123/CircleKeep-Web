@@ -22,7 +22,7 @@ fun BannerAd(modifier: Modifier = Modifier) {
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .height(50.dp)
+            .height(100.dp)
             .background(MaterialTheme.colorScheme.surfaceVariant),
         contentAlignment = Alignment.Center
     ) {
@@ -37,7 +37,7 @@ fun BannerAd(modifier: Modifier = Modifier) {
             modifier = Modifier.fillMaxWidth(),
             factory = { context ->
                 AdView(context).apply {
-                    setAdSize(AdSize.BANNER)
+                    setAdSize(AdSize.LARGE_BANNER)
                     adUnitId = com.circlekeep.BuildConfig.BANNER_AD_UNIT_ID
                     loadAd(AdRequest.Builder().build())
                 }

@@ -80,7 +80,10 @@ fun SettingsScreen(viewModel: FriendViewModel) {
                 Button(
                     onClick = { viewModel.purchaseApp() },
                     modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary)
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
                 ) {
                     Icon(Icons.Rounded.ShoppingCart, contentDescription = null)
                     Spacer(Modifier.width(8.dp))

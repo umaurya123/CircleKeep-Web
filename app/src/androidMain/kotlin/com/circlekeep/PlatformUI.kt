@@ -462,7 +462,9 @@ actual fun FilePicker(
     if (trigger) {
         SideEffect {
             if (mode == FilePickerMode.Create) {
-                createLauncher.launch("CircleKeep_Backup.json")
+                val sdf = java.text.SimpleDateFormat("yyyyMMdd_HHmm", java.util.Locale.getDefault())
+                val timestamp = sdf.format(java.util.Date())
+                createLauncher.launch("CircleKeep_Backup_$timestamp.json")
             } else {
                 openLauncher.launch(arrayOf("*/*"))
             }
