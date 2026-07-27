@@ -57,7 +57,8 @@ expect fun FilePicker(
     onFilePicked: (String) -> Unit,
     trigger: Boolean,
     onTriggerReset: () -> Unit,
-    mode: FilePickerMode
+    mode: FilePickerMode,
+    dataToSave: String? = null
 )
 
 enum class FilePickerMode { Read, Create }

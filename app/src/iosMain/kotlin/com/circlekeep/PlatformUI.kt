@@ -226,7 +226,8 @@ actual fun FilePicker(
     onFilePicked: (String) -> Unit,
     trigger: Boolean,
     onTriggerReset: () -> Unit,
-    mode: FilePickerMode
+    mode: FilePickerMode,
+    dataToSave: String?
 ) {
     if (trigger) onTriggerReset()
 }

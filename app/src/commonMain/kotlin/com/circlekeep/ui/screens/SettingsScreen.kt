@@ -38,13 +38,20 @@ fun SettingsScreen(viewModel: FriendViewModel) {
     )
 
     var exportTrigger by remember { mutableStateOf(false) }
-    // Export handling is tricky in KMP without a direct file write API in commonMain.
-    // For now, we'll assume platformUI can handle it or just trigger the picker.
+    val exportData = if (exportTrigger) viewModel.getExportData() else null
+    
     FilePicker(
         trigger = exportTrigger,
         onTriggerReset = { exportTrigger = false },
-        onFilePicked = { /* Handle save if needed, but in Android it's handled by CreateDocument launcher */ },
-        mode = FilePickerMode.Create
+        onFilePicked = { result ->
+            if (result == "Success") {
+                platformUI.showToast("Data exported successfully")
+            } else if (result.startsWith("Error")) {
+                platformUI.showToast(result)
+            }
+        },
+        mode = FilePickerMode.Create,
+        dataToSave = exportData
     )
 
     Scaffold(

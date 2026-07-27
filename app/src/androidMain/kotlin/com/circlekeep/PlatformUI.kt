@@ -435,14 +435,28 @@ actual fun FilePicker(
     onFilePicked: (String) -> Unit,
     trigger: Boolean,
     onTriggerReset: () -> Unit,
-    mode: FilePickerMode
+    mode: FilePickerMode,
+    dataToSave: String?
 ) {
     val context = LocalContext.current
     
     val createLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.CreateDocument("application/json"),
         onResult = { uri ->
-            uri?.let { onFilePicked(it.toString()) }
+            uri?.let {
+                if (dataToSave != null) {
+                    try {
+                        context.contentResolver.openOutputStream(it)?.use { output ->
+                            output.write(dataToSave.toByteArray())
+                        }
+                        onFilePicked("Success")
+                    } catch (e: Exception) {
+                        onFilePicked("Error: ${e.message}")
+                    }
+                } else {
+                    onFilePicked(it.toString())
+                }
+            }
             onTriggerReset()
         }
     )
