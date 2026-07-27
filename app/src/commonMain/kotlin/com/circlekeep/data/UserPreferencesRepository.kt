@@ -4,8 +4,10 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.stringPreferencesKey
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
 
 class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
@@ -15,13 +17,21 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
         val IS_PAID = booleanPreferencesKey("is_paid")
     }
 
-    val themeStream: Flow<String> = dataStore.data.map { preferences ->
-        preferences[PreferencesKeys.THEME] ?: "System"
-    }
+    val themeStream: Flow<String> = dataStore.data
+        .catch {
+            emit(emptyPreferences())
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.THEME] ?: "System"
+        }
 
-    val isPaidStream: Flow<Boolean> = dataStore.data.map { preferences ->
-        preferences[PreferencesKeys.IS_PAID] ?: false
-    }
+    val isPaidStream: Flow<Boolean> = dataStore.data
+        .catch {
+            emit(emptyPreferences())
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.IS_PAID] ?: false
+        }
 
     suspend fun updateTheme(theme: String) {
         dataStore.edit { preferences ->

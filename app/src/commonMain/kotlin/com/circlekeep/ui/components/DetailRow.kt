@@ -13,19 +13,28 @@ import androidx.compose.ui.unit.dp
 fun DetailRow(icon: ImageVector, text: String, label: String? = null, onClick: (() -> Unit)? = null) {
     if (text.isNotBlank()) {
         Row(
-            verticalAlignment = Alignment.CenterVertically, 
+            verticalAlignment = Alignment.Top, 
             modifier = Modifier
                 .fillMaxWidth()
                 .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
-                .padding(vertical = 4.dp, horizontal = 4.dp)
+                .padding(vertical = 8.dp, horizontal = 4.dp)
         ) {
-            Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(24.dp))
+            Icon(
+                icon, 
+                contentDescription = null, 
+                tint = MaterialTheme.colorScheme.primary, 
+                modifier = Modifier.size(24.dp).padding(top = 2.dp)
+            )
             Spacer(Modifier.width(16.dp))
             Column {
                 if (label != null) {
                     Text(label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.secondary)
                 }
-                Text(text, style = MaterialTheme.typography.bodyLarge)
+                Text(
+                    text = text, 
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier.fillMaxWidth()
+                )
             }
         }
     }

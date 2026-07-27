@@ -11,8 +11,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.input.key.*
+import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -52,7 +55,17 @@ fun PartnerSectionEdit(
     onSelectImage: () -> Unit
 ) {
     var showMore by remember { mutableStateOf(false) }
+    val focusManager = LocalFocusManager.current
     val platform = getPlatform()
+    
+    val modifierWithTabHandler = Modifier.fillMaxWidth().onPreviewKeyEvent { 
+        if (it.key == Key.Tab && it.type == KeyEventType.KeyDown) {
+            focusManager.moveFocus(if (it.isShiftPressed) FocusDirection.Previous else FocusDirection.Next)
+            true
+        } else {
+            false
+        }
+    }
 
     Card(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
         Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -97,37 +110,45 @@ fun PartnerSectionEdit(
                 value = partnerFirstName,
                 onValueChange = onPartnerFirstNameChange,
                 label = { Text("First Name") },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .onFocusChanged { if (!it.isFocused) onPartnerFirstNameChange(partnerFirstName.trim()) },
-                keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words)
+                modifier = modifierWithTabHandler,
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(
+                    capitalization = KeyboardCapitalization.Words,
+                    imeAction = ImeAction.Next
+                )
             )
             OutlinedTextField(
                 value = partnerMiddleName,
                 onValueChange = onPartnerMiddleNameChange,
                 label = { Text("Middle Name") },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .onFocusChanged { if (!it.isFocused) onPartnerMiddleNameChange(partnerMiddleName.trim()) },
-                keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words)
+                modifier = modifierWithTabHandler,
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(
+                    capitalization = KeyboardCapitalization.Words,
+                    imeAction = ImeAction.Next
+                )
             )
             OutlinedTextField(
                 value = partnerLastName,
                 onValueChange = onPartnerLastNameChange,
                 label = { Text("Last Name") },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .onFocusChanged { if (!it.isFocused) onPartnerLastNameChange(partnerLastName.trim()) },
-                keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words)
+                modifier = modifierWithTabHandler,
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(
+                    capitalization = KeyboardCapitalization.Words,
+                    imeAction = ImeAction.Next
+                )
             )
             OutlinedTextField(
                 value = partnerPhone,
                 onValueChange = onPartnerPhoneChange,
                 label = { Text("Partner Phone") },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .onFocusChanged { if (!it.isFocused) onPartnerPhoneChange(partnerPhone.trim()) },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone)
+                modifier = modifierWithTabHandler,
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Phone,
+                    imeAction = ImeAction.Next
+                )
             )
 
             DatePickerField(
@@ -138,21 +159,33 @@ fun PartnerSectionEdit(
                         onPartnerBirthDayChange("")
                         onPartnerBirthMonthChange("")
                     } else {
-                        platform.parseDateToDayMonth(it)?.let { (d, m) ->
-                            onPartnerBirthDayChange(d)
-                            onPartnerBirthMonthChange(m)
-                        }
+                        try {
+                            platform.parseDateToDayMonth(it)?.let { (d, m) ->
+                                onPartnerBirthDayChange(d)
+                                onPartnerBirthMonthChange(m)
+                            }
+                        } catch (_: Exception) {}
                     }
                 },
-                label = "Partner DOB"
+                label = "Partner DOB",
+                modifier = modifierWithTabHandler
             )
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 OutlinedTextField(
                     value = partnerBirthDay,
                     onValueChange = onPartnerBirthDayChange,
                     label = { Text("Day") },
-                    modifier = Modifier.weight(0.4f),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    modifier = Modifier.weight(0.4f).onPreviewKeyEvent { 
+                        if (it.key == Key.Tab && it.type == KeyEventType.KeyDown) {
+                            focusManager.moveFocus(if (it.isShiftPressed) FocusDirection.Previous else FocusDirection.Next)
+                            true
+                        } else false
+                    }, 
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Number,
+                        imeAction = ImeAction.Next
+                    ),
                     isError = !isPartnerDobValid,
                     supportingText = { if (!isPartnerDobValid) Text("Invalid day") }
                 )
@@ -164,28 +197,34 @@ fun PartnerSectionEdit(
                     value = partnerSiblings,
                     onValueChange = onPartnerSiblingsChange,
                     label = { Text("Siblings") },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .onFocusChanged { if (!it.isFocused) onPartnerSiblingsChange(partnerSiblings.trim()) },
-                    keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words)
+                    modifier = modifierWithTabHandler,
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(
+                        capitalization = KeyboardCapitalization.Words,
+                        imeAction = ImeAction.Next
+                    )
                 )
                 OutlinedTextField(
                     value = partnerCompanyName,
                     onValueChange = onPartnerCompanyNameChange,
                     label = { Text("Company Name") },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .onFocusChanged { if (!it.isFocused) onPartnerCompanyNameChange(partnerCompanyName.trim()) },
-                    keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words)
+                    modifier = modifierWithTabHandler,
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(
+                        capitalization = KeyboardCapitalization.Words,
+                        imeAction = ImeAction.Next
+                    )
                 )
                 OutlinedTextField(
                     value = partnerCollegeSchoolName,
                     onValueChange = onPartnerCollegeSchoolNameChange,
                     label = { Text("College Name") },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .onFocusChanged { if (!it.isFocused) onPartnerCollegeSchoolNameChange(partnerCollegeSchoolName.trim()) },
-                    keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words)
+                    modifier = modifierWithTabHandler,
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(
+                        capitalization = KeyboardCapitalization.Words,
+                        imeAction = ImeAction.Done
+                    )
                 )
             }
 

@@ -38,6 +38,7 @@ kotlin {
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.androidx.room.runtime)
+            implementation(libs.androidx.sqlite.bundled)
             implementation(libs.androidx.datastore.preferences)
             implementation(libs.coil.compose)
             implementation(libs.coil.network.ktor)

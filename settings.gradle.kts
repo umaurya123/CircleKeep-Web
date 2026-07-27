@@ -25,4 +25,5 @@ dependencyResolutionManagement {
 
 rootProject.name = "CircleKeep"
 include(":app")
+include(":iosApp")
  

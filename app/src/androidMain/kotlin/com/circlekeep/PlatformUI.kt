@@ -9,6 +9,8 @@ import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.Icons
@@ -295,8 +297,13 @@ actual fun ImagePicker(
     val cropLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult(),
         onResult = { result ->
-            if (result.resultCode == Activity.RESULT_OK && result.data != null) {
-                onImagePicked(UCrop.getOutput(result.data!!)?.toString())
+            if (result.resultCode == Activity.RESULT_OK) {
+                val data = result.data
+                if (data != null) {
+                    onImagePicked(UCrop.getOutput(data)?.toString())
+                } else {
+                    onImagePicked(null)
+                }
             }
             onTriggerReset()
         }
@@ -407,12 +414,13 @@ actual fun DatePickerField(
         onValueChange = { onValueChange(it) },
         label = { Text(label) },
         modifier = modifier.fillMaxWidth().clickable { showDatePicker = true },
-        enabled = false,
+        enabled = true,
+        readOnly = true,
+        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
         colors = OutlinedTextFieldDefaults.colors(
-            disabledTextColor = MaterialTheme.colorScheme.onSurface,
-            disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+            focusedBorderColor = MaterialTheme.colorScheme.primary,
+            unfocusedBorderColor = MaterialTheme.colorScheme.outline,
             disabledBorderColor = MaterialTheme.colorScheme.outline,
-            disabledTrailingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
         ),
         trailingIcon = {
             IconButton(onClick = { showDatePicker = true }) {

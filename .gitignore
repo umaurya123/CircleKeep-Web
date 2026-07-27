@@ -13,3 +13,8 @@
 .externalNativeBuild
 .cxx
 local.properties
+.artifacts/
+.idea/
+.kotlin/
+iosApp/iosApp.xcodeproj/project.xcworkspace/xcuserdata/
+iosApp/iosApp.xcodeproj/xcuserdata/

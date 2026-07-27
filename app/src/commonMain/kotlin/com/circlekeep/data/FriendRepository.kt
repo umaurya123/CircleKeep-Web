@@ -53,11 +53,15 @@ class FriendRepository(private val friendDao: FriendDao) {
     }
 
     suspend fun initializeDefaultGroups() {
-        val existingGroups = friendDao.getAllGroupsStream().first().map { it.name.lowercase() }
-        listOf("Friend", "Family", "Work", "School", "Sports").forEach {
-            if (!existingGroups.contains(it.lowercase())) {
-                friendDao.insertGroup(Group(it))
+        try {
+            val existingGroups = friendDao.getAllGroupsStream().first().map { it.name.lowercase() }
+            listOf("Friend", "Family", "Work", "School", "Sports").forEach {
+                if (!existingGroups.contains(it.lowercase())) {
+                    friendDao.insertGroup(Group(it))
+                }
             }
+        } catch (e: Exception) {
+            // Log or ignore database initialization errors at startup to prevent crash
         }
     }
 }

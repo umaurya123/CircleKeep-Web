@@ -18,9 +18,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.input.key.*
+import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.platform.LocalFocusManager
 import coil3.compose.SubcomposeAsyncImage
 import com.circlekeep.*
 import com.circlekeep.data.Child
@@ -127,8 +131,10 @@ fun AddEditFriendScreen(
             address = a; companyName = cn; notes = n
             dateOfBirth = dob
             anniversaryDate = anniv
-            platform.parseDateToDayMonth(dob)?.let { (d, mon) -> birthDay = d; birthMonth = mon }
-            platform.parseDateToDayMonth(anniv)?.let { (d, mon) -> anniversaryDay = d; anniversaryMonth = mon }
+            try {
+                platform.parseDateToDayMonth(dob)?.let { (d, mon) -> birthDay = d; birthMonth = mon }
+                platform.parseDateToDayMonth(anniv)?.let { (d, mon) -> anniversaryDay = d; anniversaryMonth = mon }
+            } catch (_: Exception) {}
         },
         onCancel = { contactPickerTrigger = false }
     )
@@ -155,6 +161,16 @@ fun AddEditFriendScreen(
     )
 
     val listState = rememberLazyListState()
+    val focusManager = LocalFocusManager.current
+    
+    val modifierWithTabHandler = Modifier.fillMaxWidth().onPreviewKeyEvent { 
+        if (it.key == Key.Tab && it.type == KeyEventType.KeyDown) {
+            focusManager.moveFocus(if (it.isShiftPressed) FocusDirection.Previous else FocusDirection.Next)
+            true
+        } else {
+            false
+        }
+    }
     
     LaunchedEffect(scrollToChildId) {
         if (scrollToChildId != null) {
@@ -306,43 +322,67 @@ fun AddEditFriendScreen(
                         value = firstName, 
                         onValueChange = { firstName = it }, 
                         label = { Text("First Name") }, 
-                        modifier = Modifier.fillMaxWidth(),
-                        keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words)
+                        modifier = modifierWithTabHandler,
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(
+                            capitalization = KeyboardCapitalization.Words,
+                            imeAction = ImeAction.Next
+                        )
                     )
                     OutlinedTextField(
                         value = middleName, 
                         onValueChange = { middleName = it }, 
                         label = { Text("Middle Name") }, 
-                        modifier = Modifier.fillMaxWidth(),
-                        keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words)
+                        modifier = modifierWithTabHandler,
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(
+                            capitalization = KeyboardCapitalization.Words,
+                            imeAction = ImeAction.Next
+                        )
                     )
                     OutlinedTextField(
                         value = lastName, 
                         onValueChange = { lastName = it }, 
                         label = { Text("Last Name") }, 
-                        modifier = Modifier.fillMaxWidth(),
-                        keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words)
+                        modifier = modifierWithTabHandler,
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(
+                            capitalization = KeyboardCapitalization.Words,
+                            imeAction = ImeAction.Next
+                        )
                     )
                     OutlinedTextField(
                         value = cellPhone, 
                         onValueChange = { cellPhone = it }, 
                         label = { Text("Cell Phone") }, 
-                        modifier = Modifier.fillMaxWidth(),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone)
+                        modifier = modifierWithTabHandler,
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Phone,
+                            imeAction = ImeAction.Next
+                        )
                     )
                     OutlinedTextField(
                         value = officePhone, 
                         onValueChange = { officePhone = it }, 
                         label = { Text("Office Phone") }, 
-                        modifier = Modifier.fillMaxWidth(),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone)
+                        modifier = modifierWithTabHandler,
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Phone,
+                            imeAction = ImeAction.Next
+                        )
                     )
                     OutlinedTextField(
                         value = address, 
                         onValueChange = { address = it }, 
                         label = { Text("Address") }, 
-                        modifier = Modifier.fillMaxWidth(),
-                        keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words)
+                        modifier = modifierWithTabHandler,
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(
+                            capitalization = KeyboardCapitalization.Words,
+                            imeAction = ImeAction.Next
+                        )
                     )
                     
                     DatePickerField(
@@ -353,24 +393,38 @@ fun AddEditFriendScreen(
                                 birthDay = ""
                                 birthMonth = ""
                             } else {
-                                platform.parseDateToDayMonth(it)?.let { (d, m) ->
-                                    birthDay = d
-                                    birthMonth = m
-                                }
+                                try {
+                                    platform.parseDateToDayMonth(it)?.let { (d, m) ->
+                                        birthDay = d
+                                        birthMonth = m
+                                    }
+                                } catch (_: Exception) {}
                             }
                         },
                         label = buildString {
                             append("DOB")
-                            platform.calculateAge(dateOfBirth)?.let { append(" ($it yrs)") }
-                        }
+                            try {
+                                platform.calculateAge(dateOfBirth)?.let { append(" ($it yrs)") }
+                            } catch (_: Exception) {}
+                        },
+                        modifier = modifierWithTabHandler
                     )
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         OutlinedTextField(
                             value = birthDay, 
                             onValueChange = { birthDay = it }, 
                             label = { Text("Day") }, 
-                            modifier = Modifier.weight(0.4f), 
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            modifier = Modifier.weight(0.4f).onPreviewKeyEvent { 
+                                if (it.key == Key.Tab && it.type == KeyEventType.KeyDown) {
+                                    focusManager.moveFocus(if (it.isShiftPressed) FocusDirection.Previous else FocusDirection.Next)
+                                    true
+                                } else false
+                            }, 
+                            singleLine = true,
+                            keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.Number,
+                                imeAction = ImeAction.Next
+                            ),
                             isError = !isDobValid,
                             supportingText = { if (!isDobValid) Text("Invalid day") }
                         )
@@ -385,21 +439,33 @@ fun AddEditFriendScreen(
                                 anniversaryDay = ""
                                 anniversaryMonth = ""
                             } else {
-                                platform.parseDateToDayMonth(it)?.let { (d, m) ->
-                                    anniversaryDay = d
-                                    anniversaryMonth = m
-                                }
+                                try {
+                                    platform.parseDateToDayMonth(it)?.let { (d, m) ->
+                                        anniversaryDay = d
+                                        anniversaryMonth = m
+                                    }
+                                } catch (_: Exception) {}
                             }
                         },
-                        label = "Marriage Date"
+                        label = "Marriage Date",
+                        modifier = modifierWithTabHandler
                     )
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         OutlinedTextField(
                             value = anniversaryDay, 
                             onValueChange = { anniversaryDay = it }, 
                             label = { Text("Day") }, 
-                            modifier = Modifier.weight(0.4f), 
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            modifier = Modifier.weight(0.4f).onPreviewKeyEvent { 
+                                if (it.key == Key.Tab && it.type == KeyEventType.KeyDown) {
+                                    focusManager.moveFocus(if (it.isShiftPressed) FocusDirection.Previous else FocusDirection.Next)
+                                    true
+                                } else false
+                            }, 
+                            singleLine = true,
+                            keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.Number,
+                                imeAction = ImeAction.Next
+                            ),
                             isError = !isAnniversaryValid,
                             supportingText = { if (!isAnniversaryValid) Text("Invalid day") }
                         )
@@ -411,7 +477,7 @@ fun AddEditFriendScreen(
                             value = selectedGroups.joinToString(", "),
                             onValueChange = { },
                             label = { Text("Groups") },
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = modifierWithTabHandler,
                             readOnly = true,
                             enabled = true,
                             colors = OutlinedTextFieldDefaults.colors(
@@ -430,29 +496,45 @@ fun AddEditFriendScreen(
                             value = companyName, 
                             onValueChange = { companyName = it }, 
                             label = { Text("Company Name") }, 
-                            modifier = Modifier.fillMaxWidth(),
-                            keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words)
+                            modifier = modifierWithTabHandler,
+                            singleLine = true,
+                            keyboardOptions = KeyboardOptions(
+                                capitalization = KeyboardCapitalization.Words,
+                                imeAction = ImeAction.Next
+                            )
                         )
                         OutlinedTextField(
                             value = collegeSchoolName, 
                             onValueChange = { collegeSchoolName = it }, 
                             label = { Text("College Name") },
-                            modifier = Modifier.fillMaxWidth(),
-                            keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words)
+                            modifier = modifierWithTabHandler,
+                            singleLine = true,
+                            keyboardOptions = KeyboardOptions(
+                                capitalization = KeyboardCapitalization.Words,
+                                imeAction = ImeAction.Next
+                            )
                         )
                         OutlinedTextField(
                             value = siblings, 
                             onValueChange = { siblings = it }, 
                             label = { Text("Siblings") }, 
-                            modifier = Modifier.fillMaxWidth(),
-                            keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words)
+                            modifier = modifierWithTabHandler,
+                            singleLine = true,
+                            keyboardOptions = KeyboardOptions(
+                                capitalization = KeyboardCapitalization.Words,
+                                imeAction = ImeAction.Next
+                            )
                         )
                         OutlinedTextField(
                             value = email, 
                             onValueChange = { email = it }, 
                             label = { Text("Email") }, 
-                            modifier = Modifier.fillMaxWidth(), 
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                            modifier = modifierWithTabHandler, 
+                            singleLine = true,
+                            keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.Email,
+                                imeAction = ImeAction.Next
+                            ),
                             isError = !isEmailValid,
                             supportingText = { if (!isEmailValid) Text("Invalid email format") }
                         )
@@ -460,23 +542,34 @@ fun AddEditFriendScreen(
                             value = workEmail, 
                             onValueChange = { workEmail = it }, 
                             label = { Text("Work Email") }, 
-                            modifier = Modifier.fillMaxWidth(), 
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
+                            modifier = modifierWithTabHandler, 
+                            singleLine = true,
+                            keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.Email,
+                                imeAction = ImeAction.Next
+                            )
                         )
                         OutlinedTextField(
                             value = notes, 
                             onValueChange = { notes = it }, 
                             label = { Text("Notes") }, 
-                            modifier = Modifier.fillMaxWidth(), 
-                            minLines = 2,
-                            keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences)
+                            modifier = modifierWithTabHandler.heightIn(min = 100.dp, max = 200.dp),
+                            minLines = 3,
+                            keyboardOptions = KeyboardOptions(
+                                capitalization = KeyboardCapitalization.Sentences,
+                                imeAction = ImeAction.Next
+                            )
                         )
                         OutlinedTextField(
                             value = petName,
                             onValueChange = { petName = it },
                             label = { Text("Pet Name") },
-                            modifier = Modifier.fillMaxWidth(),
-                            keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words)
+                            modifier = modifierWithTabHandler,
+                            singleLine = true,
+                            keyboardOptions = KeyboardOptions(
+                                capitalization = KeyboardCapitalization.Words,
+                                imeAction = ImeAction.Next
+                            )
                         )
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Surface(
@@ -541,10 +634,12 @@ fun AddEditFriendScreen(
                         partnerDateOfBirth = partnerDateOfBirth,
                         onPartnerDateOfBirthChange = {
                             partnerDateOfBirth = it
-                            platform.parseDateToDayMonth(it)?.let { (d, m) ->
-                                partnerBirthDay = d
-                                partnerBirthMonth = m
-                            }
+                            try {
+                                platform.parseDateToDayMonth(it)?.let { (d, m) ->
+                                    partnerBirthDay = d
+                                    partnerBirthMonth = m
+                                }
+                            } catch (_: Exception) {}
                         },
                         partnerBirthDay = partnerBirthDay,
                         onPartnerBirthDayChange = { partnerBirthDay = it },

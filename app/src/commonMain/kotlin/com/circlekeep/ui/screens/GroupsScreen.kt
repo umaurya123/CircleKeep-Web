@@ -144,7 +144,9 @@ fun GroupsScreen(
                 TextButton(
                     onClick = {
                         if (editGroupName.isNotBlank()) {
-                            onRenameGroup(groupToEdit!!.name, editGroupName)
+                            groupToEdit?.let { group ->
+                                onRenameGroup(group.name, editGroupName)
+                            }
                             showEditDialog = false
                             groupToEdit = null
                         }

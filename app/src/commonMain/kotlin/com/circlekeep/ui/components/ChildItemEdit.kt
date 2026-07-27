@@ -13,12 +13,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.input.key.*
+import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import coil3.compose.AsyncImage
 import coil3.compose.SubcomposeAsyncImage
 import com.circlekeep.DatePickerField
@@ -38,7 +43,17 @@ fun ChildItemEdit(
 ) {
     var showMore by remember { mutableStateOf(initiallyExpanded) }
     val focusRequester = remember { FocusRequester() }
+    val focusManager = LocalFocusManager.current
     val platform = getPlatform()
+    
+    val modifierWithTabHandler = Modifier.fillMaxWidth().onPreviewKeyEvent { 
+        if (it.key == Key.Tab && it.type == KeyEventType.KeyDown) {
+            focusManager.moveFocus(if (it.isShiftPressed) FocusDirection.Previous else FocusDirection.Next)
+            true
+        } else {
+            false
+        }
+    }
 
     LaunchedEffect(shouldAutoFocus) {
         if (shouldAutoFocus) {
@@ -97,38 +112,46 @@ fun ChildItemEdit(
                 value = child.firstName, 
                 onValueChange = { onChildChange(child.copy(firstName = it)) }, 
                 label = { Text("First Name") }, 
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .focusRequester(focusRequester)
-                    .onFocusChanged { if (!it.isFocused) onChildChange(child.copy(firstName = child.firstName.trim())) },
-                keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words)
+                modifier = modifierWithTabHandler
+                    .focusRequester(focusRequester),
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(
+                    capitalization = KeyboardCapitalization.Words,
+                    imeAction = ImeAction.Next
+                )
             )
             OutlinedTextField(
                 value = child.middleName, 
                 onValueChange = { onChildChange(child.copy(middleName = it)) }, 
                 label = { Text("Middle Name") }, 
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .onFocusChanged { if (!it.isFocused) onChildChange(child.copy(middleName = child.middleName.trim())) },
-                keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words)
+                modifier = modifierWithTabHandler,
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(
+                    capitalization = KeyboardCapitalization.Words,
+                    imeAction = ImeAction.Next
+                )
             )
             OutlinedTextField(
                 value = child.lastName, 
                 onValueChange = { onChildChange(child.copy(lastName = it)) }, 
                 label = { Text("Last Name") }, 
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .onFocusChanged { if (!it.isFocused) onChildChange(child.copy(lastName = child.lastName.trim())) },
-                keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words)
+                modifier = modifierWithTabHandler,
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(
+                    capitalization = KeyboardCapitalization.Words,
+                    imeAction = ImeAction.Next
+                )
             )
             OutlinedTextField(
                 value = child.phoneNumber, 
                 onValueChange = { onChildChange(child.copy(phoneNumber = it)) }, 
                 label = { Text("Cell Phone") }, 
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .onFocusChanged { if (!it.isFocused) onChildChange(child.copy(phoneNumber = child.phoneNumber.trim())) },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone)
+                modifier = modifierWithTabHandler,
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Phone,
+                    imeAction = ImeAction.Next
+                )
             )
             
             if (showMore) {
@@ -136,10 +159,12 @@ fun ChildItemEdit(
                     value = child.collegeSchoolName, 
                     onValueChange = { onChildChange(child.copy(collegeSchoolName = it)) },
                     label = { Text("College Name") }, 
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .onFocusChanged { if (!it.isFocused) onChildChange(child.copy(collegeSchoolName = child.collegeSchoolName.trim())) },
-                    keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words)
+                    modifier = modifierWithTabHandler,
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(
+                        capitalization = KeyboardCapitalization.Words,
+                        imeAction = ImeAction.Next
+                    )
                 )
                 DatePickerField(
                     value = child.dateOfBirth,
@@ -148,21 +173,33 @@ fun ChildItemEdit(
                         if (it.isBlank()) {
                             newChild = newChild.copy(birthDay = "", birthMonth = "")
                         } else {
-                            platform.parseDateToDayMonth(it)?.let { (d, m) ->
-                                newChild = newChild.copy(birthDay = d, birthMonth = m)
-                            }
+                            try {
+                                platform.parseDateToDayMonth(it)?.let { (d, m) ->
+                                    newChild = newChild.copy(birthDay = d, birthMonth = m)
+                                }
+                            } catch (_: Exception) {}
                         }
                         onChildChange(newChild)
                     },
-                    label = "DOB"
+                    label = "DOB",
+                    modifier = modifierWithTabHandler
                 )
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     OutlinedTextField(
                         value = child.birthDay, 
                         onValueChange = { onChildChange(child.copy(birthDay = it)) }, 
                         label = { Text("Day") }, 
-                        modifier = Modifier.weight(0.4f), 
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        modifier = Modifier.weight(0.4f).onPreviewKeyEvent { 
+                            if (it.key == Key.Tab && it.type == KeyEventType.KeyDown) {
+                                focusManager.moveFocus(if (it.isShiftPressed) FocusDirection.Previous else FocusDirection.Next)
+                                true
+                            } else false
+                        }, 
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Number,
+                            imeAction = ImeAction.Next
+                        ),
                         isError = !isDobValid,
                         supportingText = { if (!isDobValid) Text("Invalid day") }
                     )
@@ -292,21 +329,33 @@ fun ChildItemEdit(
                         if (it.isBlank()) {
                             newChild = newChild.copy(partnerBirthDay = "", partnerBirthMonth = "")
                         } else {
-                            platform.parseDateToDayMonth(it)?.let { (d, m) ->
-                                newChild = newChild.copy(partnerBirthDay = d, partnerBirthMonth = m)
-                            }
+                            try {
+                                platform.parseDateToDayMonth(it)?.let { (d, m) ->
+                                    newChild = newChild.copy(partnerBirthDay = d, partnerBirthMonth = m)
+                                }
+                            } catch (_: Exception) {}
                         }
                         onChildChange(newChild)
                     },
-                    label = "Partner DOB"
+                    label = "Partner DOB",
+                    modifier = modifierWithTabHandler
                 )
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     OutlinedTextField(
                         value = child.partnerBirthDay, 
                         onValueChange = { onChildChange(child.copy(partnerBirthDay = it)) }, 
                         label = { Text("Day") }, 
-                        modifier = Modifier.weight(0.4f), 
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        modifier = Modifier.weight(0.4f).onPreviewKeyEvent { 
+                            if (it.key == Key.Tab && it.type == KeyEventType.KeyDown) {
+                                focusManager.moveFocus(if (it.isShiftPressed) FocusDirection.Previous else FocusDirection.Next)
+                                true
+                            } else false
+                        }, 
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Number,
+                            imeAction = ImeAction.Next
+                        ),
                         isError = !isPartnerDobValid,
                         supportingText = { if (!isPartnerDobValid) Text("Invalid day") }
                     )
@@ -319,21 +368,33 @@ fun ChildItemEdit(
                         if (it.isBlank()) {
                             newChild = newChild.copy(anniversaryDay = "", anniversaryMonth = "")
                         } else {
-                            platform.parseDateToDayMonth(it)?.let { (d, m) ->
-                                newChild = newChild.copy(anniversaryDay = d, anniversaryMonth = m)
-                            }
+                            try {
+                                platform.parseDateToDayMonth(it)?.let { (d, m) ->
+                                    newChild = newChild.copy(anniversaryDay = d, anniversaryMonth = m)
+                                }
+                            } catch (_: Exception) {}
                         }
                         onChildChange(newChild)
                     },
-                    label = "Marriage Date"
+                    label = "Marriage Date",
+                    modifier = modifierWithTabHandler
                 )
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     OutlinedTextField(
                         value = child.anniversaryDay, 
                         onValueChange = { onChildChange(child.copy(anniversaryDay = it)) }, 
                         label = { Text("Day") }, 
-                        modifier = Modifier.weight(0.4f), 
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        modifier = Modifier.weight(0.4f).onPreviewKeyEvent { 
+                            if (it.key == Key.Tab && it.type == KeyEventType.KeyDown) {
+                                focusManager.moveFocus(if (it.isShiftPressed) FocusDirection.Previous else FocusDirection.Next)
+                                true
+                            } else false
+                        }, 
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Number,
+                            imeAction = ImeAction.Next
+                        ),
                         isError = !isAnniversaryValid,
                         supportingText = { if (!isAnniversaryValid) Text("Invalid day") }
                     )
@@ -344,8 +405,12 @@ fun ChildItemEdit(
                     value = child.notes, 
                     onValueChange = { onChildChange(child.copy(notes = it)) }, 
                     label = { Text("Notes") }, 
-                    modifier = Modifier.fillMaxWidth(),
-                    keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences)
+                    modifier = modifierWithTabHandler.heightIn(min = 100.dp, max = 200.dp),
+                    minLines = 3,
+                    keyboardOptions = KeyboardOptions(
+                        capitalization = KeyboardCapitalization.Sentences,
+                        imeAction = ImeAction.Next
+                    )
                 )
 
                 Spacer(Modifier.height(8.dp))
@@ -353,8 +418,12 @@ fun ChildItemEdit(
                     value = child.petName,
                     onValueChange = { onChildChange(child.copy(petName = it)) },
                     label = { Text("Pet Name") },
-                    modifier = Modifier.fillMaxWidth(),
-                    keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words)
+                    modifier = modifierWithTabHandler,
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(
+                        capitalization = KeyboardCapitalization.Words,
+                        imeAction = ImeAction.Done
+                    )
                 )
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Surface(

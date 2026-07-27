@@ -70,8 +70,10 @@ class AndroidPlatform(private val context: Context) : Platform {
 
     override fun isDayValidForMonth(day: String, month: String): Boolean {
         if (day.isBlank()) return true
-        val m = month.toIntOrNull() ?: return false
         val d = day.toIntOrNull() ?: return false
+        if (d !in 1..31) return false
+        
+        val m = month.toIntOrNull() ?: return true // Valid if month not selected yet
         
         if (m !in 1..12) return false
         
@@ -153,4 +155,14 @@ fun initPlatform(context: Context) {
     androidPlatform = AndroidPlatform(context)
 }
 
-actual fun getPlatform(): Platform = androidPlatform ?: throw Exception("Platform not initialized")
+actual fun getPlatform(): Platform = androidPlatform ?: object : Platform {
+    override val name: String = "Android (Fallback)"
+    override fun uriToBase64(uri: String): String? = null
+    override fun base64ToUri(base64: String, fileNamePrefix: String): String? = null
+    override fun formatDisplayDate(dateString: String?): String = dateString ?: ""
+    override fun formatPartialDate(day: String, month: String): String = ""
+    override fun calculateAge(dobString: String?): Int? = null
+    override fun parseDateToDayMonth(dateString: String): Pair<String, String>? = null
+    override fun isDayValidForMonth(day: String, month: String): Boolean = true
+    override fun currentTimeMillis(): Long = System.currentTimeMillis()
+}
