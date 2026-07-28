@@ -23,6 +23,8 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.input.key.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.platform.LocalFocusManager
 import coil3.compose.SubcomposeAsyncImage
@@ -36,11 +38,27 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.seconds
 
+<<<<<<< HEAD
 private data class ImportData(
     val f: String, val m: String, val l: String,
     val cp: String, val op: String, val e: String,
     val we: String, val a: String, val cn: String,
     val n: String, val dob: String, val anniv: String
+=======
+data class PickedContact(
+    val firstName: String,
+    val middleName: String,
+    val lastName: String,
+    val cellPhone: String,
+    val officePhone: String,
+    val email: String,
+    val workEmail: String,
+    val address: String,
+    val companyName: String,
+    val notes: String,
+    val dateOfBirth: String,
+    val anniversaryDate: String
+>>>>>>> d279d7d8a0e5d498821ae30e3459a7f61c662020
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -118,6 +136,10 @@ fun AddEditFriendScreen(
     }
     
     var showGroupDialog by remember { mutableStateOf(false) }
+    var pendingContact by remember { mutableStateOf<PickedContact?>(null) }
+    var showImportTargetDialog by remember { mutableStateOf(false) }
+    var showChildPickerForImport by remember { mutableStateOf(false) }
+
     val children = remember { mutableStateListOf<Child>().apply { addAll(initialChildren) } }
 
     var importData by remember { mutableStateOf<ImportData?>(null) }
@@ -127,7 +149,12 @@ fun AddEditFriendScreen(
         trigger = contactPickerTrigger,
         onTriggerReset = { contactPickerTrigger = false },
         onContactPicked = { f, m, l, cp, op, e, we, a, cn, n, dob, anniv ->
+<<<<<<< HEAD
             importData = ImportData(f, m, l, cp, op, e, we, a, cn, n, dob, anniv)
+=======
+            pendingContact = PickedContact(f, m, l, cp, op, e, we, a, cn, n, dob, anniv)
+            showImportTargetDialog = true
+>>>>>>> d279d7d8a0e5d498821ae30e3459a7f61c662020
         },
         onCancel = { contactPickerTrigger = false }
     )
@@ -637,7 +664,7 @@ fun AddEditFriendScreen(
                             value = notes, 
                             onValueChange = { notes = it }, 
                             label = { Text("Notes") }, 
-                            modifier = modifierWithTabHandler.heightIn(min = 100.dp, max = 200.dp),
+                            modifier = modifierWithTabHandler.heightIn(max = 200.dp).verticalScroll(rememberScrollState()),
                             minLines = 3,
                             keyboardOptions = KeyboardOptions(
                                 capitalization = KeyboardCapitalization.Sentences,
@@ -705,6 +732,7 @@ fun AddEditFriendScreen(
                 item {
                     Text("Partner", style = MaterialTheme.typography.titleLarge)
                     PartnerSectionEdit(
+                        modifier = modifierWithTabHandler,
                         partnerType = partnerType,
                         onPartnerTypeChange = { partnerType = it },
                         partnerFirstName = partnerFirstName,
@@ -771,6 +799,7 @@ fun AddEditFriendScreen(
                     ImagePicker(trigger = childPetImagePickerTrigger, onTriggerReset = { childPetImagePickerTrigger = false }, onImagePicked = { children[index] = children[index].copy(petImageUri = it) })
 
                     ChildItemEdit(
+                        modifier = modifierWithTabHandler,
                         child = children[index],
                         initiallyExpanded = children[index].id == scrollToChildId,
                         shouldAutoFocus = index == children.size - 1 && focusNewChildTrigger,
@@ -849,6 +878,147 @@ fun AddEditFriendScreen(
             confirmButton = {
                 TextButton(onClick = { showGroupDialog = false }) {
                     Text("OK")
+                }
+            }
+        )
+    }
+
+    if (showImportTargetDialog && pendingContact != null) {
+        AlertDialog(
+            onDismissRequest = { showImportTargetDialog = false; pendingContact = null },
+            title = { Text("Import Contact To...") },
+            text = {
+                Column {
+                    Text("Choose where to import this contact's details.")
+                }
+            },
+            confirmButton = {
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    TextButton(
+                        modifier = Modifier.fillMaxWidth(),
+                        onClick = {
+                            pendingContact?.let { p ->
+                                firstName = p.firstName; middleName = p.middleName; lastName = p.lastName
+                                cellPhone = p.cellPhone; officePhone = p.officePhone; email = p.email; workEmail = p.workEmail
+                                address = p.address; companyName = p.companyName; notes = p.notes
+                                dateOfBirth = p.dateOfBirth; anniversaryDate = p.anniversaryDate
+                                try {
+                                    platform.parseDateToDayMonth(p.dateOfBirth)?.let { (d, m) -> birthDay = d; birthMonth = m }
+                                    platform.parseDateToDayMonth(p.anniversaryDate)?.let { (d, m) -> anniversaryDay = d; anniversaryMonth = m }
+                                } catch (_: Exception) {}
+                            }
+                            showImportTargetDialog = false; pendingContact = null
+                        }
+                    ) {
+                        Icon(Icons.Rounded.Person, contentDescription = null)
+                        Spacer(Modifier.width(8.dp))
+                        Text("Main Friend Section")
+                    }
+                    TextButton(
+                        modifier = Modifier.fillMaxWidth(),
+                        onClick = {
+                            pendingContact?.let { p ->
+                                partnerFirstName = p.firstName; partnerMiddleName = p.middleName; partnerLastName = p.lastName
+                                partnerPhone = p.cellPhone; partnerEmail = p.email; partnerWorkEmail = p.workEmail
+                                partnerCompanyName = p.companyName; partnerDateOfBirth = p.dateOfBirth
+                                try {
+                                    platform.parseDateToDayMonth(p.dateOfBirth)?.let { (d, m) -> partnerBirthDay = d; partnerBirthMonth = m }
+                                } catch (_: Exception) {}
+                            }
+                            showImportTargetDialog = false; pendingContact = null
+                        }
+                    ) {
+                        Icon(Icons.Rounded.Favorite, contentDescription = null)
+                        Spacer(Modifier.width(8.dp))
+                        Text("Partner Section")
+                    }
+                    
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+                    
+                    TextButton(
+                        modifier = Modifier.fillMaxWidth(),
+                        onClick = {
+                            pendingContact?.let { p ->
+                                children.add(Child(
+                                    friendId = initialFriend?.id ?: 0L,
+                                    firstName = p.firstName,
+                                    middleName = p.middleName,
+                                    lastName = p.lastName,
+                                    phoneNumber = p.cellPhone,
+                                    email = p.email,
+                                    workEmail = p.workEmail,
+                                    dateOfBirth = p.dateOfBirth,
+                                    notes = p.notes,
+                                    collegeSchoolName = p.companyName
+                                ))
+                                focusNewChildTrigger = true
+                            }
+                            showImportTargetDialog = false; pendingContact = null
+                        }
+                    ) {
+                        Icon(Icons.Rounded.Add, contentDescription = null)
+                        Spacer(Modifier.width(8.dp))
+                        Text("New Child Record")
+                    }
+                    if (children.isNotEmpty()) {
+                        TextButton(
+                            modifier = Modifier.fillMaxWidth(),
+                            onClick = {
+                                showImportTargetDialog = false
+                                showChildPickerForImport = true
+                            }
+                        ) {
+                            Icon(Icons.Rounded.Edit, contentDescription = null)
+                            Spacer(Modifier.width(8.dp))
+                            Text("Update Existing Child...")
+                        }
+                    }
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showImportTargetDialog = false; pendingContact = null }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+
+    if (showChildPickerForImport && pendingContact != null) {
+        AlertDialog(
+            onDismissRequest = { showChildPickerForImport = false; pendingContact = null },
+            title = { Text("Select Child to Update") },
+            text = {
+                LazyColumn {
+                    items(children.size) { index ->
+                        val child = children[index]
+                        val name = "${child.firstName} ${child.lastName}".trim().ifBlank { "Child ${index + 1}" }
+                        ListItem(
+                            headlineContent = { Text(name) },
+                            modifier = Modifier.clickable {
+                                pendingContact?.let { p ->
+                                    children[index] = child.copy(
+                                        firstName = if (child.firstName.isBlank()) p.firstName else child.firstName,
+                                        middleName = if (child.middleName.isBlank()) p.middleName else child.middleName,
+                                        lastName = if (child.lastName.isBlank()) p.lastName else child.lastName,
+                                        phoneNumber = if (child.phoneNumber.isBlank()) p.cellPhone else child.phoneNumber,
+                                        email = if (child.email.isBlank()) p.email else child.email,
+                                        workEmail = if (child.workEmail.isBlank()) p.workEmail else child.workEmail,
+                                        dateOfBirth = if (child.dateOfBirth.isBlank()) p.dateOfBirth else child.dateOfBirth,
+                                        notes = if (child.notes.isBlank()) p.notes else child.notes,
+                                        collegeSchoolName = if (child.collegeSchoolName.isBlank()) p.companyName else child.collegeSchoolName
+                                    )
+                                }
+                                showChildPickerForImport = false
+                                pendingContact = null
+                            }
+                        )
+                    }
+                }
+            },
+            confirmButton = {},
+            dismissButton = {
+                TextButton(onClick = { showChildPickerForImport = false; pendingContact = null }) {
+                    Text("Cancel")
                 }
             }
         )

@@ -126,7 +126,7 @@ fun FriendDetailScreen(
 
                 item {
                     DetailRow(Icons.Rounded.LocationOn, friendWithChildren.friend.address, onClick = {
-                        platformUI.openUrl("geo:0,0?q=${friendWithChildren.friend.address}")
+                        platformUI.openMap(friendWithChildren.friend.address)
                     })
                     DetailRow(Icons.Rounded.Phone, friendWithChildren.friend.cellPhone, onClick = {
                         platformUI.dialPhone(friendWithChildren.friend.cellPhone)

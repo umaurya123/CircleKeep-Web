@@ -8,6 +8,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -32,6 +34,7 @@ import com.circlekeep.getPlatform
 
 @Composable
 fun ChildItemEdit(
+    modifier: Modifier = Modifier,
     child: Child,
     initiallyExpanded: Boolean = false,
     shouldAutoFocus: Boolean = false,
@@ -45,15 +48,6 @@ fun ChildItemEdit(
     val focusRequester = remember { FocusRequester() }
     val focusManager = LocalFocusManager.current
     val platform = getPlatform()
-    
-    val modifierWithTabHandler = Modifier.fillMaxWidth().onPreviewKeyEvent { 
-        if (it.key == Key.Tab && it.type == KeyEventType.KeyDown) {
-            focusManager.moveFocus(if (it.isShiftPressed) FocusDirection.Previous else FocusDirection.Next)
-            true
-        } else {
-            false
-        }
-    }
 
     LaunchedEffect(shouldAutoFocus) {
         if (shouldAutoFocus) {
@@ -112,7 +106,7 @@ fun ChildItemEdit(
                 value = child.firstName, 
                 onValueChange = { onChildChange(child.copy(firstName = it)) }, 
                 label = { Text("First Name") }, 
-                modifier = modifierWithTabHandler
+                modifier = modifier
                     .focusRequester(focusRequester),
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(
@@ -124,7 +118,7 @@ fun ChildItemEdit(
                 value = child.middleName, 
                 onValueChange = { onChildChange(child.copy(middleName = it)) }, 
                 label = { Text("Middle Name") }, 
-                modifier = modifierWithTabHandler,
+                modifier = modifier,
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(
                     capitalization = KeyboardCapitalization.Words,
@@ -135,7 +129,7 @@ fun ChildItemEdit(
                 value = child.lastName, 
                 onValueChange = { onChildChange(child.copy(lastName = it)) }, 
                 label = { Text("Last Name") }, 
-                modifier = modifierWithTabHandler,
+                modifier = modifier,
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(
                     capitalization = KeyboardCapitalization.Words,
@@ -146,7 +140,7 @@ fun ChildItemEdit(
                 value = child.phoneNumber, 
                 onValueChange = { onChildChange(child.copy(phoneNumber = it)) }, 
                 label = { Text("Cell Phone") }, 
-                modifier = modifierWithTabHandler,
+                modifier = modifier,
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Phone,
@@ -159,7 +153,7 @@ fun ChildItemEdit(
                     value = child.collegeSchoolName, 
                     onValueChange = { onChildChange(child.copy(collegeSchoolName = it)) },
                     label = { Text("College Name") }, 
-                    modifier = modifierWithTabHandler,
+                    modifier = modifier,
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(
                         capitalization = KeyboardCapitalization.Words,
@@ -182,14 +176,14 @@ fun ChildItemEdit(
                         onChildChange(newChild)
                     },
                     label = "DOB",
-                    modifier = modifierWithTabHandler
+                    modifier = modifier
                 )
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     OutlinedTextField(
                         value = child.birthDay, 
                         onValueChange = { onChildChange(child.copy(birthDay = it)) }, 
                         label = { Text("Day") }, 
-                        modifier = Modifier.weight(0.4f).onPreviewKeyEvent { 
+                        modifier = modifier.weight(0.4f).onPreviewKeyEvent { 
                             if (it.key == Key.Tab && it.type == KeyEventType.KeyDown) {
                                 focusManager.moveFocus(if (it.isShiftPressed) FocusDirection.Previous else FocusDirection.Next)
                                 true
@@ -338,14 +332,14 @@ fun ChildItemEdit(
                         onChildChange(newChild)
                     },
                     label = "Partner DOB",
-                    modifier = modifierWithTabHandler
+                    modifier = modifier
                 )
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     OutlinedTextField(
                         value = child.partnerBirthDay, 
                         onValueChange = { onChildChange(child.copy(partnerBirthDay = it)) }, 
                         label = { Text("Day") }, 
-                        modifier = Modifier.weight(0.4f).onPreviewKeyEvent { 
+                        modifier = modifier.weight(0.4f).onPreviewKeyEvent { 
                             if (it.key == Key.Tab && it.type == KeyEventType.KeyDown) {
                                 focusManager.moveFocus(if (it.isShiftPressed) FocusDirection.Previous else FocusDirection.Next)
                                 true
@@ -377,14 +371,14 @@ fun ChildItemEdit(
                         onChildChange(newChild)
                     },
                     label = "Marriage Date",
-                    modifier = modifierWithTabHandler
+                    modifier = modifier
                 )
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     OutlinedTextField(
                         value = child.anniversaryDay, 
                         onValueChange = { onChildChange(child.copy(anniversaryDay = it)) }, 
                         label = { Text("Day") }, 
-                        modifier = Modifier.weight(0.4f).onPreviewKeyEvent { 
+                        modifier = modifier.weight(0.4f).onPreviewKeyEvent { 
                             if (it.key == Key.Tab && it.type == KeyEventType.KeyDown) {
                                 focusManager.moveFocus(if (it.isShiftPressed) FocusDirection.Previous else FocusDirection.Next)
                                 true
@@ -405,7 +399,9 @@ fun ChildItemEdit(
                     value = child.notes, 
                     onValueChange = { onChildChange(child.copy(notes = it)) }, 
                     label = { Text("Notes") }, 
-                    modifier = modifierWithTabHandler.heightIn(min = 100.dp, max = 200.dp),
+                    modifier = modifier
+                        .heightIn(max = 200.dp)
+                        .verticalScroll(rememberScrollState()),
                     minLines = 3,
                     keyboardOptions = KeyboardOptions(
                         capitalization = KeyboardCapitalization.Sentences,
@@ -418,7 +414,7 @@ fun ChildItemEdit(
                     value = child.petName,
                     onValueChange = { onChildChange(child.copy(petName = it)) },
                     label = { Text("Pet Name") },
-                    modifier = modifierWithTabHandler,
+                    modifier = modifier,
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(
                         capitalization = KeyboardCapitalization.Words,

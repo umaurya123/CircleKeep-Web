@@ -30,6 +30,11 @@ class AndroidPlatformUI(private val context: android.content.Context) : Platform
         context.startActivity(intent)
     }
 
+    override fun openMap(address: String) {
+        val encodedAddress = Uri.encode(address)
+        openUrl("geo:0,0?q=$encodedAddress")
+    }
+
     override fun dialPhone(phoneNumber: String) {
         val intent = Intent(Intent.ACTION_DIAL, Uri.parse("tel:$phoneNumber"))
         context.startActivity(intent)

@@ -39,7 +39,9 @@ fun SettingsScreen(viewModel: FriendViewModel) {
     )
 
     var exportTrigger by remember { mutableStateOf(false) }
-    val exportData = if (exportTrigger) viewModel.getExportData() else null
+    val exportData = remember(exportTrigger) { 
+        if (exportTrigger) viewModel.getExportData() else null 
+    }
     
     FilePicker(
         trigger = exportTrigger,

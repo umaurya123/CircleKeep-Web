@@ -5,6 +5,7 @@ import androidx.compose.runtime.staticCompositionLocalOf
 
 interface PlatformUI {
     fun openUrl(url: String)
+    fun openMap(address: String)
     fun dialPhone(phoneNumber: String)
     fun sendEmail(email: String)
     fun showToast(message: String)

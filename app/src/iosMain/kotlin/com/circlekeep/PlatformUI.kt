@@ -1,31 +1,49 @@
 package com.circlekeep
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.CalendarToday
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import platform.UIKit.*
 import platform.Foundation.*
+import platform.Contacts.*
+import platform.ContactsUI.*
 import platform.darwin.NSObject
 import platform.darwin.dispatch_after
+import platform.darwin.dispatch_async
 import platform.darwin.dispatch_get_main_queue
 import platform.darwin.dispatch_time
 import platform.darwin.DISPATCH_TIME_NOW
 import platform.darwin.NSEC_PER_SEC
 import kotlinx.cinterop.ExperimentalForeignApi
+import platform.UniformTypeIdentifiers.UTType
+import platform.UniformTypeIdentifiers.UTTypeJSON
 
 class IOSPlatformUI : PlatformUI {
     override fun openUrl(url: String) {
         val nsUrl = NSURL.URLWithString(url)
         if (nsUrl != null) {
-            UIApplication.sharedApplication.openURL(nsUrl)
+            dispatch_async(dispatch_get_main_queue()) {
+                UIApplication.sharedApplication.openURL(nsUrl, options = emptyMap<Any?, Any?>(), completionHandler = null)
+            }
         }
+    }
+
+    override fun openMap(address: String) {
+        val nsString = address as platform.Foundation.NSString
+        val encodedAddress = nsString.stringByAddingPercentEncodingWithAllowedCharacters(
+            platform.Foundation.NSCharacterSet.URLQueryAllowedCharacterSet()
+        ) ?: address.replace(" ", "%20")
+        openUrl("maps://?q=$encodedAddress")
     }
 
     override fun dialPhone(phoneNumber: String) {
@@ -38,16 +56,21 @@ class IOSPlatformUI : PlatformUI {
     }
 
     override fun showToast(message: String) {
-        val alert = UIAlertController.alertControllerWithTitle(
-            title = null,
-            message = message,
-            preferredStyle = UIAlertControllerStyleAlert
-        )
-        UIApplication.sharedApplication.keyWindow?.rootViewController?.presentViewController(alert, true, null)
-        
-        val delay = 2L * NSEC_PER_SEC.toLong()
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, delay), dispatch_get_main_queue()) {
-            alert.dismissViewControllerAnimated(true, null)
+        dispatch_async(dispatch_get_main_queue()) {
+            val topVC = getTopViewController()
+            if (topVC != null) {
+                val alert = UIAlertController.alertControllerWithTitle(
+                    title = null,
+                    message = message,
+                    preferredStyle = UIAlertControllerStyleAlert
+                )
+                topVC.presentViewController(alert, true, null)
+                
+                val delay = 2L * NSEC_PER_SEC.toLong()
+                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, delay), dispatch_get_main_queue()) {
+                    alert.dismissViewControllerAnimated(true, null)
+                }
+            }
         }
     }
 
@@ -56,6 +79,35 @@ class IOSPlatformUI : PlatformUI {
     }
 
     override fun exitApp() {}
+
+    companion object {
+        fun getTopViewController(): UIViewController? {
+            val window = UIApplication.sharedApplication.windows.filterIsInstance<UIWindow>().firstOrNull { it.isKeyWindow() }
+                ?: UIApplication.sharedApplication.keyWindow
+            
+            var topController = window?.rootViewController
+            while (topController?.presentedViewController != null && !topController.presentedViewController!!.isBeingDismissed()) {
+                topController = topController.presentedViewController
+            }
+            return topController
+        }
+
+        fun presentSafe(viewController: UIViewController, animated: Boolean = true, completion: (() -> Unit)? = null) {
+            dispatch_async(dispatch_get_main_queue()) {
+                val topVC = getTopViewController()
+                if (topVC != null) {
+                    if (topVC.presentedViewController != null) {
+                        println("DEBUG: topVC is already presenting, waiting...")
+                        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (0.1 * NSEC_PER_SEC.toDouble()).toLong()), dispatch_get_main_queue()) {
+                            presentSafe(viewController, animated, completion)
+                        }
+                    } else {
+                        topVC.presentViewController(viewController, animated, completion)
+                    }
+                }
+            }
+        }
+    }
 }
 
 @Composable
@@ -82,8 +134,93 @@ actual fun ContactPicker(
     onTriggerReset: () -> Unit
 ) {
     if (trigger) {
+        val delegate = remember {
+            object : NSObject(), CNContactPickerDelegateProtocol {
+                override fun contactPicker(picker: CNContactPickerViewController, didSelectContact: CNContact) {
+                    val firstName = didSelectContact.givenName
+                    val middleName = didSelectContact.middleName
+                    val lastName = didSelectContact.familyName
+                    
+                    var cellPhone = ""
+                    var officePhone = ""
+                    didSelectContact.phoneNumbers.forEach { 
+                        val labeledValue = it as? CNLabeledValue
+                        val value = labeledValue?.value as? CNPhoneNumber
+                        val stringValue = value?.stringValue ?: ""
+                        val label = labeledValue?.label
+                        if (label == CNLabelPhoneNumberMobile || label == CNLabelPhoneNumberiPhone) {
+                            if (cellPhone.isBlank()) cellPhone = stringValue
+                        } else if (label == CNLabelWork) {
+                            if (officePhone.isBlank()) officePhone = stringValue
+                        } else {
+                            if (cellPhone.isBlank()) cellPhone = stringValue
+                        }
+                    }
+
+                    var email = ""
+                    var workEmail = ""
+                    didSelectContact.emailAddresses.forEach {
+                        val labeledValue = it as? CNLabeledValue
+                        val stringValue = labeledValue?.value as? String ?: ""
+                        val label = labeledValue?.label
+                        if (label == CNLabelHome) {
+                            if (email.isBlank()) email = stringValue
+                        } else if (label == CNLabelWork) {
+                            if (workEmail.isBlank()) workEmail = stringValue
+                        } else {
+                            if (email.isBlank()) email = stringValue
+                        }
+                    }
+
+                    var addressValue = ""
+                    didSelectContact.postalAddresses.firstOrNull()?.let {
+                        val labeledValue = it as? CNLabeledValue
+                        val value = labeledValue?.value as? CNPostalAddress
+                        if (value != null) {
+                            addressValue = listOf(value.street, value.city, value.state, value.postalCode, value.country)
+                                .filter { it.isNotBlank() }.joinToString(", ")
+                        }
+                    }
+
+                    val companyName = didSelectContact.organizationName
+                    val notes = didSelectContact.note
+                    
+                    var dob = ""
+                    didSelectContact.birthday?.let {
+                        val day = it.day.toString().padStart(2, '0')
+                        val month = it.month.toString().padStart(2, '0')
+                        val year = if (it.year > 0) it.year.toString() else "1900"
+                        dob = "$day/$month/$year"
+                    }
+
+                    onContactPicked(
+                        firstName, middleName, lastName, 
+                        cellPhone, officePhone, email, workEmail,
+                        addressValue, companyName, notes, dob, ""
+                    )
+                    
+                    dispatch_async(dispatch_get_main_queue()) {
+                        picker.dismissViewControllerAnimated(true) {
+                            onTriggerReset()
+                        }
+                    }
+                }
+
+                override fun contactPickerDidCancel(picker: CNContactPickerViewController) {
+                    dispatch_async(dispatch_get_main_queue()) {
+                        picker.dismissViewControllerAnimated(true) {
+                            onCancel()
+                            onTriggerReset()
+                        }
+                    }
+                }
+            }
+        }
+
         LaunchedEffect(Unit) {
-            onTriggerReset()
+            val picker = CNContactPickerViewController()
+            picker.delegate = delegate
+            IOSPlatformUI.presentSafe(picker)
         }
     }
 }
@@ -96,11 +233,10 @@ actual fun ImagePicker(
     onTriggerReset: () -> Unit
 ) {
     if (trigger) {
-        val imagePicker = remember { UIImagePickerController() }
         val delegate = remember {
             object : NSObject(), UIImagePickerControllerDelegateProtocol, UINavigationControllerDelegateProtocol {
                 override fun imagePickerController(picker: UIImagePickerController, didFinishPickingMediaWithInfo: Map<Any?, *>) {
-                    val image = didFinishPickingMediaWithInfo[UIImagePickerControllerOriginalImage] as? UIImage
+                    val image = (didFinishPickingMediaWithInfo[UIImagePickerControllerEditedImage] ?: didFinishPickingMediaWithInfo[UIImagePickerControllerOriginalImage]) as? UIImage
                     if (image != null) {
                         val data = UIImageJPEGRepresentation(image, 0.8)
                         if (data != null) {
@@ -116,27 +252,52 @@ actual fun ImagePicker(
                     } else {
                         onImagePicked(null)
                     }
-                    picker.dismissViewControllerAnimated(true, null)
-                    onTriggerReset()
+                    
+                    dispatch_async(dispatch_get_main_queue()) {
+                        picker.dismissViewControllerAnimated(true) {
+                            onTriggerReset()
+                        }
+                    }
                 }
 
                 override fun imagePickerControllerDidCancel(picker: UIImagePickerController) {
-                    picker.dismissViewControllerAnimated(true, null)
-                    onTriggerReset()
+                    dispatch_async(dispatch_get_main_queue()) {
+                        picker.dismissViewControllerAnimated(true) {
+                            onTriggerReset()
+                        }
+                    }
                 }
             }
         }
 
         LaunchedEffect(Unit) {
+            val imagePicker = UIImagePickerController()
             imagePicker.delegate = delegate
+            imagePicker.allowsEditing = true
             imagePicker.sourceType = UIImagePickerControllerSourceType.UIImagePickerControllerSourceTypePhotoLibrary
-            UIApplication.sharedApplication.keyWindow?.rootViewController?.presentViewController(imagePicker, true, null)
+            IOSPlatformUI.presentSafe(imagePicker)
         }
     }
 }
 
 @Composable
-actual fun BannerAdView() {}
+actual fun BannerAdView() {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(50.dp)
+            .background(MaterialTheme.colorScheme.surfaceVariant)
+            .padding(4.dp)
+            .border(1.dp, MaterialTheme.colorScheme.outline, MaterialTheme.shapes.small),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            "CircleKeep - Keeping you connected",
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+}
 
 @Composable
 actual fun PlatformBackHandler(enabled: Boolean, onBack: () -> Unit) {}
@@ -225,6 +386,7 @@ actual fun DatePickerField(
     )
 }
 
+@OptIn(ExperimentalForeignApi::class, kotlinx.cinterop.BetaInteropApi::class)
 @Composable
 actual fun FilePicker(
     onFilePicked: (String) -> Unit,
@@ -233,5 +395,56 @@ actual fun FilePicker(
     mode: FilePickerMode,
     dataToSave: String?
 ) {
-    if (trigger) onTriggerReset()
+    if (trigger) {
+        val delegate = remember {
+            object : NSObject(), UIDocumentPickerDelegateProtocol {
+                override fun documentPicker(controller: UIDocumentPickerViewController, didPickDocumentsAtURLs: List<*>) {
+                    val url = didPickDocumentsAtURLs.firstOrNull() as? NSURL
+                    if (url != null) {
+                        if (mode == FilePickerMode.Read) {
+                            val data = NSData.dataWithContentsOfURL(url)
+                            if (data != null) {
+                                val string = NSString.create(data = data, encoding = NSUTF8StringEncoding)
+                                onFilePicked(string?.toString() ?: "")
+                            }
+                        } else {
+                            onFilePicked("Success")
+                        }
+                    }
+                    
+                    dispatch_async(dispatch_get_main_queue()) {
+                        controller.dismissViewControllerAnimated(true) {
+                            onTriggerReset()
+                        }
+                    }
+                }
+
+                override fun documentPickerWasCancelled(controller: UIDocumentPickerViewController) {
+                    dispatch_async(dispatch_get_main_queue()) {
+                        controller.dismissViewControllerAnimated(true) {
+                            onTriggerReset()
+                        }
+                    }
+                }
+            }
+        }
+
+        LaunchedEffect(Unit) {
+            val picker = if (mode == FilePickerMode.Create && dataToSave != null) {
+                val tempDir = NSTemporaryDirectory()
+                val fileName = "CircleKeep_Backup_${NSDate().timeIntervalSince1970}.json"
+                val filePath = if (tempDir.endsWith("/")) tempDir + fileName else "$tempDir/$fileName"
+                
+                val nsString = NSString.create(string = dataToSave)
+                nsString.writeToFile(filePath, true, NSUTF8StringEncoding, null)
+                
+                val url = NSURL.fileURLWithPath(filePath)
+                UIDocumentPickerViewController(forExportingURLs = listOf(url))
+            } else {
+                UIDocumentPickerViewController(forOpeningContentTypes = listOf<UTType>(UTTypeJSON), asCopy = true)
+            }
+            picker.delegate = delegate
+            IOSPlatformUI.presentSafe(picker)
+        }
+    }
 }

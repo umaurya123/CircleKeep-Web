@@ -27,6 +27,7 @@ import com.circlekeep.DatePickerField
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PartnerSectionEdit(
+    modifier: Modifier = Modifier,
     partnerType: String,
     onPartnerTypeChange: (String) -> Unit,
     partnerFirstName: String,
@@ -57,15 +58,6 @@ fun PartnerSectionEdit(
     var showMore by remember { mutableStateOf(false) }
     val focusManager = LocalFocusManager.current
     val platform = getPlatform()
-    
-    val modifierWithTabHandler = Modifier.fillMaxWidth().onPreviewKeyEvent { 
-        if (it.key == Key.Tab && it.type == KeyEventType.KeyDown) {
-            focusManager.moveFocus(if (it.isShiftPressed) FocusDirection.Previous else FocusDirection.Next)
-            true
-        } else {
-            false
-        }
-    }
 
     Card(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
         Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -110,7 +102,7 @@ fun PartnerSectionEdit(
                 value = partnerFirstName,
                 onValueChange = onPartnerFirstNameChange,
                 label = { Text("First Name") },
-                modifier = modifierWithTabHandler,
+                modifier = modifier,
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(
                     capitalization = KeyboardCapitalization.Words,
@@ -121,7 +113,7 @@ fun PartnerSectionEdit(
                 value = partnerMiddleName,
                 onValueChange = onPartnerMiddleNameChange,
                 label = { Text("Middle Name") },
-                modifier = modifierWithTabHandler,
+                modifier = modifier,
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(
                     capitalization = KeyboardCapitalization.Words,
@@ -132,7 +124,7 @@ fun PartnerSectionEdit(
                 value = partnerLastName,
                 onValueChange = onPartnerLastNameChange,
                 label = { Text("Last Name") },
-                modifier = modifierWithTabHandler,
+                modifier = modifier,
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(
                     capitalization = KeyboardCapitalization.Words,
@@ -143,7 +135,7 @@ fun PartnerSectionEdit(
                 value = partnerPhone,
                 onValueChange = onPartnerPhoneChange,
                 label = { Text("Partner Phone") },
-                modifier = modifierWithTabHandler,
+                modifier = modifier,
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Phone,
@@ -168,14 +160,14 @@ fun PartnerSectionEdit(
                     }
                 },
                 label = "Partner DOB",
-                modifier = modifierWithTabHandler
+                modifier = modifier
             )
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 OutlinedTextField(
                     value = partnerBirthDay,
                     onValueChange = onPartnerBirthDayChange,
                     label = { Text("Day") },
-                    modifier = Modifier.weight(0.4f).onPreviewKeyEvent { 
+                    modifier = modifier.weight(0.4f).onPreviewKeyEvent { 
                         if (it.key == Key.Tab && it.type == KeyEventType.KeyDown) {
                             focusManager.moveFocus(if (it.isShiftPressed) FocusDirection.Previous else FocusDirection.Next)
                             true
@@ -197,7 +189,7 @@ fun PartnerSectionEdit(
                     value = partnerSiblings,
                     onValueChange = onPartnerSiblingsChange,
                     label = { Text("Siblings") },
-                    modifier = modifierWithTabHandler,
+                    modifier = modifier,
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(
                         capitalization = KeyboardCapitalization.Words,
@@ -208,7 +200,7 @@ fun PartnerSectionEdit(
                     value = partnerCompanyName,
                     onValueChange = onPartnerCompanyNameChange,
                     label = { Text("Company Name") },
-                    modifier = modifierWithTabHandler,
+                    modifier = modifier,
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(
                         capitalization = KeyboardCapitalization.Words,
@@ -219,7 +211,7 @@ fun PartnerSectionEdit(
                     value = partnerCollegeSchoolName,
                     onValueChange = onPartnerCollegeSchoolNameChange,
                     label = { Text("College Name") },
-                    modifier = modifierWithTabHandler,
+                    modifier = modifier,
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(
                         capitalization = KeyboardCapitalization.Words,
