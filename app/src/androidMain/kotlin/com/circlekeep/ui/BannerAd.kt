@@ -2,6 +2,7 @@ package com.circlekeep.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.material3.MaterialTheme
@@ -34,13 +35,21 @@ fun BannerAd(modifier: Modifier = Modifier) {
         )
         
         AndroidView(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxSize(),
             factory = { context ->
                 AdView(context).apply {
                     setAdSize(AdSize.BANNER)
                     adUnitId = com.circlekeep.BuildConfig.BANNER_AD_UNIT_ID
+                    adListener = object : AdListener() {
+                        override fun onAdFailedToLoad(error: LoadAdError) {
+                            println("Banner Ad failed to load: ${error.message}")
+                        }
+                    }
                     loadAd(AdRequest.Builder().build())
                 }
+            },
+            update = { adView ->
+                adView.loadAd(AdRequest.Builder().build())
             }
         )
     }
