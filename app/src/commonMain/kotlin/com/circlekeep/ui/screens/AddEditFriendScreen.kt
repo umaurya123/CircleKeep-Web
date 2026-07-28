@@ -36,6 +36,13 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.seconds
 
+private data class ImportData(
+    val f: String, val m: String, val l: String,
+    val cp: String, val op: String, val e: String,
+    val we: String, val a: String, val cn: String,
+    val n: String, val dob: String, val anniv: String
+)
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddEditFriendScreen(
@@ -99,14 +106,6 @@ fun AddEditFriendScreen(
     var focusNewChildTrigger by remember { mutableStateOf(false) }
     var showMore by remember { mutableStateOf(false) }
 
-    val isEmailValid = email.isBlank() || email.contains("@") // Simplified for KMP
-    
-    val isDobValid = platform.isDayValidForMonth(birthDay, birthMonth)
-    val isAnniversaryValid = platform.isDayValidForMonth(anniversaryDay, anniversaryMonth)
-    val isPartnerDobValid = platform.isDayValidForMonth(partnerBirthDay, partnerBirthMonth)
-    
-    val isFormValid = isEmailValid && isDobValid && isAnniversaryValid && isPartnerDobValid
-    
     val selectedGroups = remember { mutableStateListOf<String>().apply { 
         if (initialFriend != null) addAll(initialFriend.groups) else add("Friend")
     } }
@@ -121,24 +120,106 @@ fun AddEditFriendScreen(
     var showGroupDialog by remember { mutableStateOf(false) }
     val children = remember { mutableStateListOf<Child>().apply { addAll(initialChildren) } }
 
+    var importData by remember { mutableStateOf<ImportData?>(null) }
     var contactPickerTrigger by remember { mutableStateOf(false) }
+
     ContactPicker(
         trigger = contactPickerTrigger,
         onTriggerReset = { contactPickerTrigger = false },
         onContactPicked = { f, m, l, cp, op, e, we, a, cn, n, dob, anniv ->
-            // Use simplified picker logic
-            firstName = f; middleName = m; lastName = l
-            cellPhone = cp; officePhone = op; email = e; workEmail = we
-            address = a; companyName = cn; notes = n
-            dateOfBirth = dob
-            anniversaryDate = anniv
-            try {
-                platform.parseDateToDayMonth(dob)?.let { (d, mon) -> birthDay = d; birthMonth = mon }
-                platform.parseDateToDayMonth(anniv)?.let { (d, mon) -> anniversaryDay = d; anniversaryMonth = mon }
-            } catch (_: Exception) {}
+            importData = ImportData(f, m, l, cp, op, e, we, a, cn, n, dob, anniv)
         },
         onCancel = { contactPickerTrigger = false }
     )
+
+    importData?.let { data ->
+        AlertDialog(
+            onDismissRequest = { importData = null },
+            title = { Text("Import Contact To...") },
+            text = {
+                Column {
+                    ListItem(
+                        headlineContent = { Text("Main Section") },
+                        modifier = Modifier.clickable {
+                            firstName = data.f; middleName = data.m; lastName = data.l
+                            cellPhone = data.cp; officePhone = data.op; email = data.e; workEmail = data.we
+                            address = data.a; companyName = data.cn; notes = data.n
+                            dateOfBirth = data.dob; anniversaryDate = data.anniv
+                            try {
+                                platform.parseDateToDayMonth(data.dob)?.let { (d, mon) -> birthDay = d; birthMonth = mon }
+                                platform.parseDateToDayMonth(data.anniv)?.let { (d, mon) -> anniversaryDay = d; anniversaryMonth = mon }
+                            } catch (_: Exception) {}
+                            importData = null
+                        }
+                    )
+                    ListItem(
+                        headlineContent = { Text("Partner Section") },
+                        modifier = Modifier.clickable {
+                            partnerFirstName = data.f; partnerMiddleName = data.m; partnerLastName = data.l
+                            partnerPhone = data.cp; partnerEmail = data.e; partnerWorkEmail = data.we
+                            partnerCompanyName = data.cn
+                            partnerDateOfBirth = data.dob
+                            try {
+                                platform.parseDateToDayMonth(data.dob)?.let { (d, mon) -> partnerBirthDay = d; partnerBirthMonth = mon }
+                            } catch (_: Exception) {}
+                            importData = null
+                        }
+                    )
+                    if (children.isNotEmpty()) {
+                        HorizontalDivider()
+                        Text("Existing Children", style = MaterialTheme.typography.labelMedium, modifier = Modifier.padding(16.dp))
+                        children.forEachIndexed { index, child ->
+                            ListItem(
+                                headlineContent = { Text("${child.firstName} ${child.lastName}".ifBlank { "Child ${index + 1}" }) },
+                                modifier = Modifier.clickable {
+                                    children[index] = child.copy(
+                                        firstName = data.f, middleName = data.m, lastName = data.l,
+                                        phoneNumber = data.cp, email = data.e, workEmail = data.we,
+                                        notes = data.n,
+                                        dateOfBirth = data.dob, birthDay = "", birthMonth = "" // Simplified
+                                    )
+                                    try {
+                                        platform.parseDateToDayMonth(data.dob)?.let { (d, mon) ->
+                                            children[index] = children[index].copy(birthDay = d, birthMonth = mon)
+                                        }
+                                    } catch (_: Exception) {}
+                                    importData = null
+                                }
+                            )
+                        }
+                    }
+                    HorizontalDivider()
+                    ListItem(
+                        headlineContent = { Text("New Child") },
+                        modifier = Modifier.clickable {
+                            val newChild = Child(
+                                friendId = initialFriend?.id ?: 0L,
+                                firstName = data.f, middleName = data.m, lastName = data.l,
+                                phoneNumber = data.cp, email = data.e, workEmail = data.we,
+                                notes = data.n,
+                                dateOfBirth = data.dob
+                            )
+                            children.add(newChild)
+                            focusNewChildTrigger = true
+                            importData = null
+                        }
+                    )
+                }
+            },
+            confirmButton = {},
+            dismissButton = {
+                TextButton(onClick = { importData = null }) { Text("Cancel") }
+            }
+        )
+    }
+
+    val isEmailValid = email.isBlank() || email.contains("@") // Simplified for KMP
+    
+    val isDobValid = platform.isDayValidForMonth(birthDay, birthMonth)
+    val isAnniversaryValid = platform.isDayValidForMonth(anniversaryDay, anniversaryMonth)
+    val isPartnerDobValid = platform.isDayValidForMonth(partnerBirthDay, partnerBirthMonth)
+    
+    val isFormValid = isEmailValid && isDobValid && isAnniversaryValid && isPartnerDobValid
 
     var mainImagePickerTrigger by remember { mutableStateOf(false) }
     ImagePicker(
