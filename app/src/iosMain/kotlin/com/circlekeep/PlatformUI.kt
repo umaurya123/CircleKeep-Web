@@ -13,6 +13,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.UIKitView
 import platform.UIKit.*
 import platform.Foundation.*
 import platform.Contacts.*
@@ -25,8 +26,29 @@ import platform.darwin.dispatch_time
 import platform.darwin.DISPATCH_TIME_NOW
 import platform.darwin.NSEC_PER_SEC
 import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.launch
 import platform.UniformTypeIdentifiers.UTType
 import platform.UniformTypeIdentifiers.UTTypeJSON
+
+interface NativePlatformProvider {
+    fun getBannerView(): UIView
+    fun showInterstitialAd(onAdDismissed: () -> Unit)
+    fun launchPurchaseFlow(productId: String)
+    fun queryPurchases()
+}
+
+private var platformProvider: NativePlatformProvider? = null
+
+fun setPlatformProvider(provider: NativePlatformProvider) {
+    platformProvider = provider
+}
+
+fun notifyPurchaseSuccess() {
+    MainScope().launch {
+        com.circlekeep.viewmodel.userPreferencesRepository.updateIsPaid(true)
+    }
+}
 
 class IOSPlatformUI : PlatformUI {
     override fun openUrl(url: String) {
@@ -75,10 +97,23 @@ class IOSPlatformUI : PlatformUI {
     }
 
     override fun showInterstitialAd(onAdDismissed: () -> Unit) {
-        onAdDismissed()
+        val provider = platformProvider
+        if (provider != null) {
+            provider.showInterstitialAd(onAdDismissed)
+        } else {
+            onAdDismissed()
+        }
     }
 
     override fun exitApp() {}
+
+    override fun launchPurchaseFlow(productId: String) {
+        platformProvider?.launchPurchaseFlow(productId)
+    }
+
+    override fun queryPurchases() {
+        platformProvider?.queryPurchases()
+    }
 
     companion object {
         fun getTopViewController(): UIViewController? {
@@ -218,9 +253,19 @@ actual fun ContactPicker(
         }
 
         LaunchedEffect(Unit) {
-            val picker = CNContactPickerViewController()
-            picker.delegate = delegate
-            IOSPlatformUI.presentSafe(picker)
+            // Small delay to ensure no re-entrancy issues with PPT or other transitions
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (0.2 * NSEC_PER_SEC.toDouble()).toLong()), dispatch_get_main_queue()) {
+                val picker = CNContactPickerViewController()
+                picker.delegate = delegate
+                val topVC = IOSPlatformUI.getTopViewController()
+                if (topVC != null) {
+                    println("DEBUG: Presenting Contact Picker from ${topVC::class.simpleName}")
+                    topVC.presentViewController(picker, true, null)
+                } else {
+                    println("ERROR: Could not find top view controller to present Contact Picker")
+                    onTriggerReset()
+                }
+            }
         }
     }
 }
@@ -271,31 +316,46 @@ actual fun ImagePicker(
         }
 
         LaunchedEffect(Unit) {
-            val imagePicker = UIImagePickerController()
-            imagePicker.delegate = delegate
-            imagePicker.allowsEditing = true
-            imagePicker.sourceType = UIImagePickerControllerSourceType.UIImagePickerControllerSourceTypePhotoLibrary
-            IOSPlatformUI.presentSafe(imagePicker)
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (0.2 * NSEC_PER_SEC.toDouble()).toLong()), dispatch_get_main_queue()) {
+                val imagePicker = UIImagePickerController()
+                imagePicker.delegate = delegate
+                imagePicker.allowsEditing = true
+                imagePicker.sourceType = UIImagePickerControllerSourceType.UIImagePickerControllerSourceTypePhotoLibrary
+                val topVC = IOSPlatformUI.getTopViewController()
+                if (topVC != null) {
+                    topVC.presentViewController(imagePicker, true, null)
+                } else {
+                    onTriggerReset()
+                }
+            }
         }
     }
 }
 
 @Composable
 actual fun BannerAdView() {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(50.dp)
-            .background(MaterialTheme.colorScheme.surfaceVariant)
-            .padding(4.dp)
-            .border(1.dp, MaterialTheme.colorScheme.outline, MaterialTheme.shapes.small),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            "CircleKeep - Keeping you connected",
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+    val provider = platformProvider
+    if (provider != null) {
+        UIKitView(
+            factory = { provider.getBannerView() },
+            modifier = Modifier.fillMaxWidth().height(50.dp)
         )
+    } else {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(50.dp)
+                .background(MaterialTheme.colorScheme.surfaceVariant)
+                .padding(4.dp)
+                .border(1.dp, MaterialTheme.colorScheme.outline, MaterialTheme.shapes.small),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                "CircleKeep - Keeping you connected",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
     }
 }
 
@@ -430,21 +490,32 @@ actual fun FilePicker(
         }
 
         LaunchedEffect(Unit) {
-            val picker = if (mode == FilePickerMode.Create && dataToSave != null) {
-                val tempDir = NSTemporaryDirectory()
-                val fileName = "CircleKeep_Backup_${NSDate().timeIntervalSince1970}.json"
-                val filePath = if (tempDir.endsWith("/")) tempDir + fileName else "$tempDir/$fileName"
-                
-                val nsString = NSString.create(string = dataToSave)
-                nsString.writeToFile(filePath, true, NSUTF8StringEncoding, null)
-                
-                val url = NSURL.fileURLWithPath(filePath)
-                UIDocumentPickerViewController(forExportingURLs = listOf(url))
-            } else {
-                UIDocumentPickerViewController(forOpeningContentTypes = listOf<UTType>(UTTypeJSON), asCopy = true)
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (0.2 * NSEC_PER_SEC.toDouble()).toLong()), dispatch_get_main_queue()) {
+                val picker = if (mode == FilePickerMode.Create && dataToSave != null) {
+                    val tempDir = NSTemporaryDirectory()
+                    val formatter = NSDateFormatter()
+                    formatter.dateFormat = "yyyyMMdd_HHmm"
+                    val timestamp = formatter.stringFromDate(NSDate())
+                    val fileName = "CircleKeep_Backup_$timestamp.json"
+                    val filePath = if (tempDir.endsWith("/")) tempDir + fileName else "$tempDir/$fileName"
+                    
+                    val nsString = NSString.create(string = dataToSave)
+                    nsString.writeToFile(filePath, true, NSUTF8StringEncoding, null)
+                    
+                    val url = NSURL.fileURLWithPath(filePath)
+                    UIDocumentPickerViewController(forExportingURLs = listOf(url))
+                } else {
+                    UIDocumentPickerViewController(forOpeningContentTypes = listOf<UTType>(UTTypeJSON), asCopy = true)
+                }
+                picker.delegate = delegate
+                val topVC = IOSPlatformUI.getTopViewController()
+                if (topVC != null) {
+                    topVC.presentViewController(picker, true, null)
+                } else {
+                    println("ERROR: Could not find top view controller to present File Picker")
+                    onTriggerReset()
+                }
             }
-            picker.delegate = delegate
-            IOSPlatformUI.presentSafe(picker)
         }
     }
 }

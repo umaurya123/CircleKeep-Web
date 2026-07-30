@@ -21,7 +21,7 @@ class IOSPlatform: Platform {
 
     override fun base64ToUri(base64: String, fileNamePrefix: String): String? {
         if (base64.isBlank()) return null
-        val data = NSData.create(base64EncodedString = base64, options = 0UL) ?: return null
+        val data = NSData.create(base64EncodedString = base64, options = NSDataBase64DecodingIgnoreUnknownCharacters) ?: return null
         val fileName = "${fileNamePrefix}_${NSDate().timeIntervalSince1970}.jpg"
         val paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, true)
         val documentDirectory = paths.firstOrNull() as? String ?: return null

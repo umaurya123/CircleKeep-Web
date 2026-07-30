@@ -36,7 +36,7 @@ private val repository: FriendRepository
 
 private var _userPreferencesRepository: UserPreferencesRepository? = null
 @OptIn(ExperimentalForeignApi::class, kotlinx.cinterop.BetaInteropApi::class)
-private val userPreferencesRepository: UserPreferencesRepository
+internal val userPreferencesRepository: UserPreferencesRepository
     get() {
         if (_userPreferencesRepository == null) {
             val paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, true)

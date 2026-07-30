@@ -18,7 +18,7 @@ class AndroidPlatform(private val context: Context) : Platform {
                 context.contentResolver.openInputStream(Uri.parse(uri))
             }
             inputStream?.use { input ->
-                Base64.encodeToString(input.readBytes(), Base64.DEFAULT)
+                Base64.encodeToString(input.readBytes(), Base64.NO_WRAP)
             }
         } catch (e: Exception) {
             null

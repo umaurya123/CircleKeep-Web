@@ -1,5 +1,6 @@
 package com.circlekeep.ui
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -30,7 +31,7 @@ fun BannerAd(modifier: Modifier = Modifier) {
         // Show placeholder text first (visible if offline or loading)
         Text(
             "CircleKeep - Keeping you connected",
-            style = MaterialTheme.typography.labelMedium,
+            style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
         
@@ -41,15 +42,22 @@ fun BannerAd(modifier: Modifier = Modifier) {
                     setAdSize(AdSize.BANNER)
                     adUnitId = com.circlekeep.BuildConfig.BANNER_AD_UNIT_ID
                     adListener = object : AdListener() {
+                        override fun onAdLoaded() {
+                            Log.d("CircleKeepAd", "Banner Ad loaded successfully")
+                        }
                         override fun onAdFailedToLoad(error: LoadAdError) {
-                            println("Banner Ad failed to load: ${error.message}")
+                            Log.e("CircleKeepAd", "Banner Ad failed to load: ${error.message} (Code: ${error.code})")
+                        }
+                        override fun onAdOpened() {
+                            Log.d("CircleKeepAd", "Banner Ad opened")
                         }
                     }
+                    Log.d("CircleKeepAd", "Requesting Banner Ad: ${com.circlekeep.BuildConfig.BANNER_AD_UNIT_ID}")
                     loadAd(AdRequest.Builder().build())
                 }
             },
-            update = { adView ->
-                adView.loadAd(AdRequest.Builder().build())
+            update = { 
+                // No need to load ad here, it causes redundant requests on recomposition
             }
         )
     }

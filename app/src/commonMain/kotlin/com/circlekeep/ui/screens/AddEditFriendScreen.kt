@@ -264,7 +264,7 @@ fun AddEditFriendScreen(
                                     notes = notes
                                 )
                                 
-                                if (friendCount >= 15 && !isPaid) {
+                                if (friendCount >= 2 && !isPaid) {
                                     platformUI.showInterstitialAd {
                                         isSaving = true
                                         scope.launch {

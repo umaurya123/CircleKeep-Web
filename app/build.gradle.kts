@@ -90,12 +90,12 @@ kotlin {
 
 android {
     namespace = "com.circlekeep"
-    compileSdk = 37
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.circlekeep"
         minSdk = 24
-        targetSdk = 37
+        targetSdk = 35
         versionCode = 8
         versionName = "2.0"
 
