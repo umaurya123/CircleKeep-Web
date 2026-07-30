@@ -93,7 +93,7 @@ fun SettingsScreen(viewModel: FriendViewModel) {
             
             if (!isPaid) {
                 Button(
-                    onClick = { viewModel.purchaseApp() },
+                    onClick = { platformUI.launchPurchaseFlow("pro_upgrade") },
                     modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.primaryContainer,
@@ -103,6 +103,16 @@ fun SettingsScreen(viewModel: FriendViewModel) {
                     Icon(Icons.Rounded.ShoppingCart, contentDescription = null)
                     Spacer(Modifier.width(8.dp))
                     Text("Purchase App (Remove Ads)")
+                }
+                Spacer(Modifier.height(12.dp))
+
+                OutlinedButton(
+                    onClick = { platformUI.queryPurchases() },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Icon(Icons.Rounded.ShoppingCart, contentDescription = null)
+                    Spacer(Modifier.width(8.dp))
+                    Text("Restore Purchases")
                 }
                 Spacer(Modifier.height(12.dp))
             }
@@ -139,7 +149,7 @@ fun SettingsScreen(viewModel: FriendViewModel) {
             
             ListItem(
                 headlineContent = { Text("App Version") },
-                supportingContent = { Text("1.2.0 (${platform.buildVariant})") }
+                supportingContent = { Text("${platform.appVersion} (${platform.buildVariant})") }
             )
             HorizontalDivider()
             ListItem(

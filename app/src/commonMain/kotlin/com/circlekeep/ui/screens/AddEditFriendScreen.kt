@@ -29,6 +29,7 @@ import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.platform.LocalFocusManager
 import coil3.compose.SubcomposeAsyncImage
 import com.circlekeep.*
+import androidx.compose.ui.platform.testTag
 import com.circlekeep.data.Child
 import com.circlekeep.data.Friend
 import com.circlekeep.getPlatform
@@ -38,13 +39,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.seconds
 
-<<<<<<< HEAD
-private data class ImportData(
-    val f: String, val m: String, val l: String,
-    val cp: String, val op: String, val e: String,
-    val we: String, val a: String, val cn: String,
-    val n: String, val dob: String, val anniv: String
-=======
 data class PickedContact(
     val firstName: String,
     val middleName: String,
@@ -58,7 +52,6 @@ data class PickedContact(
     val notes: String,
     val dateOfBirth: String,
     val anniversaryDate: String
->>>>>>> d279d7d8a0e5d498821ae30e3459a7f61c662020
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -142,103 +135,19 @@ fun AddEditFriendScreen(
 
     val children = remember { mutableStateListOf<Child>().apply { addAll(initialChildren) } }
 
-    var importData by remember { mutableStateOf<ImportData?>(null) }
     var contactPickerTrigger by remember { mutableStateOf(false) }
 
     ContactPicker(
         trigger = contactPickerTrigger,
         onTriggerReset = { contactPickerTrigger = false },
         onContactPicked = { f, m, l, cp, op, e, we, a, cn, n, dob, anniv ->
-<<<<<<< HEAD
-            importData = ImportData(f, m, l, cp, op, e, we, a, cn, n, dob, anniv)
-=======
             pendingContact = PickedContact(f, m, l, cp, op, e, we, a, cn, n, dob, anniv)
             showImportTargetDialog = true
->>>>>>> d279d7d8a0e5d498821ae30e3459a7f61c662020
         },
         onCancel = { contactPickerTrigger = false }
     )
 
-    importData?.let { data ->
-        AlertDialog(
-            onDismissRequest = { importData = null },
-            title = { Text("Import Contact To...") },
-            text = {
-                Column {
-                    ListItem(
-                        headlineContent = { Text("Main Section") },
-                        modifier = Modifier.clickable {
-                            firstName = data.f; middleName = data.m; lastName = data.l
-                            cellPhone = data.cp; officePhone = data.op; email = data.e; workEmail = data.we
-                            address = data.a; companyName = data.cn; notes = data.n
-                            dateOfBirth = data.dob; anniversaryDate = data.anniv
-                            try {
-                                platform.parseDateToDayMonth(data.dob)?.let { (d, mon) -> birthDay = d; birthMonth = mon }
-                                platform.parseDateToDayMonth(data.anniv)?.let { (d, mon) -> anniversaryDay = d; anniversaryMonth = mon }
-                            } catch (_: Exception) {}
-                            importData = null
-                        }
-                    )
-                    ListItem(
-                        headlineContent = { Text("Partner Section") },
-                        modifier = Modifier.clickable {
-                            partnerFirstName = data.f; partnerMiddleName = data.m; partnerLastName = data.l
-                            partnerPhone = data.cp; partnerEmail = data.e; partnerWorkEmail = data.we
-                            partnerCompanyName = data.cn
-                            partnerDateOfBirth = data.dob
-                            try {
-                                platform.parseDateToDayMonth(data.dob)?.let { (d, mon) -> partnerBirthDay = d; partnerBirthMonth = mon }
-                            } catch (_: Exception) {}
-                            importData = null
-                        }
-                    )
-                    if (children.isNotEmpty()) {
-                        HorizontalDivider()
-                        Text("Existing Children", style = MaterialTheme.typography.labelMedium, modifier = Modifier.padding(16.dp))
-                        children.forEachIndexed { index, child ->
-                            ListItem(
-                                headlineContent = { Text("${child.firstName} ${child.lastName}".ifBlank { "Child ${index + 1}" }) },
-                                modifier = Modifier.clickable {
-                                    children[index] = child.copy(
-                                        firstName = data.f, middleName = data.m, lastName = data.l,
-                                        phoneNumber = data.cp, email = data.e, workEmail = data.we,
-                                        notes = data.n,
-                                        dateOfBirth = data.dob, birthDay = "", birthMonth = "" // Simplified
-                                    )
-                                    try {
-                                        platform.parseDateToDayMonth(data.dob)?.let { (d, mon) ->
-                                            children[index] = children[index].copy(birthDay = d, birthMonth = mon)
-                                        }
-                                    } catch (_: Exception) {}
-                                    importData = null
-                                }
-                            )
-                        }
-                    }
-                    HorizontalDivider()
-                    ListItem(
-                        headlineContent = { Text("New Child") },
-                        modifier = Modifier.clickable {
-                            val newChild = Child(
-                                friendId = initialFriend?.id ?: 0L,
-                                firstName = data.f, middleName = data.m, lastName = data.l,
-                                phoneNumber = data.cp, email = data.e, workEmail = data.we,
-                                notes = data.n,
-                                dateOfBirth = data.dob
-                            )
-                            children.add(newChild)
-                            focusNewChildTrigger = true
-                            importData = null
-                        }
-                    )
-                }
-            },
-            confirmButton = {},
-            dismissButton = {
-                TextButton(onClick = { importData = null }) { Text("Cancel") }
-            }
-        )
-    }
+
 
     val isEmailValid = email.isBlank() || email.contains("@") // Simplified for KMP
     
@@ -389,7 +298,8 @@ fun AddEditFriendScreen(
                 modifier = Modifier
                     .padding(padding)
                     .padding(16.dp)
-                    .fillMaxSize(),
+                    .fillMaxSize()
+                    .testTag("MainList"),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 item {

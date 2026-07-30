@@ -72,6 +72,7 @@ kotlin {
             implementation(libs.play.services.ads)
             implementation(libs.retrofit)
             implementation(libs.ucrop)
+            implementation(libs.billing.ktx)
         }
         androidUnitTest.dependencies {
             implementation(libs.junit)
@@ -79,6 +80,7 @@ kotlin {
         androidInstrumentedTest.dependencies {
             implementation(libs.androidx.junit)
             implementation(libs.androidx.espresso.core)
+            implementation("androidx.compose.ui:ui-test-junit4:1.7.3")
         }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
@@ -94,8 +96,8 @@ android {
         applicationId = "com.circlekeep"
         minSdk = 24
         targetSdk = 37
-        versionCode = 3
-        versionName = "1.2"
+        versionCode = 8
+        versionName = "2.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -123,7 +125,9 @@ android {
         create("beta") {
             initWith(getByName("release"))
             matchingFallbacks.add("release")
-            
+            ndk {
+                debugSymbolLevel = "FULL"
+            }
             // Enabled ads for Beta variant by keeping placeholders (which we set to Test IDs for safety)
             manifestPlaceholders["admobAppId"] = "ca-app-pub-3940256099942544~3347511713" // Test App ID
             buildConfigField("String", "BANNER_AD_UNIT_ID", "\"ca-app-pub-3940256099942544/6300978111\"") // Test Banner
@@ -143,4 +147,5 @@ android {
 dependencies {
     ksp(libs.androidx.room.compiler)
     ksp(libs.moshi.kotlin.codegen)
+    debugImplementation("androidx.compose.ui:ui-test-manifest:1.7.3")
 }

@@ -11,6 +11,8 @@ interface PlatformUI {
     fun showToast(message: String)
     fun showInterstitialAd(onAdDismissed: () -> Unit)
     fun exitApp()
+    fun launchPurchaseFlow(productId: String)
+    fun queryPurchases()
 }
 
 @Composable

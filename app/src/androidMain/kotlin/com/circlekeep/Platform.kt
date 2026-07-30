@@ -90,6 +90,15 @@ class AndroidPlatform(private val context: Context) : Platform {
 
     override val buildVariant: String = BuildConfig.BUILD_TYPE
 
+    override val appVersion: String by lazy {
+        try {
+            val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
+            packageInfo.versionName ?: "Unknown"
+        } catch (e: Exception) {
+            "Unknown"
+        }
+    }
+
     private fun parseDate(dateString: String?): java.util.Date? {
         if (dateString.isNullOrBlank()) return null
         val formats = listOf(
@@ -166,4 +175,5 @@ actual fun getPlatform(): Platform = androidPlatform ?: object : Platform {
     override fun isDayValidForMonth(day: String, month: String): Boolean = true
     override fun currentTimeMillis(): Long = System.currentTimeMillis()
     override val buildVariant: String = "Unknown"
+    override val appVersion: String = "Unknown"
 }

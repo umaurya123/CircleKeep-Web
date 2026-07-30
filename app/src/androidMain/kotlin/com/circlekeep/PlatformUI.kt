@@ -24,7 +24,10 @@ import com.circlekeep.ui.BannerAd
 import com.yalantis.ucrop.UCrop
 import java.io.File
 
-class AndroidPlatformUI(private val context: android.content.Context) : PlatformUI {
+class AndroidPlatformUI(
+    private val context: android.content.Context,
+    private val billingManager: BillingManager? = null
+) : PlatformUI {
     override fun openUrl(url: String) {
         val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
         context.startActivity(intent)
@@ -68,12 +71,24 @@ class AndroidPlatformUI(private val context: android.content.Context) : Platform
     override fun exitApp() {
         (context as? Activity)?.finish()
     }
+
+    override fun launchPurchaseFlow(productId: String) {
+        val activity = context as? Activity ?: return
+        billingManager?.launchPurchaseFlow(activity, productId)
+    }
+
+    override fun queryPurchases() {
+        billingManager?.queryPurchases()
+    }
 }
 
 @Composable
 actual fun rememberPlatformUI(): PlatformUI {
     val context = LocalContext.current
-    return remember(context) { AndroidPlatformUI(context) }
+    val application = context.applicationContext as? CircleKeepApplication
+    return remember(context, application) { 
+        AndroidPlatformUI(context, application?.billingManager) 
+    }
 }
 
 @Composable

@@ -11,6 +11,7 @@ interface Platform {
     fun isDayValidForMonth(day: String, month: String): Boolean
     fun currentTimeMillis(): Long
     val buildVariant: String
+    val appVersion: String
 }
 
 expect fun getPlatform(): Platform

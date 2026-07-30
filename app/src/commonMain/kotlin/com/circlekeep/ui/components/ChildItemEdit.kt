@@ -99,7 +99,7 @@ fun ChildItemEdit(
                     }
                 }
                 IconButton(onClick = onDelete) {
-                    Icon(Icons.Rounded.Delete, contentDescription = null)
+                    Icon(Icons.Rounded.Delete, contentDescription = "Delete Child")
                 }
             }
             OutlinedTextField(

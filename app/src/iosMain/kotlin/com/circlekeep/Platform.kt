@@ -81,6 +81,10 @@ class IOSPlatform: Platform {
 
     override val buildVariant: String = "Release"
 
+    override val appVersion: String by lazy {
+        NSBundle.mainBundle.objectForInfoDictionaryKey("CFBundleShortVersionString") as? String ?: "Unknown"
+    }
+
     private fun parseDate(dateString: String?): NSDate? {
         if (dateString.isNullOrBlank()) return null
         val formats = listOf(
