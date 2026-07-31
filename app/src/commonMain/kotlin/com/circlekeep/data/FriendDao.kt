@@ -43,6 +43,22 @@ interface FriendDao {
     @Query("SELECT * FROM groups ORDER BY name ASC")
     fun getAllGroupsStream(): Flow<List<Group>>
 
+    @Query("DELETE FROM friends")
+    suspend fun deleteAllFriends()
+
+    @Query("DELETE FROM children")
+    suspend fun deleteAllChildren()
+
+    @Query("DELETE FROM `groups`")
+    suspend fun deleteAllGroups()
+
+    @Transaction
+    suspend fun clearAllData() {
+        deleteAllChildren()
+        deleteAllFriends()
+        deleteAllGroups()
+    }
+
     @Transaction
     suspend fun updateFriendWithChildren(friend: Friend, children: List<Child>) {
         updateFriend(friend)

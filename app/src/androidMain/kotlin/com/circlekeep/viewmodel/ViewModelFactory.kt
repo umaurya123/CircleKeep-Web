@@ -28,6 +28,10 @@ actual fun getFriendViewModelFactory(): ViewModelProvider.Factory = viewModelFac
                 override fun getAllGroupsStream(): kotlinx.coroutines.flow.Flow<List<com.circlekeep.data.Group>> = kotlinx.coroutines.flow.flowOf(emptyList())
                 override suspend fun insertGroup(group: com.circlekeep.data.Group) {}
                 override suspend fun deleteGroup(group: com.circlekeep.data.Group) {}
+                override suspend fun deleteAllFriends() {}
+                override suspend fun deleteAllChildren() {}
+                override suspend fun deleteAllGroups() {}
+                override suspend fun clearAllData() {}
             })
             val dummyPrefs = UserPreferencesRepository(
                 androidx.datastore.preferences.core.PreferenceDataStoreFactory.create {

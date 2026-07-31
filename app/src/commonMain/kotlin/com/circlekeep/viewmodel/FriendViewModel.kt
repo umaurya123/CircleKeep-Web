@@ -183,6 +183,12 @@ class FriendViewModel(
         }
     }
 
+    fun clearAllData() {
+        viewModelScope.launch {
+            friendRepository.clearAllData()
+        }
+    }
+
     fun onThemeChange(theme: String) {
         viewModelScope.launch {
             userPreferencesRepository.updateTheme(theme)

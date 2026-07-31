@@ -10,56 +10,32 @@ import com.circlekeep.data.getDatabaseBuilder
 import com.circlekeep.data.getRoomDatabase
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import okio.Path.Companion.toPath
-import platform.Foundation.NSDocumentDirectory
-import platform.Foundation.NSSearchPathForDirectoriesInDomains
-import platform.Foundation.NSUserDomainMask
-import platform.Foundation.NSHomeDirectory
+import platform.Foundation.*
 import kotlinx.cinterop.ExperimentalForeignApi
 
-private var _database: CircleKeepDatabase? = null
-private val database: CircleKeepDatabase
-    get() {
-        if (_database == null) {
-            _database = getRoomDatabase(getDatabaseBuilder())
-        }
-        return _database!!
-    }
+private val database: CircleKeepDatabase by lazy {
+    getRoomDatabase(getDatabaseBuilder())
+}
 
-private var _repository: FriendRepository? = null
-private val repository: FriendRepository
-    get() {
-        if (_repository == null) {
-            _repository = FriendRepository(database.friendDao())
-        }
-        return _repository!!
-    }
+private val repository: FriendRepository by lazy {
+    FriendRepository(database.friendDao())
+}
 
-private var _userPreferencesRepository: UserPreferencesRepository? = null
 @OptIn(ExperimentalForeignApi::class, kotlinx.cinterop.BetaInteropApi::class)
-internal val userPreferencesRepository: UserPreferencesRepository
-    get() {
-        if (_userPreferencesRepository == null) {
-            val paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, true)
-            val documentDirectory = paths.firstOrNull() as? String
-            
-            val path = if (documentDirectory != null) {
-                documentDirectory + "/circlekeep.preferences_pb"
-            } else {
-                NSHomeDirectory() + "/circlekeep.preferences_pb"
-            }
-            
-            _userPreferencesRepository = UserPreferencesRepository(
-                PreferenceDataStoreFactory.create(
-                    storage = androidx.datastore.core.okio.OkioStorage(
-                        fileSystem = okio.FileSystem.SYSTEM,
-                        producePath = { path.toPath() },
-                        serializer = androidx.datastore.preferences.core.PreferencesSerializer
-                    )
-                )
+internal val userPreferencesRepository: UserPreferencesRepository by lazy {
+    val documentDirectory = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, true).firstOrNull() as? String
+    val path = (documentDirectory ?: NSHomeDirectory()) + "/circlekeep.preferences_pb"
+    
+    UserPreferencesRepository(
+        PreferenceDataStoreFactory.create(
+            storage = androidx.datastore.core.okio.OkioStorage(
+                fileSystem = okio.FileSystem.SYSTEM,
+                producePath = { path.toPath() },
+                serializer = androidx.datastore.preferences.core.PreferencesSerializer
             )
-        }
-        return _userPreferencesRepository!!
-    }
+        )
+    )
+}
 
 actual fun getFriendViewModelFactory(): ViewModelProvider.Factory = viewModelFactory {
     initializer {

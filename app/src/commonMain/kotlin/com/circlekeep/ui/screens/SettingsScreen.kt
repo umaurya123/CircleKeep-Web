@@ -2,10 +2,11 @@ package com.circlekeep.ui.screens
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Feedback
-import androidx.compose.material.icons.rounded.FileDownload
-import androidx.compose.material.icons.rounded.FileUpload
-import androidx.compose.material.icons.rounded.ShoppingCart
+import androidx.compose.material.icons.filled.ArrowDownward
+import androidx.compose.material.icons.filled.Build
+import androidx.compose.material.icons.filled.DeleteForever
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -27,6 +28,7 @@ fun SettingsScreen(viewModel: FriendViewModel) {
     var importTrigger by remember { mutableStateOf(false) }
     var importData by remember { mutableStateOf<String?>(null) }
     var showImportDialog by remember { mutableStateOf(false) }
+    var showDeleteAllDialog by remember { mutableStateOf(false) }
 
     FilePicker(
         trigger = importTrigger,
@@ -100,7 +102,7 @@ fun SettingsScreen(viewModel: FriendViewModel) {
                         contentColor = MaterialTheme.colorScheme.onPrimaryContainer
                     )
                 ) {
-                    Icon(Icons.Rounded.ShoppingCart, contentDescription = null)
+                    Icon(Icons.Default.Build, contentDescription = null)
                     Spacer(Modifier.width(8.dp))
                     Text("Purchase App (Remove Ads)")
                 }
@@ -110,7 +112,7 @@ fun SettingsScreen(viewModel: FriendViewModel) {
                     onClick = { platformUI.queryPurchases() },
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Icon(Icons.Rounded.ShoppingCart, contentDescription = null)
+                    Icon(Icons.Default.Build, contentDescription = null)
                     Spacer(Modifier.width(8.dp))
                     Text("Restore Purchases")
                 }
@@ -121,7 +123,7 @@ fun SettingsScreen(viewModel: FriendViewModel) {
                 onClick = { exportTrigger = true }, 
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Icon(Icons.Rounded.FileUpload, contentDescription = null)
+                Icon(Icons.Default.Share, contentDescription = null)
                 Spacer(Modifier.width(8.dp))
                 Text("Export Data")
             }
@@ -129,7 +131,7 @@ fun SettingsScreen(viewModel: FriendViewModel) {
             Spacer(Modifier.height(12.dp))
             
             OutlinedButton(onClick = { importTrigger = true }, modifier = Modifier.fillMaxWidth()) {
-                Icon(Icons.Rounded.FileDownload, contentDescription = null)
+                Icon(Icons.Default.ArrowDownward, contentDescription = null)
                 Spacer(Modifier.width(8.dp))
                 Text("Import Data")
             }
@@ -140,9 +142,24 @@ fun SettingsScreen(viewModel: FriendViewModel) {
                 onClick = { platformUI.sendEmail("CircleKeepApp@gmail.com") },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Icon(Icons.Rounded.Feedback, contentDescription = null)
+                Icon(Icons.Default.Email, contentDescription = null)
                 Spacer(Modifier.width(8.dp))
                 Text("Send Feedback")
+            }
+
+            if (platform.buildVariant == "Debug" || platform.buildVariant.isBlank()) {
+                Spacer(Modifier.height(12.dp))
+                OutlinedButton(
+                    onClick = { showDeleteAllDialog = true },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = MaterialTheme.colorScheme.error
+                    )
+                ) {
+                    Icon(Icons.Default.DeleteForever, contentDescription = null)
+                    Spacer(Modifier.width(8.dp))
+                    Text("Delete All Records")
+                }
             }
 
             Spacer(Modifier.weight(1f))
@@ -183,6 +200,32 @@ fun SettingsScreen(viewModel: FriendViewModel) {
             },
             dismissButton = {
                 TextButton(onClick = { showImportDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+
+    if (showDeleteAllDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteAllDialog = false },
+            title = { Text("Delete All Records") },
+            text = { Text("Are you sure you want to delete all friends, children, and groups? This action cannot be undone.") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.clearAllData()
+                        showDeleteAllDialog = false
+                    },
+                    colors = ButtonDefaults.textButtonColors(
+                        contentColor = MaterialTheme.colorScheme.error
+                    )
+                ) {
+                    Text("Delete All")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteAllDialog = false }) {
                     Text("Cancel")
                 }
             }

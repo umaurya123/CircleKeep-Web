@@ -4,6 +4,8 @@
 <dict>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
+	<key>CKBuildVariant</key>
+	<string>${CK_BUILD_VARIANT}</string>
 	<key>NSContactsUsageDescription</key>
 	<string>This app requires access to your contacts to import friend details.</string>
 	<key>NSPhotoLibraryUsageDescription</key>

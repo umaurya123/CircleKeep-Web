@@ -45,7 +45,7 @@ fun setPlatformProvider(provider: NativePlatformProvider) {
 }
 
 fun notifyPurchaseSuccess() {
-    MainScope().launch {
+    MainScope().launch(kotlinx.coroutines.Dispatchers.Main) {
         com.circlekeep.viewmodel.userPreferencesRepository.updateIsPaid(true)
     }
 }

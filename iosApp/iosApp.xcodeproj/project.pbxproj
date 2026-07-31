@@ -367,7 +367,7 @@
 				A67044D37E73BF587BB84C9E /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
+			defaultConfigurationName = Debug;
 		};
 		9188C90CB275F9506EF66B42 /* Build configuration list for PBXProject "iosApp" */ = {
 			isa = XCConfigurationList;
@@ -376,7 +376,7 @@
 				D2CF6BF24E103D03B5D482E9 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
+			defaultConfigurationName = Debug;
 		};
 /* End XCConfigurationList section */
 

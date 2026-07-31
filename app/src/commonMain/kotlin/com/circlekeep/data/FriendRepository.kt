@@ -52,6 +52,11 @@ class FriendRepository(private val friendDao: FriendDao) {
         }
     }
 
+    suspend fun clearAllData() {
+        friendDao.clearAllData()
+        initializeDefaultGroups()
+    }
+
     suspend fun initializeDefaultGroups() {
         try {
             val existingGroups = friendDao.getAllGroupsStream().first().map { it.name.lowercase() }

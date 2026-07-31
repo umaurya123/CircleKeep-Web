@@ -79,7 +79,10 @@ class IOSPlatform: Platform {
 
     override fun currentTimeMillis(): Long = (NSDate().timeIntervalSince1970 * 1000).toLong()
 
-    override val buildVariant: String = "Release"
+    override val buildVariant: String by lazy {
+        val variant = NSBundle.mainBundle.objectForInfoDictionaryKey("CKBuildVariant") as? String
+        if (variant.isNullOrBlank()) "Debug" else variant
+    }
 
     override val appVersion: String by lazy {
         NSBundle.mainBundle.objectForInfoDictionaryKey("CFBundleShortVersionString") as? String ?: "Unknown"
