@@ -147,7 +147,11 @@ fun SettingsScreen(viewModel: FriendViewModel) {
                 Text("Send Feedback")
             }
 
-            if (platform.buildVariant == "Debug" || platform.buildVariant.isBlank()) {
+            val isDebugOrBeta = platform.buildVariant.lowercase().let { it == "debug" || it == "beta" } || 
+                               platform.buildVariant.isBlank() || 
+                               platform.buildVariant == "Unknown"
+
+            if (isDebugOrBeta) {
                 Spacer(Modifier.height(12.dp))
                 OutlinedButton(
                     onClick = { showDeleteAllDialog = true },

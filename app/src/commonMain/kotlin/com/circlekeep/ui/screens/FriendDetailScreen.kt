@@ -304,24 +304,25 @@ fun FriendDetailScreen(
                                         }
                                     }
                                     Spacer(Modifier.width(12.dp))
-                                    val childDisplayName = buildString {
-                                        append(child.firstName)
-                                        if (child.middleName.isNotBlank()) append(" ${child.middleName}")
-                                        if (child.lastName.isNotBlank()) append(" ${child.lastName}")
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        val childDisplayName = buildString {
+                                            append(child.firstName)
+                                            if (child.middleName.isNotBlank()) append(" ${child.middleName}")
+                                            if (child.lastName.isNotBlank()) append(" ${child.lastName}")
+                                        }
+                                        Text(
+                                            text = childDisplayName,
+                                            style = MaterialTheme.typography.titleMedium
+                                        )
+                                        if (child.phoneNumber.isNotBlank()) {
+                                            DetailRow(Icons.Rounded.Phone, child.phoneNumber, onClick = {
+                                                platformUI.dialPhone(child.phoneNumber)
+                                            })
+                                        }
                                     }
-                                    Text(
-                                        text = childDisplayName,
-                                        style = MaterialTheme.typography.titleMedium,
-                                        modifier = Modifier.weight(1f)
-                                    )
                                     IconButton(onClick = { onEditClick(friendWithChildren.friend.id, child.id) }) {
                                         Icon(Icons.Rounded.Edit, contentDescription = "Edit")
                                     }
-                                }
-                                if (child.phoneNumber.isNotBlank()) {
-                                    DetailRow(Icons.Rounded.Phone, child.phoneNumber, onClick = {
-                                        platformUI.dialPhone(child.phoneNumber)
-                                    })
                                 }
                                 if (child.collegeSchoolName.isNotBlank()) {
                                     DetailRow(Icons.Rounded.School, child.collegeSchoolName)
@@ -408,6 +409,12 @@ fun FriendDetailScreen(
                                         DetailRow(Icons.Rounded.Phone, child.partnerPhone, onClick = {
                                             platformUI.dialPhone(child.partnerPhone)
                                         })
+                                    }
+                                    if (child.partnerCompanyName.isNotBlank()) {
+                                        DetailRow(Icons.Rounded.Business, child.partnerCompanyName, label = "Company")
+                                    }
+                                    if (child.partnerCollegeSchoolName.isNotBlank()) {
+                                        DetailRow(Icons.Rounded.School, child.partnerCollegeSchoolName, label = "College/School")
                                     }
                                     if (child.partnerEmail.isNotBlank()) {
                                         DetailRow(Icons.Rounded.Email, child.partnerEmail, onClick = {

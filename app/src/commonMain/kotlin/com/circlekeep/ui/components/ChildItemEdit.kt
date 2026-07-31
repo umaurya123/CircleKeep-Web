@@ -380,9 +380,37 @@ fun ChildItemEdit(
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone)
                         )
                         OutlinedTextField(
+                            value = child.partnerEmail, 
+                            onValueChange = { onChildChange(child.copy(partnerEmail = it)) }, 
+                            label = { Text("Partner Email") }, 
+                            modifier = Modifier.fillMaxWidth(), 
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
+                        )
+                        OutlinedTextField(
+                            value = child.partnerWorkEmail, 
+                            onValueChange = { onChildChange(child.copy(partnerWorkEmail = it)) }, 
+                            label = { Text("Partner Work Email") }, 
+                            modifier = Modifier.fillMaxWidth(), 
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
+                        )
+                        OutlinedTextField(
                             value = child.partnerSiblings, 
                             onValueChange = { onChildChange(child.copy(partnerSiblings = it)) }, 
                             label = { Text("Siblings") }, 
+                            modifier = Modifier.fillMaxWidth(),
+                            keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words)
+                        )
+                        OutlinedTextField(
+                            value = child.partnerCompanyName,
+                            onValueChange = { onChildChange(child.copy(partnerCompanyName = it)) },
+                            label = { Text("Company Name") },
+                            modifier = Modifier.fillMaxWidth(),
+                            keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words)
+                        )
+                        OutlinedTextField(
+                            value = child.partnerCollegeSchoolName,
+                            onValueChange = { onChildChange(child.copy(partnerCollegeSchoolName = it)) },
+                            label = { Text("College Name") },
                             modifier = Modifier.fillMaxWidth(),
                             keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words)
                         )

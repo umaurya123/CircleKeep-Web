@@ -41,6 +41,8 @@ data class Child(
     val partnerEmail: String = "",
     val partnerWorkEmail: String = "",
     val partnerType: String = "",
+    val partnerCompanyName: String = "",
+    val partnerCollegeSchoolName: String = "",
     val partnerImageUri: String? = null,
     val partnerSiblings: String = "",
     val partnerDateOfBirth: String = "",
