@@ -64,6 +64,7 @@ data class ChildBackup(
     val email: String = "",
     val workEmail: String = "",
     val lastName: String = "",
+    val siblings: String = "",
     val collegeSchoolName: String = "",
     val dateOfBirth: String = "",
     val birthDay: String = "",

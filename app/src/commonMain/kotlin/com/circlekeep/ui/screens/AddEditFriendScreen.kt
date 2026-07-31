@@ -234,6 +234,7 @@ fun AddEditFriendScreen(
                                     cellPhone = cellPhone,
                                     officePhone = officePhone,
                                     email = email,
+                                    workEmail = workEmail,
                                     partnerFirstName = partnerFirstName,
                                     partnerMiddleName = partnerMiddleName,
                                     partnerLastName = partnerLastName,
@@ -653,6 +654,10 @@ fun AddEditFriendScreen(
                         onPartnerLastNameChange = { partnerLastName = it },
                         partnerPhone = partnerPhone,
                         onPartnerPhoneChange = { partnerPhone = it },
+                        partnerEmail = partnerEmail,
+                        onPartnerEmailChange = { partnerEmail = it },
+                        partnerWorkEmail = partnerWorkEmail,
+                        onPartnerWorkEmailChange = { partnerWorkEmail = it },
                         partnerDateOfBirth = partnerDateOfBirth,
                         onPartnerDateOfBirthChange = {
                             partnerDateOfBirth = it

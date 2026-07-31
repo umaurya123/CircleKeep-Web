@@ -38,6 +38,10 @@ fun PartnerSectionEdit(
     onPartnerLastNameChange: (String) -> Unit,
     partnerPhone: String,
     onPartnerPhoneChange: (String) -> Unit,
+    partnerEmail: String,
+    onPartnerEmailChange: (String) -> Unit,
+    partnerWorkEmail: String,
+    onPartnerWorkEmailChange: (String) -> Unit,
     partnerDateOfBirth: String,
     onPartnerDateOfBirthChange: (String) -> Unit,
     partnerBirthDay: String,
@@ -139,6 +143,28 @@ fun PartnerSectionEdit(
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Phone,
+                    imeAction = ImeAction.Next
+                )
+            )
+            OutlinedTextField(
+                value = partnerEmail,
+                onValueChange = onPartnerEmailChange,
+                label = { Text("Email") },
+                modifier = modifier,
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Email,
+                    imeAction = ImeAction.Next
+                )
+            )
+            OutlinedTextField(
+                value = partnerWorkEmail,
+                onValueChange = onPartnerWorkEmailChange,
+                label = { Text("Work Email") },
+                modifier = modifier,
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Email,
                     imeAction = ImeAction.Next
                 )
             )

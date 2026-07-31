@@ -120,6 +120,11 @@ fun FriendDetailScreen(
                                     color = MaterialTheme.colorScheme.secondary
                                 )
                             }
+                            if (friendWithChildren.friend.cellPhone.isNotBlank()) {
+                                DetailRow(Icons.Rounded.Phone, friendWithChildren.friend.cellPhone, onClick = {
+                                    platformUI.dialPhone(friendWithChildren.friend.cellPhone)
+                                })
+                            }
                         }
                     }
                 }
@@ -128,15 +133,17 @@ fun FriendDetailScreen(
                     DetailRow(Icons.Rounded.LocationOn, friendWithChildren.friend.address, onClick = {
                         platformUI.openMap(friendWithChildren.friend.address)
                     })
-                    DetailRow(Icons.Rounded.Phone, friendWithChildren.friend.cellPhone, onClick = {
-                        platformUI.dialPhone(friendWithChildren.friend.cellPhone)
-                    })
                     DetailRow(Icons.Rounded.Work, friendWithChildren.friend.officePhone, onClick = {
                         platformUI.dialPhone(friendWithChildren.friend.officePhone)
                     })
                     DetailRow(Icons.Rounded.Email, friendWithChildren.friend.email, onClick = {
                         platformUI.sendEmail(friendWithChildren.friend.email)
                     })
+                    if (friendWithChildren.friend.workEmail.isNotBlank()) {
+                        DetailRow(Icons.Rounded.Email, friendWithChildren.friend.workEmail, label = "Work Email", onClick = {
+                            platformUI.sendEmail(friendWithChildren.friend.workEmail)
+                        })
+                    }
                     DetailRow(Icons.Rounded.Cake, platform.formatDisplayDate(friendWithChildren.friend.dateOfBirth), label = buildString {
                         append("DOB")
                         platform.calculateAge(friendWithChildren.friend.dateOfBirth)?.let { append(" ($it yrs)") }
@@ -229,6 +236,22 @@ fun FriendDetailScreen(
                                         }
                                     }
                                 }
+                                if (friendWithChildren.friend.partnerCompanyName.isNotBlank()) {
+                                    DetailRow(Icons.Rounded.Business, friendWithChildren.friend.partnerCompanyName, label = "Company")
+                                }
+                                if (friendWithChildren.friend.partnerCollegeSchoolName.isNotBlank()) {
+                                    DetailRow(Icons.Rounded.School, friendWithChildren.friend.partnerCollegeSchoolName, label = "College/School")
+                                }
+                                if (friendWithChildren.friend.partnerEmail.isNotBlank()) {
+                                    DetailRow(Icons.Rounded.Email, friendWithChildren.friend.partnerEmail, onClick = {
+                                        platformUI.sendEmail(friendWithChildren.friend.partnerEmail)
+                                    })
+                                }
+                                if (friendWithChildren.friend.partnerWorkEmail.isNotBlank()) {
+                                    DetailRow(Icons.Rounded.Email, friendWithChildren.friend.partnerWorkEmail, label = "Work Email", onClick = {
+                                        platformUI.sendEmail(friendWithChildren.friend.partnerWorkEmail)
+                                    })
+                                }
                                 if (friendWithChildren.friend.partnerDateOfBirth.isNotBlank()) {
                                     DetailRow(
                                         icon = Icons.Rounded.Cake,
@@ -295,12 +318,22 @@ fun FriendDetailScreen(
                                         Icon(Icons.Rounded.Edit, contentDescription = "Edit")
                                     }
                                 }
-                                if (child.collegeSchoolName.isNotBlank()) {
-                                    DetailRow(Icons.Rounded.School, child.collegeSchoolName)
-                                }
                                 if (child.phoneNumber.isNotBlank()) {
                                     DetailRow(Icons.Rounded.Phone, child.phoneNumber, onClick = {
                                         platformUI.dialPhone(child.phoneNumber)
+                                    })
+                                }
+                                if (child.collegeSchoolName.isNotBlank()) {
+                                    DetailRow(Icons.Rounded.School, child.collegeSchoolName)
+                                }
+                                if (child.email.isNotBlank()) {
+                                    DetailRow(Icons.Rounded.Email, child.email, onClick = {
+                                        platformUI.sendEmail(child.email)
+                                    })
+                                }
+                                if (child.workEmail.isNotBlank()) {
+                                    DetailRow(Icons.Rounded.Email, child.workEmail, label = "Work Email", onClick = {
+                                        platformUI.sendEmail(child.workEmail)
                                     })
                                 }
                                 if (child.dateOfBirth.isNotBlank()) {
@@ -323,6 +356,23 @@ fun FriendDetailScreen(
                                             label = "Age"
                                         )
                                     }
+                                }
+                                
+                                if (child.siblings.isNotBlank()) {
+                                    DetailRow(Icons.Rounded.People, child.siblings, label = "Siblings")
+                                }
+                                
+                                if (child.petName.isNotBlank()) {
+                                    DetailRow(Icons.Rounded.Pets, child.petName, label = "Pet Name")
+                                    if (child.petImageUri != null) {
+                                        Card(modifier = Modifier.padding(start = 44.dp, top = 4.dp, bottom = 8.dp).size(80.dp)) {
+                                            AsyncImage(model = child.petImageUri, contentDescription = null, modifier = Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
+                                        }
+                                    }
+                                }
+                                
+                                if (child.notes.isNotBlank()) {
+                                    DetailRow(Icons.AutoMirrored.Rounded.Notes, child.notes)
                                 }
                                 
                                 if (child.partnerFirstName.isNotBlank()) {
@@ -359,6 +409,16 @@ fun FriendDetailScreen(
                                             platformUI.dialPhone(child.partnerPhone)
                                         })
                                     }
+                                    if (child.partnerEmail.isNotBlank()) {
+                                        DetailRow(Icons.Rounded.Email, child.partnerEmail, onClick = {
+                                            platformUI.sendEmail(child.partnerEmail)
+                                        })
+                                    }
+                                    if (child.partnerWorkEmail.isNotBlank()) {
+                                        DetailRow(Icons.Rounded.Email, child.partnerWorkEmail, label = "Work Email", onClick = {
+                                            platformUI.sendEmail(child.partnerWorkEmail)
+                                        })
+                                    }
                                     if (child.partnerDateOfBirth.isNotBlank()) {
                                         DetailRow(
                                             icon = Icons.Rounded.Cake,
@@ -378,19 +438,6 @@ fun FriendDetailScreen(
                                     if (child.partnerSiblings.isNotBlank()) {
                                         DetailRow(Icons.Rounded.People, child.partnerSiblings, label = "Siblings")
                                     }
-                                }
-                                
-                                if (child.petName.isNotBlank()) {
-                                    DetailRow(Icons.Rounded.Pets, child.petName, label = "Pet Name")
-                                    if (child.petImageUri != null) {
-                                        Card(modifier = Modifier.padding(start = 44.dp, top = 4.dp, bottom = 8.dp).size(80.dp)) {
-                                            AsyncImage(model = child.petImageUri, contentDescription = null, modifier = Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
-                                        }
-                                    }
-                                }
-                                
-                                if (child.notes.isNotBlank()) {
-                                    Text(child.notes, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
                                 }
                             }
                         }

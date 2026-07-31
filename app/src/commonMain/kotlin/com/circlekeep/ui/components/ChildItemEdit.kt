@@ -246,6 +246,78 @@ fun ChildItemEdit(
                     }
                 }
 
+                OutlinedTextField(
+                    value = child.workEmail, 
+                    onValueChange = { onChildChange(child.copy(workEmail = it)) }, 
+                    label = { Text("Work Email") }, 
+                    modifier = modifier, 
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Email,
+                        imeAction = ImeAction.Next
+                    )
+                )
+                OutlinedTextField(
+                    value = child.siblings, 
+                    onValueChange = { onChildChange(child.copy(siblings = it)) }, 
+                    label = { Text("Siblings") }, 
+                    modifier = modifier,
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(
+                        capitalization = KeyboardCapitalization.Words,
+                        imeAction = ImeAction.Next
+                    )
+                )
+                OutlinedTextField(
+                    value = child.notes, 
+                    onValueChange = { onChildChange(child.copy(notes = it)) }, 
+                    label = { Text("Notes") }, 
+                    modifier = modifier
+                        .heightIn(max = 200.dp)
+                        .verticalScroll(rememberScrollState()),
+                    minLines = 3,
+                    keyboardOptions = KeyboardOptions(
+                        capitalization = KeyboardCapitalization.Sentences,
+                        imeAction = ImeAction.Next
+                    )
+                )
+
+                Spacer(Modifier.height(8.dp))
+                OutlinedTextField(
+                    value = child.petName,
+                    onValueChange = { onChildChange(child.copy(petName = it)) },
+                    label = { Text("Pet Name") },
+                    modifier = modifier,
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(
+                        capitalization = KeyboardCapitalization.Words,
+                        imeAction = ImeAction.Done
+                    )
+                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Surface(
+                        modifier = Modifier.size(48.dp).clip(CircleShape).clickable { onSelectPetImage() },
+                        color = MaterialTheme.colorScheme.surfaceVariant
+                    ) {
+                        if (child.petImageUri != null) {
+                            AsyncImage(model = child.petImageUri, contentDescription = null, modifier = Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
+                        } else {
+                            Icon(Icons.Rounded.Pets, contentDescription = null, modifier = Modifier.padding(8.dp))
+                        }
+                    }
+                    Spacer(Modifier.width(12.dp))
+                    Row {
+                        TextButton(onClick = { onSelectPetImage() }) {
+                            Text("Select Pet Image", style = MaterialTheme.typography.labelSmall)
+                        }
+                        if (child.petImageUri != null) {
+                            TextButton(onClick = { onChildChange(child.copy(petImageUri = null)) }) {
+                                Text("Remove Image", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.labelSmall)
+                            }
+                        }
+                    }
+                }
+
                 Spacer(Modifier.height(8.dp))
                 Text("Child's Partner", style = MaterialTheme.typography.labelLarge)
                 Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
@@ -393,56 +465,6 @@ fun ChildItemEdit(
                         supportingText = { if (!isAnniversaryValid) Text("Invalid day") }
                     )
                     MonthDropdown(value = child.anniversaryMonth, onValueChange = { onChildChange(child.copy(anniversaryMonth = it)) }, modifier = Modifier.weight(0.6f))
-                }
-
-                OutlinedTextField(
-                    value = child.notes, 
-                    onValueChange = { onChildChange(child.copy(notes = it)) }, 
-                    label = { Text("Notes") }, 
-                    modifier = modifier
-                        .heightIn(max = 200.dp)
-                        .verticalScroll(rememberScrollState()),
-                    minLines = 3,
-                    keyboardOptions = KeyboardOptions(
-                        capitalization = KeyboardCapitalization.Sentences,
-                        imeAction = ImeAction.Next
-                    )
-                )
-
-                Spacer(Modifier.height(8.dp))
-                OutlinedTextField(
-                    value = child.petName,
-                    onValueChange = { onChildChange(child.copy(petName = it)) },
-                    label = { Text("Pet Name") },
-                    modifier = modifier,
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(
-                        capitalization = KeyboardCapitalization.Words,
-                        imeAction = ImeAction.Done
-                    )
-                )
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Surface(
-                        modifier = Modifier.size(48.dp).clip(CircleShape).clickable { onSelectPetImage() },
-                        color = MaterialTheme.colorScheme.surfaceVariant
-                    ) {
-                        if (child.petImageUri != null) {
-                            AsyncImage(model = child.petImageUri, contentDescription = null, modifier = Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
-                        } else {
-                            Icon(Icons.Rounded.Pets, contentDescription = null, modifier = Modifier.padding(8.dp))
-                        }
-                    }
-                    Spacer(Modifier.width(12.dp))
-                    Row {
-                        TextButton(onClick = { onSelectPetImage() }) {
-                            Text("Select Pet Image", style = MaterialTheme.typography.labelSmall)
-                        }
-                        if (child.petImageUri != null) {
-                            TextButton(onClick = { onChildChange(child.copy(petImageUri = null)) }) {
-                                Text("Remove Image", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.labelSmall)
-                            }
-                        }
-                    }
                 }
             }
             

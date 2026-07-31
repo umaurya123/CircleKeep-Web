@@ -234,19 +234,17 @@ actual fun ContactPicker(
                         addressValue, companyName, notes, dob, ""
                     )
                     
+                    onTriggerReset()
                     dispatch_async(dispatch_get_main_queue()) {
-                        picker.dismissViewControllerAnimated(true) {
-                            onTriggerReset()
-                        }
+                        picker.dismissViewControllerAnimated(true, null)
                     }
                 }
 
                 override fun contactPickerDidCancel(picker: CNContactPickerViewController) {
+                    onCancel()
+                    onTriggerReset()
                     dispatch_async(dispatch_get_main_queue()) {
-                        picker.dismissViewControllerAnimated(true) {
-                            onCancel()
-                            onTriggerReset()
-                        }
+                        picker.dismissViewControllerAnimated(true, null)
                     }
                 }
             }
@@ -299,17 +297,15 @@ actual fun ImagePicker(
                     }
                     
                     dispatch_async(dispatch_get_main_queue()) {
-                        picker.dismissViewControllerAnimated(true) {
-                            onTriggerReset()
-                        }
+                        picker.dismissViewControllerAnimated(true, null)
+                        onTriggerReset()
                     }
                 }
 
                 override fun imagePickerControllerDidCancel(picker: UIImagePickerController) {
                     dispatch_async(dispatch_get_main_queue()) {
-                        picker.dismissViewControllerAnimated(true) {
-                            onTriggerReset()
-                        }
+                        picker.dismissViewControllerAnimated(true, null)
+                        onTriggerReset()
                     }
                 }
             }
@@ -473,17 +469,15 @@ actual fun FilePicker(
                     }
                     
                     dispatch_async(dispatch_get_main_queue()) {
-                        controller.dismissViewControllerAnimated(true) {
-                            onTriggerReset()
-                        }
+                        controller.dismissViewControllerAnimated(true, null)
+                        onTriggerReset()
                     }
                 }
 
                 override fun documentPickerWasCancelled(controller: UIDocumentPickerViewController) {
                     dispatch_async(dispatch_get_main_queue()) {
-                        controller.dismissViewControllerAnimated(true) {
-                            onTriggerReset()
-                        }
+                        controller.dismissViewControllerAnimated(true, null)
+                        onTriggerReset()
                     }
                 }
             }
