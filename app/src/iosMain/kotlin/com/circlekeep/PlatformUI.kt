@@ -38,14 +38,16 @@ interface NativePlatformProvider {
     fun queryPurchases()
 }
 
-private var platformProvider: NativePlatformProvider? = null
+private val platformProviderState = mutableStateOf<NativePlatformProvider?>(null)
+
+private val platformScope = MainScope()
 
 fun setPlatformProvider(provider: NativePlatformProvider) {
-    platformProvider = provider
+    platformProviderState.value = provider
 }
 
 fun notifyPurchaseSuccess() {
-    MainScope().launch(kotlinx.coroutines.Dispatchers.Main) {
+    platformScope.launch {
         com.circlekeep.viewmodel.userPreferencesRepository.updateIsPaid(true)
     }
 }
@@ -97,7 +99,7 @@ class IOSPlatformUI : PlatformUI {
     }
 
     override fun showInterstitialAd(onAdDismissed: () -> Unit) {
-        val provider = platformProvider
+        val provider = platformProviderState.value
         if (provider != null) {
             provider.showInterstitialAd(onAdDismissed)
         } else {
@@ -108,11 +110,11 @@ class IOSPlatformUI : PlatformUI {
     override fun exitApp() {}
 
     override fun launchPurchaseFlow(productId: String) {
-        platformProvider?.launchPurchaseFlow(productId)
+        platformProviderState.value?.launchPurchaseFlow(productId)
     }
 
     override fun queryPurchases() {
-        platformProvider?.queryPurchases()
+        platformProviderState.value?.queryPurchases()
     }
 
     companion object {
@@ -330,10 +332,11 @@ actual fun ImagePicker(
 
 @Composable
 actual fun BannerAdView() {
-    val provider = platformProvider
+    val provider by platformProviderState
+    
     if (provider != null) {
         UIKitView(
-            factory = { provider.getBannerView() },
+            factory = { provider!!.getBannerView() },
             modifier = Modifier.fillMaxWidth().height(50.dp)
         )
     } else {
