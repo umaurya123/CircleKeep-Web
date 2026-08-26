@@ -42,6 +42,14 @@ private val platformProviderState = mutableStateOf<NativePlatformProvider?>(null
 
 private val platformScope = MainScope()
 
+private var internalBuildVariant: String = "Release"
+
+fun setBuildVariant(variant: String) {
+    internalBuildVariant = variant
+}
+
+fun getBuildVariant(): String = internalBuildVariant
+
 fun setPlatformProvider(provider: NativePlatformProvider) {
     platformProviderState.value = provider
 }

@@ -7,6 +7,12 @@ class AppDependencyManager: ObservableObject {
     var adsProvider: PlatformProviderImpl?
 
     init() {
+        #if DEBUG
+        PlatformUIKt.setBuildVariant(variant: "Debug")
+        #else
+        PlatformUIKt.setBuildVariant(variant: "Release")
+        #endif
+        
         self.adsProvider = PlatformProviderImpl(onPurchaseSuccess: {
             PlatformUIKt.notifyPurchaseSuccess()
         })
@@ -14,7 +20,6 @@ class AppDependencyManager: ObservableObject {
 
     func start() {
         // Request tracking authorization before initializing ads
-        // We use dispatch_after to give the app a moment to finish launching
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
             ATTrackingManager.requestTrackingAuthorization { status in
                 // Crucial: Execute UI/SDK initialization on the Main Thread
@@ -33,11 +38,6 @@ class AppDependencyManager: ObservableObject {
 @main
 struct iOSApp: App {
     @StateObject private var dependencyManager = AppDependencyManager()
-
-    init() {
-        // We call start() in init or onAppear. 
-        // Calling it here is safe because dependencyManager is a StateObject (reference type).
-    }
 
     var body: some Scene {
         WindowGroup {

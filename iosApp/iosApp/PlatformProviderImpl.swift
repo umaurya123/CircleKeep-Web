@@ -9,6 +9,7 @@ class PlatformProviderImpl: NSObject, NativePlatformProvider, FullScreenContentD
     private var interstitial: InterstitialAd?
     private var onInterstitialDismissed: (() -> Void)?
     private var onPurchaseSuccess: (() -> Void)?
+    private let platformUI = IOSPlatformUI()
 
     init(onPurchaseSuccess: @escaping () -> Void) {
         self.onPurchaseSuccess = onPurchaseSuccess
@@ -59,42 +60,53 @@ class PlatformProviderImpl: NSObject, NativePlatformProvider, FullScreenContentD
         Task {
             do {
                 let products = try await Product.products(for: [productId])
-                if let product = products.first {
-                    let result = try await product.purchase()
-                    switch result {
-                    case .success(let verification):
-                        switch verification {
-                        case .verified(let transaction):
-                            await transaction.finish()
-                            onPurchaseSuccess?()
-                        case .unverified:
-                            print("Transaction unverified")
-                        }
-                    case .userCancelled:
-                        print("User cancelled")
-                    case .pending:
-                        print("Purchase pending")
-                    @unknown default:
-                        break
+                guard let product = products.first else {
+                    platformUI.showToast(message: "Product '\(productId)' not found in App Store.")
+                    return
+                }
+                
+                let result = try await product.purchase()
+                switch result {
+                case .success(let verification):
+                    switch verification {
+                    case .verified(let transaction):
+                        await transaction.finish()
+                        platformUI.showToast(message: "Purchase successful!")
+                        onPurchaseSuccess?()
+                    case .unverified:
+                        platformUI.showToast(message: "Transaction verification failed.")
                     }
+                case .userCancelled:
+                    print("User cancelled")
+                case .pending:
+                    platformUI.showToast(message: "Purchase is pending approval.")
+                @unknown default:
+                    break
                 }
             } catch {
-                print("Failed to purchase: \(error.localizedDescription)")
+                platformUI.showToast(message: "Error: \(error.localizedDescription)")
             }
         }
     }
 
     func queryPurchases() {
         Task {
+            var found = false
             for await result in Transaction.currentEntitlements {
                 switch result {
                 case .verified(let transaction):
                     if transaction.productID == "pro_upgrade" {
+                        found = true
                         onPurchaseSuccess?()
                     }
                 case .unverified:
                     break
                 }
+            }
+            if found {
+                platformUI.showToast(message: "Purchases restored successfully.")
+            } else {
+                platformUI.showToast(message: "No previous purchases found.")
             }
         }
     }

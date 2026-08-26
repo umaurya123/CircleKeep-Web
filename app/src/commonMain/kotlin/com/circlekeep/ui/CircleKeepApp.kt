@@ -56,30 +56,38 @@ fun CircleKeepApp() {
                 else -> Destination.Home
             }
 
+            val showBottomBar = remember(currentRoute) {
+                !currentRoute.contains("FriendDetail") && 
+                !currentRoute.contains("AddFriend") && 
+                !currentRoute.contains("EditFriend")
+            }
+
             Scaffold(
                 modifier = Modifier.fillMaxSize(),
                 bottomBar = {
-                    val friends by viewModel.friendsState.collectAsState()
-                    
-                    Column(modifier = Modifier.fillMaxWidth()) {
-                        if (!isPaid) {
-                            BannerAdView()
-                        }
-                        CircleKeepBottomBar(
-                            currentDestination = barDestination,
-                            friendCount = friends.size,
-                            favoriteCount = friends.count { it.friend.isFavorite },
-                            onNavigate = { destination ->
-                                if (destination == Destination.Home && barDestination == Destination.Home) {
-                                    viewModel.clearFilters()
-                                }
-                                navController.navigate(destination) {
-                                    popUpTo(Destination.Home) { saveState = true }
-                                    launchSingleTop = true
-                                    restoreState = true
-                                }
+                    if (showBottomBar) {
+                        val friends by viewModel.friendsState.collectAsState()
+                        
+                        Column(modifier = Modifier.fillMaxWidth()) {
+                            if (!isPaid) {
+                                BannerAdView()
                             }
-                        )
+                            CircleKeepBottomBar(
+                                currentDestination = barDestination,
+                                friendCount = friends.size,
+                                favoriteCount = friends.count { it.friend.isFavorite },
+                                onNavigate = { destination ->
+                                    if (destination == Destination.Home && barDestination == Destination.Home) {
+                                        viewModel.clearFilters()
+                                    }
+                                    navController.navigate(destination) {
+                                        popUpTo(Destination.Home) { saveState = true }
+                                        launchSingleTop = true
+                                        restoreState = true
+                                    }
+                                }
+                            )
+                        }
                     }
                 },
                 contentWindowInsets = WindowInsets(0, 0, 0, 0)
