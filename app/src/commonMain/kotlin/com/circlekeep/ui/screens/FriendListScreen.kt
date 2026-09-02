@@ -1,7 +1,11 @@
 package com.circlekeep.ui.screens
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.Sort
@@ -15,137 +19,350 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.circlekeep.data.Friend
 import com.circlekeep.data.FriendWithChildren
+import com.circlekeep.data.Group
 import com.circlekeep.viewmodel.SortOrder
 import com.circlekeep.ui.components.FriendItem
+import com.circlekeep.LocalPlatformUI
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
 fun FriendListScreen(
     friends: List<FriendWithChildren>,
+    groups: List<Group>,
+    activeGroups: Set<String>,
     searchQuery: String,
-    selectedGroup: String?,
+    selectedGroups: Set<String>,
+    groupFilterMode: String,
+    onGroupFilterModeChange: (String) -> Unit,
+    onGroupSelected: (String) -> Unit,
+    onSetGroups: (Set<String>) -> Unit,
+    onGroupClear: () -> Unit,
+    onSetDefaultGroups: (Set<String>) -> Unit,
     currentSortOrder: SortOrder,
     showInlineData: Boolean,
     onSearchQueryChange: (String) -> Unit,
-    onSelectedGroupChange: (String?) -> Unit,
     onSortChange: (SortOrder) -> Unit,
     onToggleInline: () -> Unit,
     onFriendClick: (Long) -> Unit,
     onEditFriendClick: (Long, Long?) -> Unit,
     onAddFriendClick: () -> Unit,
     onToggleFavorite: (Friend) -> Unit,
-    onTogglePin: (Friend) -> Unit
+    onTogglePin: (Friend) -> Unit,
+    onDeleteFriends: (Set<Long>) -> Unit,
+    onNavigateToSettings: () -> Unit
 ) {
     var showSortMenu by remember { mutableStateOf(false) }
+    var showMoreMenu by remember { mutableStateOf(false) }
+    var selectedFriendIds by remember { mutableStateOf(setOf<Long>()) }
+    val selectionMode = selectedFriendIds.isNotEmpty()
+    val platformUI = LocalPlatformUI.current
+    
+    var isGroupMultiSelectMode by remember { mutableStateOf(selectedGroups.size > 1) }
+    
+    // Sync mode when groups are loaded or changed
+    LaunchedEffect(selectedGroups) {
+        if (selectedGroups.size > 1) {
+            isGroupMultiSelectMode = true
+        } else if (selectedGroups.isEmpty()) {
+            isGroupMultiSelectMode = false
+        }
+    }
+
+    // Ensure all active groups are shown, and preserve order from groups list
+    val filteredGroups = remember(groups, activeGroups) {
+        groups.filter { group ->
+            activeGroups.contains(group.name.trim())
+        }
+    }
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = {
-                    if (selectedGroup != null) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text("$selectedGroup (${friends.size})", style = MaterialTheme.typography.titleLarge)
-                            IconButton(onClick = { onSelectedGroupChange(null) }) {
-                                Icon(Icons.Rounded.Close, contentDescription = "Clear Filter")
+            Column(modifier = Modifier.background(MaterialTheme.colorScheme.surface)) {
+                TopAppBar(
+                    title = {
+                        if (selectionMode) {
+                            Text("${selectedFriendIds.size} selected")
+                        } else {
+                            TextField(
+                                value = searchQuery,
+                                onValueChange = onSearchQueryChange,
+                                placeholder = { Text("Search (${friends.size})") },
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = TextFieldDefaults.colors(
+                                    focusedContainerColor = Color.Transparent,
+                                    unfocusedContainerColor = Color.Transparent,
+                                    focusedIndicatorColor = Color.Transparent,
+                                    unfocusedIndicatorColor = Color.Transparent
+                                ),
+                                singleLine = true,
+                                leadingIcon = { Icon(Icons.Rounded.Search, contentDescription = null) },
+                                trailingIcon = {
+                                    if (searchQuery.isNotBlank()) {
+                                        IconButton(onClick = { onSearchQueryChange("") }) {
+                                            Icon(Icons.Rounded.Clear, contentDescription = "Clear search")
+                                        }
+                                    }
+                                }
+                            )
+                        }
+                    },
+                    navigationIcon = {
+                        if (selectionMode) {
+                            IconButton(onClick = { selectedFriendIds = emptySet() }) {
+                                Icon(Icons.Rounded.Close, contentDescription = "Clear selection")
                             }
                         }
-                    } else {
-                        TextField(
-                            value = searchQuery,
-                            onValueChange = onSearchQueryChange,
-                            placeholder = { Text("Search (${friends.size})") },
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = TextFieldDefaults.colors(
-                                focusedContainerColor = Color.Transparent,
-                                unfocusedContainerColor = Color.Transparent
-                            ),
-                            singleLine = true,
-                            leadingIcon = { Icon(Icons.Rounded.Search, contentDescription = null) }
-                        )
-                    }
-                },
-                actions = {
-                    IconButton(onClick = onToggleInline) {
-                        Icon(
-                            imageVector = if (showInlineData) Icons.Rounded.ViewStream else Icons.AutoMirrored.Rounded.ViewList,
-                            contentDescription = "Toggle Inline"
-                        )
-                    }
-                    Box {
-                        IconButton(onClick = { showSortMenu = true }) {
-                            Icon(Icons.AutoMirrored.Rounded.Sort, contentDescription = "Sort")
+                    },
+                    actions = {
+                        if (selectionMode) {
+                            IconButton(onClick = { 
+                                onDeleteFriends(selectedFriendIds)
+                                selectedFriendIds = emptySet()
+                            }) {
+                                Icon(Icons.Rounded.Delete, contentDescription = "Delete selected")
+                            }
+                        } else {
+                            IconButton(onClick = onToggleInline) {
+                                Icon(
+                                    imageVector = if (showInlineData) Icons.Rounded.ViewStream else Icons.AutoMirrored.Rounded.ViewList,
+                                    contentDescription = "Toggle Inline"
+                                )
+                            }
+                            Box {
+                                IconButton(onClick = { showSortMenu = true }) {
+                                    Icon(Icons.AutoMirrored.Rounded.Sort, contentDescription = "Sort")
+                                }
+                                DropdownMenu(
+                                    expanded = showSortMenu,
+                                    onDismissRequest = { showSortMenu = false }
+                                ) {
+                                    DropdownMenuItem(
+                                        text = { Text("First, Last Name") },
+                                        leadingIcon = { if (currentSortOrder == SortOrder.FIRST_LAST_NAME) Icon(Icons.Rounded.Check, contentDescription = null) },
+                                        onClick = {
+                                            onSortChange(SortOrder.FIRST_LAST_NAME)
+                                            showSortMenu = false
+                                        }
+                                    )
+                                    DropdownMenuItem(
+                                        text = { Text("Last, First Name") },
+                                        leadingIcon = { if (currentSortOrder == SortOrder.LAST_FIRST_NAME) Icon(Icons.Rounded.Check, contentDescription = null) },
+                                        onClick = {
+                                            onSortChange(SortOrder.LAST_FIRST_NAME)
+                                            showSortMenu = false
+                                        }
+                                    )
+                                    DropdownMenuItem(
+                                        text = { Text("Group") },
+                                        leadingIcon = { if (currentSortOrder == SortOrder.GROUP) Icon(Icons.Rounded.Check, contentDescription = null) },
+                                        onClick = {
+                                            onSortChange(SortOrder.GROUP)
+                                            showSortMenu = false
+                                        }
+                                    )
+                                    DropdownMenuItem(
+                                        text = { Text("Birthday") },
+                                        leadingIcon = { if (currentSortOrder == SortOrder.BIRTHDAY) Icon(Icons.Rounded.Check, contentDescription = null) },
+                                        onClick = {
+                                            onSortChange(SortOrder.BIRTHDAY)
+                                            showSortMenu = false
+                                        }
+                                    )
+                                    DropdownMenuItem(
+                                        text = { Text("Marriage Anniversary") },
+                                        leadingIcon = { if (currentSortOrder == SortOrder.MARRIAGE_ANNIVERSARY) Icon(Icons.Rounded.Check, contentDescription = null) },
+                                        onClick = {
+                                            onSortChange(SortOrder.MARRIAGE_ANNIVERSARY)
+                                            showSortMenu = false
+                                        }
+                                    )
+                                    DropdownMenuItem(
+                                        text = { Text("Creation Date") },
+                                        leadingIcon = { if (currentSortOrder == SortOrder.CREATION_DATE) Icon(Icons.Rounded.Check, contentDescription = null) },
+                                        onClick = {
+                                            onSortChange(SortOrder.CREATION_DATE)
+                                            showSortMenu = false
+                                        }
+                                    )
+                                    DropdownMenuItem(
+                                        text = { Text("Last Modified") },
+                                        leadingIcon = { if (currentSortOrder == SortOrder.LAST_MODIFIED) Icon(Icons.Rounded.Check, contentDescription = null) },
+                                        onClick = {
+                                            onSortChange(SortOrder.LAST_MODIFIED)
+                                            showSortMenu = false
+                                        }
+                                    )
+                                }
+                            }
+                            Box {
+                                IconButton(onClick = { showMoreMenu = true }) {
+                                    Icon(Icons.Rounded.MoreVert, contentDescription = "More options")
+                                }
+                                DropdownMenu(
+                                    expanded = showMoreMenu,
+                                    onDismissRequest = { showMoreMenu = false }
+                                ) {
+                                    DropdownMenuItem(
+                                        text = { Text("Settings") },
+                                        leadingIcon = { Icon(Icons.Rounded.Settings, contentDescription = null) },
+                                        onClick = {
+                                            showMoreMenu = false
+                                            onNavigateToSettings()
+                                        }
+                                    )
+                                }
+                            }
                         }
-                        DropdownMenu(
-                            expanded = showSortMenu,
-                            onDismissRequest = { showSortMenu = false }
-                        ) {
-                            DropdownMenuItem(
-                                text = { Text("First, Last Name") },
-                                leadingIcon = { if (currentSortOrder == SortOrder.FIRST_LAST_NAME) Icon(Icons.Rounded.Check, contentDescription = null) },
-                                onClick = {
-                                    onSortChange(SortOrder.FIRST_LAST_NAME)
-                                    showSortMenu = false
-                                }
+                    }
+                )
+
+                LazyRow(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    item {
+                        FilterChip(
+                            selected = selectedGroups.isEmpty(),
+                            onClick = {
+                                isGroupMultiSelectMode = false
+                                onGroupClear()
+                            },
+                            label = { Text("All") }
+                        )
+                    }
+                    
+                    item {
+                        IconButton(onClick = { 
+                            onSetDefaultGroups(selectedGroups)
+                            platformUI.showToast("Default view saved")
+                        }) {
+                            Icon(
+                                Icons.Rounded.PushPin, 
+                                contentDescription = "Set Default", 
+                                tint = if (selectedGroups.isNotEmpty()) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
                             )
-                            DropdownMenuItem(
-                                text = { Text("Last, First Name") },
-                                leadingIcon = { if (currentSortOrder == SortOrder.LAST_FIRST_NAME) Icon(Icons.Rounded.Check, contentDescription = null) },
-                                onClick = {
-                                    onSortChange(SortOrder.LAST_FIRST_NAME)
-                                    showSortMenu = false
-                                }
+                        }
+                    }
+
+                    if (isGroupMultiSelectMode || selectedGroups.size > 1) {
+                        item {
+                            FilterChip(
+                                selected = false,
+                                onClick = { 
+                                    onGroupFilterModeChange(if (groupFilterMode == "OR") "AND" else "OR") 
+                                },
+                                label = { Text("Mode: $groupFilterMode") },
+                                colors = FilterChipDefaults.filterChipColors(
+                                    labelColor = MaterialTheme.colorScheme.primary
+                                )
                             )
-                            DropdownMenuItem(
-                                text = { Text("Group") },
-                                leadingIcon = { if (currentSortOrder == SortOrder.GROUP) Icon(Icons.Rounded.Check, contentDescription = null) },
-                                onClick = {
-                                    onSortChange(SortOrder.GROUP)
-                                    showSortMenu = false
-                                }
+                        }
+                    }
+                    items(filteredGroups) { group ->
+                        val groupName = group.name
+                        val isSelected = selectedGroups.contains(groupName)
+                        
+                        // Use a Box to capture both tap and long-press without FilterChip interference
+                        Box(modifier = Modifier.padding(vertical = 4.dp)) {
+                            FilterChip(
+                                selected = isSelected,
+                                onClick = { }, // Handled by Box
+                                label = { Text(groupName) }
                             )
-                            DropdownMenuItem(
-                                text = { Text("Birthday") },
-                                leadingIcon = { if (currentSortOrder == SortOrder.BIRTHDAY) Icon(Icons.Rounded.Check, contentDescription = null) },
-                                onClick = {
-                                    onSortChange(SortOrder.BIRTHDAY)
-                                    showSortMenu = false
-                                }
-                            )
-                            DropdownMenuItem(
-                                text = { Text("Marriage Anniversary") },
-                                leadingIcon = { if (currentSortOrder == SortOrder.MARRIAGE_ANNIVERSARY) Icon(Icons.Rounded.Check, contentDescription = null) },
-                                onClick = {
-                                    onSortChange(SortOrder.MARRIAGE_ANNIVERSARY)
-                                    showSortMenu = false
-                                }
+                            Box(
+                                modifier = Modifier
+                                    .matchParentSize()
+                                    .combinedClickable(
+                                        onClick = { 
+                                            if (isGroupMultiSelectMode) {
+                                                onGroupSelected(groupName)
+                                            } else {
+                                                onSetGroups(setOf(groupName))
+                                            }
+                                        },
+                                        onLongClick = { 
+                                            isGroupMultiSelectMode = true
+                                            onGroupSelected(groupName)
+                                        }
+                                    )
                             )
                         }
                     }
                 }
-            )
+            }
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = onAddFriendClick) {
-                Icon(Icons.Rounded.Add, contentDescription = "Add Friend")
+            if (!selectionMode) {
+                FloatingActionButton(onClick = onAddFriendClick) {
+                    Icon(Icons.Rounded.Add, contentDescription = "Add Friend")
+                }
             }
         }
     ) { padding ->
-        LazyColumn(modifier = Modifier.padding(padding)) {
-            items(friends) { friendWithChildren ->
-                FriendItem(
-                    friendWithChildren = friendWithChildren,
-                    showInline = showInlineData,
-                    currentSortOrder = currentSortOrder,
-                    onClick = { onFriendClick(friendWithChildren.friend.id) },
-                    onEditClick = { childId -> onEditFriendClick(friendWithChildren.friend.id, childId) },
-                    onToggleFavorite = { onToggleFavorite(friendWithChildren.friend) },
-                    onTogglePin = { onTogglePin(friendWithChildren.friend) }
+        if (friends.isEmpty()) {
+            Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
+                Text(
+                    text = if (searchQuery.isNotBlank() || selectedGroups.isNotEmpty()) "No results found" else "No contacts found",
+                    color = MaterialTheme.colorScheme.outline
                 )
-                HorizontalDivider(
-                    modifier = Modifier.padding(horizontal = 16.dp),
-                    thickness = 0.5.dp,
-                    color = MaterialTheme.colorScheme.outlineVariant
-                )
+            }
+        } else {
+            LazyColumn(
+                modifier = Modifier
+                    .padding(padding)
+                    .fillMaxSize(),
+                contentPadding = PaddingValues(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                items(friends, key = { it.friend.id }) { friendWithChildren ->
+                    val friendId = friendWithChildren.friend.id
+                    val isSelected = selectedFriendIds.contains(friendId)
+                    
+                    Box(modifier = Modifier.fillMaxWidth()) {
+                        FriendItem(
+                            modifier = Modifier.combinedClickable(
+                                onClick = { 
+                                    if (selectedFriendIds.isNotEmpty()) {
+                                        selectedFriendIds = if (isSelected) {
+                                            selectedFriendIds.filter { it != friendId }.toSet()
+                                        } else {
+                                            selectedFriendIds + friendId
+                                        }
+                                    } else {
+                                        onFriendClick(friendId) 
+                                    }
+                                },
+                                onLongClick = {
+                                    if (selectedFriendIds.isEmpty()) {
+                                        selectedFriendIds = setOf(friendId)
+                                    }
+                                }
+                            ),
+                            friendWithChildren = friendWithChildren,
+                            showInline = showInlineData,
+                            currentSortOrder = currentSortOrder,
+                            onEditClick = { childId -> onEditFriendClick(friendId, childId) },
+                            onToggleFavorite = { onToggleFavorite(friendWithChildren.friend) },
+                            onTogglePin = { onTogglePin(friendWithChildren.friend) }
+                        )
+                        
+                        if (isSelected) {
+                            Surface(
+                                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
+                                modifier = Modifier.matchParentSize(),
+                                border = androidx.compose.foundation.BorderStroke(2.dp, MaterialTheme.colorScheme.primary),
+                                shape = MaterialTheme.shapes.medium
+                            ) {}
+                            Icon(
+                                Icons.Rounded.CheckCircle,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.align(Alignment.TopEnd).padding(8.dp)
+                            )
+                        }
+                    }
+                }
             }
         }
     }

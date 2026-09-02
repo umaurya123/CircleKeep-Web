@@ -52,6 +52,7 @@ fun CircleKeepApp() {
             val barDestination = when {
                 currentRoute.contains("Favorites") -> Destination.Favorites
                 currentRoute.contains("Groups") -> Destination.Groups
+                currentRoute.contains("UpcomingEvents") -> Destination.UpcomingEvents
                 currentRoute.contains("Settings") -> Destination.Settings
                 else -> Destination.Home
             }
@@ -67,6 +68,7 @@ fun CircleKeepApp() {
                 bottomBar = {
                     if (showBottomBar) {
                         val friends by viewModel.friendsState.collectAsState()
+                        val events by viewModel.upcomingEventsState.collectAsState()
                         
                         Column(modifier = Modifier.fillMaxWidth()) {
                             if (!isPaid) {
@@ -76,14 +78,20 @@ fun CircleKeepApp() {
                                 currentDestination = barDestination,
                                 friendCount = friends.size,
                                 favoriteCount = friends.count { it.friend.isFavorite },
+                                eventsCount = events.size,
                                 onNavigate = { destination ->
-                                    if (destination == Destination.Home && barDestination == Destination.Home) {
-                                        viewModel.clearFilters()
-                                    }
                                     navController.navigate(destination) {
-                                        popUpTo(Destination.Home) { saveState = true }
+                                        // Standard bottom bar navigation behavior
+                                        popUpTo(navController.graph.startDestinationRoute ?: "Home") {
+                                            saveState = true
+                                        }
                                         launchSingleTop = true
                                         restoreState = true
+                                    }
+                                    
+                                    // If we are already on Home and click it again, clear filters
+                                    if (destination == Destination.Home && barDestination == Destination.Home) {
+                                        viewModel.clearFilters()
                                     }
                                 }
                             )
@@ -99,19 +107,29 @@ fun CircleKeepApp() {
                 ) {
                     composable<Destination.Home> {
                         val friends by viewModel.friendsState.collectAsState()
+                        val groups by viewModel.groupsState.collectAsState()
+                        val activeGroups by viewModel.activeGroups.collectAsState()
+                        val groupFilterMode by viewModel.groupFilterModeState.collectAsState()
                         val searchQuery by viewModel.searchQuery.collectAsState()
-                        val selectedGroup by viewModel.selectedGroup.collectAsState()
+                        val selectedGroups by viewModel.selectedGroups.collectAsState()
                         val sortOrder by viewModel.sortOrder.collectAsState()
                         val showInlineData by viewModel.showInlineData.collectAsState()
 
                         FriendListScreen(
                             friends = friends,
+                            groups = groups,
+                            activeGroups = activeGroups,
+                            groupFilterMode = groupFilterMode,
+                            onGroupFilterModeChange = viewModel::onGroupFilterModeChange,
                             searchQuery = searchQuery,
-                            selectedGroup = selectedGroup,
+                            selectedGroups = selectedGroups,
+                            onGroupSelected = viewModel::onGroupSelected,
+                            onSetGroups = viewModel::onSetGroups,
+                            onGroupClear = viewModel::onGroupClear,
+                            onSetDefaultGroups = viewModel::setPersistentDefaultGroups,
                             currentSortOrder = sortOrder,
                             showInlineData = showInlineData,
                             onSearchQueryChange = viewModel::onSearchQueryChange,
-                            onSelectedGroupChange = viewModel::onSelectedGroupChange,
                             onSortChange = viewModel::onSortOrderChange,
                             onToggleInline = viewModel::toggleInlineData,
                             onFriendClick = { id ->
@@ -124,7 +142,11 @@ fun CircleKeepApp() {
                                 navController.navigate(Destination.AddFriend)
                             },
                             onToggleFavorite = viewModel::toggleFavorite,
-                            onTogglePin = viewModel::togglePin
+                            onTogglePin = viewModel::togglePin,
+                            onDeleteFriends = viewModel::deleteFriends,
+                            onNavigateToSettings = {
+                                navController.navigate(Destination.Settings)
+                            }
                         )
                     }
                     composable<Destination.FriendDetail> { backStackEntry ->
@@ -185,26 +207,41 @@ fun CircleKeepApp() {
                     }
                     composable<Destination.Favorites> {
                         val friends by viewModel.friendsState.collectAsState()
+                        val groups by viewModel.groupsState.collectAsState()
+                        val activeGroups by viewModel.activeGroups.collectAsState()
+                        val groupFilterMode by viewModel.groupFilterModeState.collectAsState()
                         val favorites = friends.filter { it.friend.isFavorite }
                         val searchQuery by viewModel.searchQuery.collectAsState()
+                        val selectedGroups by viewModel.selectedGroups.collectAsState()
                         val sortOrder by viewModel.sortOrder.collectAsState()
                         val showInlineData by viewModel.showInlineData.collectAsState()
                         
                         FriendListScreen(
                             friends = favorites,
+                            groups = groups,
+                            activeGroups = activeGroups,
+                            groupFilterMode = groupFilterMode,
+                            onGroupFilterModeChange = viewModel::onGroupFilterModeChange,
                             searchQuery = searchQuery,
-                            selectedGroup = null,
+                            selectedGroups = selectedGroups,
+                            onGroupSelected = viewModel::onGroupSelected,
+                            onSetGroups = viewModel::onSetGroups,
+                            onGroupClear = viewModel::onGroupClear,
+                            onSetDefaultGroups = viewModel::setPersistentDefaultGroups,
                             currentSortOrder = sortOrder,
                             showInlineData = showInlineData,
                             onSearchQueryChange = viewModel::onSearchQueryChange,
-                            onSelectedGroupChange = { },
                             onSortChange = viewModel::onSortOrderChange,
                             onToggleInline = viewModel::toggleInlineData,
                             onFriendClick = { id -> navController.navigate(Destination.FriendDetail(id)) },
                             onEditFriendClick = { id, childId -> navController.navigate(Destination.EditFriend(id, childId)) },
                             onAddFriendClick = { navController.navigate(Destination.AddFriend) },
                             onToggleFavorite = viewModel::toggleFavorite,
-                            onTogglePin = viewModel::togglePin
+                            onTogglePin = viewModel::togglePin,
+                            onDeleteFriends = viewModel::deleteFriends,
+                            onNavigateToSettings = {
+                                navController.navigate(Destination.Settings)
+                            }
                         )
                     }
                     composable<Destination.Groups> {
@@ -214,7 +251,8 @@ fun CircleKeepApp() {
                             viewModel = viewModel,
                             groups = groups,
                             onGroupClick = { groupName ->
-                                viewModel.onSelectedGroupChange(groupName)
+                                viewModel.onGroupClear()
+                                viewModel.onGroupSelected(groupName)
                                 navController.navigate(Destination.Home) {
                                     popUpTo(Destination.Home) { inclusive = true }
                                 }
@@ -224,8 +262,19 @@ fun CircleKeepApp() {
                             onRenameGroup = viewModel::renameGroup
                         )
                     }
+                    composable<Destination.UpcomingEvents> {
+                        UpcomingEventsScreen(
+                            viewModel = viewModel,
+                            onEventClick = { id ->
+                                navController.navigate(Destination.FriendDetail(id))
+                            }
+                        )
+                    }
                     composable<Destination.Settings> {
-                        SettingsScreen(viewModel = viewModel)
+                        SettingsScreen(
+                            viewModel = viewModel,
+                            onBackClick = { navController.popBackStack() }
+                        )
                     }
                 }
             }

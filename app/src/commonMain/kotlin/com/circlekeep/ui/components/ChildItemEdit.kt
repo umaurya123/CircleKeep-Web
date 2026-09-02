@@ -137,6 +137,17 @@ fun ChildItemEdit(
                 )
             )
             OutlinedTextField(
+                value = child.nickname, 
+                onValueChange = { onChildChange(child.copy(nickname = it)) }, 
+                label = { Text("Nickname") },
+                modifier = modifier,
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(
+                    capitalization = KeyboardCapitalization.Words,
+                    imeAction = ImeAction.Next
+                )
+            )
+            OutlinedTextField(
                 value = child.phoneNumber, 
                 onValueChange = { onChildChange(child.copy(phoneNumber = it)) }, 
                 label = { Text("Cell Phone") }, 
@@ -369,6 +380,13 @@ fun ChildItemEdit(
                             value = child.partnerLastName, 
                             onValueChange = { onChildChange(child.copy(partnerLastName = it)) }, 
                             label = { Text("Last Name") }, 
+                            modifier = Modifier.fillMaxWidth(),
+                            keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words)
+                        )
+                        OutlinedTextField(
+                            value = child.partnerNickname, 
+                            onValueChange = { onChildChange(child.copy(partnerNickname = it)) }, 
+                            label = { Text("Nickname") },
                             modifier = Modifier.fillMaxWidth(),
                             keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words)
                         )

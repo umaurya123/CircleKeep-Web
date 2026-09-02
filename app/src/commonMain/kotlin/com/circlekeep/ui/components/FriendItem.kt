@@ -24,10 +24,10 @@ import com.circlekeep.viewmodel.SortOrder
 
 @Composable
 fun FriendItem(
+    modifier: Modifier = Modifier,
     friendWithChildren: FriendWithChildren,
     showInline: Boolean,
     currentSortOrder: SortOrder,
-    onClick: () -> Unit,
     onEditClick: (Long?) -> Unit,
     onToggleFavorite: () -> Unit,
     onTogglePin: () -> Unit
@@ -39,19 +39,21 @@ fun FriendItem(
             if (friend.firstName.isNotBlank()) {
                 append(", ")
                 append(friend.firstName)
+                if (friend.nickname.isNotBlank()) append(" '${friend.nickname}'")
                 if (friend.middleName.isNotBlank()) append(" ${friend.middleName}")
             }
         }
     } else {
         buildString {
             append(friend.firstName)
+            if (friend.nickname.isNotBlank()) append(" '${friend.nickname}'")
             if (friend.middleName.isNotBlank()) append(" ${friend.middleName}")
             if (friend.lastName.isNotBlank()) append(" ${friend.lastName}")
         }
     }
 
     ListItem(
-        modifier = Modifier.clickable(onClick = onClick),
+        modifier = modifier,
         headlineContent = { 
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
@@ -115,6 +117,7 @@ fun FriendItem(
                         val label = partnerTypeStr.ifBlank { "Partner" }
                         val partnerDisplayName = buildString {
                             append(friend.partnerFirstName)
+                            if (friend.partnerNickname.isNotBlank()) append(" '${friend.partnerNickname}'")
                             if (friend.partnerMiddleName.isNotBlank()) append(" ${friend.partnerMiddleName}")
                             if (friend.partnerLastName.isNotBlank()) append(" ${friend.partnerLastName}")
                         }
@@ -140,6 +143,7 @@ fun FriendItem(
                     friendWithChildren?.children?.forEach { child ->
                         val childText = buildString {
                             append(child.firstName)
+                            if (child.nickname.isNotBlank()) append(" '${child.nickname}'")
                             if (child.middleName.isNotBlank()) append(" ${child.middleName}")
                             if (child.lastName.isNotBlank()) append(" ${child.lastName}")
                             if (child.age != null) append(" (${child.age} ${child.ageUnit})")

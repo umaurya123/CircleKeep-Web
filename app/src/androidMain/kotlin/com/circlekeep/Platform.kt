@@ -50,6 +50,16 @@ class AndroidPlatform(private val context: Context) : Platform {
         return "$monthName $day"
     }
 
+    override fun formatTimestamp(timestamp: Long): String {
+        if (timestamp == 0L) return ""
+        val date = java.util.Date(timestamp)
+        return java.text.DateFormat.getDateTimeInstance(java.text.DateFormat.MEDIUM, java.text.DateFormat.SHORT).format(date)
+    }
+
+    override fun getDayOfMonth(): Int = java.util.Calendar.getInstance().get(java.util.Calendar.DAY_OF_MONTH)
+    
+    override fun getMonth(): Int = java.util.Calendar.getInstance().get(java.util.Calendar.MONTH) + 1
+
     override fun calculateAge(dobString: String?): Int? {
         val date = parseDate(dobString) ?: return null
         val today = java.util.Calendar.getInstance()
@@ -170,6 +180,9 @@ actual fun getPlatform(): Platform = androidPlatform ?: object : Platform {
     override fun base64ToUri(base64: String, fileNamePrefix: String): String? = null
     override fun formatDisplayDate(dateString: String?): String = dateString ?: ""
     override fun formatPartialDate(day: String, month: String): String = ""
+    override fun formatTimestamp(timestamp: Long): String = ""
+    override fun getDayOfMonth(): Int = 1
+    override fun getMonth(): Int = 1
     override fun calculateAge(dobString: String?): Int? = null
     override fun parseDateToDayMonth(dateString: String): Pair<String, String>? = null
     override fun isDayValidForMonth(day: String, month: String): Boolean = true

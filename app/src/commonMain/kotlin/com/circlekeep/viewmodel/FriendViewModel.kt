@@ -9,7 +9,24 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
-enum class SortOrder { FIRST_LAST_NAME, LAST_FIRST_NAME, GROUP, BIRTHDAY, MARRIAGE_ANNIVERSARY }
+enum class SortOrder { 
+    FIRST_LAST_NAME, 
+    LAST_FIRST_NAME, 
+    GROUP, 
+    BIRTHDAY, 
+    MARRIAGE_ANNIVERSARY,
+    CREATION_DATE,
+    LAST_MODIFIED
+}
+
+data class UpcomingEvent(
+    val name: String,
+    val date: String,
+    val type: String,
+    val friendId: Long,
+    val daysRemaining: Int,
+    val imageUri: String? = null
+)
 
 class FriendViewModel(
     private val friendRepository: FriendRepository,
@@ -22,13 +39,18 @@ class FriendViewModel(
         viewModelScope.launch {
             friendRepository.initializeDefaultGroups()
         }
+        viewModelScope.launch {
+            userPreferencesRepository.defaultGroupsStream.first().let { persistentSelected ->
+                _selectedGroups.value = persistentSelected
+            }
+        }
     }
 
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery
 
-    private val _selectedGroup = MutableStateFlow<String?>(null)
-    val selectedGroup: StateFlow<String?> = _selectedGroup
+    private val _selectedGroups = MutableStateFlow<Set<String>>(emptySet())
+    val selectedGroups: StateFlow<Set<String>> = _selectedGroups
 
     private val _sortOrder = MutableStateFlow(SortOrder.FIRST_LAST_NAME)
     val sortOrder: StateFlow<SortOrder> = _sortOrder
@@ -48,6 +70,20 @@ class FriendViewModel(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000),
             initialValue = false
+        )
+
+    val remindersEnabledState: StateFlow<Boolean> = userPreferencesRepository.remindersEnabledStream
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = false
+        )
+
+    val groupFilterModeState: StateFlow<String> = userPreferencesRepository.groupFilterModeStream
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = "OR"
         )
 
     val groupsState: StateFlow<List<Group>> =
@@ -71,23 +107,40 @@ class FriendViewModel(
         combine(
             friendRepository.getAllFriendsStream(),
             _searchQuery,
-            _selectedGroup,
-            _sortOrder
-        ) { friends, query, selectedGroup, sort ->
+            _selectedGroups,
+            _sortOrder,
+            userPreferencesRepository.groupFilterModeStream
+        ) { friends, query, selectedGroups, sort, filterMode ->
             friends.filter {
                 val matchesQuery = it.friend.firstName.contains(query, ignoreCase = true) ||
                         it.friend.lastName.contains(query, ignoreCase = true) ||
+                        it.friend.nickname.contains(query, ignoreCase = true) ||
                         it.friend.groups.any { group -> group.contains(query, ignoreCase = true) } ||
                         it.friend.partnerFirstName.contains(query, ignoreCase = true) ||
                         it.friend.partnerLastName.contains(query, ignoreCase = true) ||
+                        it.friend.partnerNickname.contains(query, ignoreCase = true) ||
+                        it.friend.notes.contains(query, ignoreCase = true) ||
                         it.children.any { child ->
                             child.firstName.contains(query, ignoreCase = true) ||
                             child.lastName.contains(query, ignoreCase = true) ||
+                            child.nickname.contains(query, ignoreCase = true) ||
+                            child.notes.contains(query, ignoreCase = true) ||
                             child.partnerFirstName.contains(query, ignoreCase = true) ||
-                            child.partnerLastName.contains(query, ignoreCase = true)
+                            child.partnerLastName.contains(query, ignoreCase = true) ||
+                            child.partnerNickname.contains(query, ignoreCase = true)
                         }
                 
-                val matchesGroup = selectedGroup == null || it.friend.groups.any { group -> group.trim().equals(selectedGroup.trim(), ignoreCase = true) }
+                val matchesGroup = if (selectedGroups.isEmpty()) {
+                    true
+                } else if (filterMode == "AND") {
+                    selectedGroups.all { selected ->
+                        it.friend.groups.any { g -> g.trim().equals(selected.trim(), ignoreCase = true) }
+                    }
+                } else {
+                    selectedGroups.any { selected ->
+                        it.friend.groups.any { g -> g.trim().equals(selected.trim(), ignoreCase = true) }
+                    }
+                }
                 
                 matchesQuery && matchesGroup
             }.sortedWith(
@@ -105,6 +158,8 @@ class FriendViewModel(
                                 { it.friend.anniversaryMonth.toIntOrNull() ?: 13 },
                                 { it.friend.anniversaryDay.toIntOrNull() ?: 32 }
                             )
+                            SortOrder.CREATION_DATE -> compareByDescending { it.friend.createdAt }
+                            SortOrder.LAST_MODIFIED -> compareByDescending { it.friend.lastModifiedAt }
                         }
                     )
             )
@@ -114,12 +169,111 @@ class FriendViewModel(
             initialValue = emptyList()
         )
 
+    val activeGroups: StateFlow<Set<String>> =
+        friendRepository.getAllFriendsStream()
+            .map { friends -> 
+                friends.flatMap { it.friend.groups }.map { it.trim() }.filter { it.isNotBlank() }.toSet()
+            }
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptySet())
+
+    val upcomingEventsState: StateFlow<List<UpcomingEvent>> =
+        friendsState.map { friends ->
+            val platform = com.circlekeep.getPlatform()
+            val currentDay = platform.getDayOfMonth()
+            val currentMonth = platform.getMonth()
+            val events = mutableListOf<UpcomingEvent>()
+            
+            friends.forEach { fwc ->
+                checkEvent(fwc.friend.firstName + " " + fwc.friend.lastName, fwc.friend.birthDay, fwc.friend.birthMonth, "Birthday", fwc.friend.id, currentDay, currentMonth, fwc.friend.imageUri)?.let { events.add(it) }
+                checkEvent(fwc.friend.firstName + " " + fwc.friend.lastName, fwc.friend.anniversaryDay, fwc.friend.anniversaryMonth, "Marriage Anniversary", fwc.friend.id, currentDay, currentMonth, fwc.friend.imageUri)?.let { events.add(it) }
+                
+                // Add partner birthdays
+                if (fwc.friend.partnerFirstName.isNotBlank()) {
+                    checkEvent(fwc.friend.partnerFirstName + " " + fwc.friend.partnerLastName, fwc.friend.partnerBirthDay, fwc.friend.partnerBirthMonth, "Partner Birthday", fwc.friend.id, currentDay, currentMonth, fwc.friend.partnerImageUri)?.let { events.add(it) }
+                }
+
+                fwc.children.forEach { child ->
+                    checkEvent(child.firstName + " " + child.lastName, child.birthDay, child.birthMonth, "Birthday (Child)", fwc.friend.id, currentDay, currentMonth, child.imageUri)?.let { events.add(it) }
+                    checkEvent(child.firstName + " " + child.lastName, child.anniversaryDay, child.anniversaryMonth, "Marriage Anniversary (Child)", fwc.friend.id, currentDay, currentMonth, child.partnerImageUri)?.let { events.add(it) }
+                }
+            }
+            
+            events.sortedBy { it.daysRemaining }
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    private fun checkEvent(name: String, dayStr: String, monthStr: String, type: String, friendId: Long, currentDay: Int, currentMonth: Int, imageUri: String? = null): UpcomingEvent? {
+        val day = dayStr.toIntOrNull() ?: return null
+        val month = monthStr.toIntOrNull() ?: return null
+        
+        // Days remaining logic
+        var daysRemaining: Int
+        if (month == currentMonth) {
+            if (day >= currentDay) {
+                daysRemaining = day - currentDay
+            } else {
+                daysRemaining = 330 // Approximate
+            }
+        } else if (month > currentMonth) {
+            daysRemaining = (month - currentMonth) * 30 + (day - currentDay)
+        } else {
+            daysRemaining = 330 // Already passed this year
+        }
+        
+        if (daysRemaining in 0..30) {
+            val months = listOf("", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+            return UpcomingEvent(name, "${months[month]} $day", type, friendId, daysRemaining, imageUri)
+        }
+        return null
+    }
+
+    fun deleteFriends(ids: Set<Long>) {
+        viewModelScope.launch {
+            ids.forEach { id ->
+                // We need the Friend object to delete it via repository
+                // For simplicity, let's just use the ID if I have a method for it.
+                // Or find it in friendsState.
+                friendsState.value.find { it.friend.id == id }?.let {
+                    friendRepository.deleteFriend(it.friend)
+                }
+            }
+        }
+    }
+
     fun onSearchQueryChange(query: String) {
         _searchQuery.value = query
     }
 
-    fun onSelectedGroupChange(group: String?) {
-        _selectedGroup.value = group
+    fun onGroupSelected(group: String) {
+        val current = _selectedGroups.value.toMutableSet()
+        if (current.contains(group)) {
+            current.remove(group)
+        } else {
+            current.add(group)
+        }
+        _selectedGroups.value = current
+    }
+
+    fun onGroupClear() {
+        _selectedGroups.value = emptySet()
+    }
+
+    fun onSetGroups(groups: Set<String>) {
+        _selectedGroups.value = groups
+    }
+
+    fun setPersistentDefaultGroups(groups: Set<String>) {
+        viewModelScope.launch {
+            userPreferencesRepository.updateDefaultGroups(groups)
+        }
+    }
+
+    val defaultGroups = userPreferencesRepository.defaultGroupsStream
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptySet())
+
+    fun updateGroupOrder(groups: List<Group>) {
+        viewModelScope.launch {
+            friendRepository.updateGroupOrder(groups)
+        }
     }
 
     fun onSortOrderChange(order: SortOrder) {
@@ -128,7 +282,7 @@ class FriendViewModel(
 
     fun clearFilters() {
         _searchQuery.value = ""
-        _selectedGroup.value = null
+        _selectedGroups.value = emptySet()
     }
 
     fun toggleInlineData() {
@@ -195,6 +349,18 @@ class FriendViewModel(
         }
     }
 
+    fun onRemindersToggle(enabled: Boolean) {
+        viewModelScope.launch {
+            userPreferencesRepository.updateRemindersEnabled(enabled)
+        }
+    }
+
+    fun onGroupFilterModeChange(mode: String) {
+        viewModelScope.launch {
+            userPreferencesRepository.updateGroupFilterMode(mode)
+        }
+    }
+
     fun purchaseApp() {
         viewModelScope.launch {
             userPreferencesRepository.updateIsPaid(true)
@@ -209,6 +375,7 @@ class FriendViewModel(
                     firstName = fw.friend.firstName,
                     middleName = fw.friend.middleName,
                     lastName = fw.friend.lastName,
+                    nickname = fw.friend.nickname,
                     address = fw.friend.address,
                     cellPhone = fw.friend.cellPhone,
                     officePhone = fw.friend.officePhone,
@@ -217,6 +384,7 @@ class FriendViewModel(
                     partnerFirstName = fw.friend.partnerFirstName,
                     partnerMiddleName = fw.friend.partnerMiddleName,
                     partnerLastName = fw.friend.partnerLastName,
+                    partnerNickname = fw.friend.partnerNickname,
                     partnerPhone = fw.friend.partnerPhone,
                     partnerEmail = fw.friend.partnerEmail,
                     partnerWorkEmail = fw.friend.partnerWorkEmail,
@@ -242,15 +410,19 @@ class FriendViewModel(
                     isPinned = fw.friend.isPinned,
                     imageUri = fw.friend.imageUri,
                     imageBase64 = fw.friend.imageUri?.let { platform.uriToBase64(it) },
+                    secondaryImageBase64 = fw.friend.secondaryImageUri?.let { platform.uriToBase64(it) },
                     partnerImageBase64 = fw.friend.partnerImageUri?.let { platform.uriToBase64(it) },
                     petName = fw.friend.petName,
                     petImageBase64 = fw.friend.petImageUri?.let { platform.uriToBase64(it) },
-                    notes = fw.friend.notes
+                    notes = fw.friend.notes,
+                    createdAt = fw.friend.createdAt,
+                    lastModifiedAt = fw.friend.lastModifiedAt
                 ),
                 children = fw.children.map { c ->
                     ChildBackup(
                         firstName = c.firstName,
                         middleName = c.middleName,
+                        nickname = c.nickname,
                         phoneNumber = c.phoneNumber,
                         email = c.email,
                         workEmail = c.workEmail,
@@ -265,6 +437,7 @@ class FriendViewModel(
                         partnerFirstName = c.partnerFirstName,
                         partnerMiddleName = c.partnerMiddleName,
                         partnerLastName = c.partnerLastName,
+                        partnerNickname = c.partnerNickname,
                         partnerPhone = c.partnerPhone,
                         partnerEmail = c.partnerEmail,
                         partnerWorkEmail = c.partnerWorkEmail,
@@ -284,7 +457,9 @@ class FriendViewModel(
                         partnerImageBase64 = c.partnerImageUri?.let { platform.uriToBase64(it) },
                         petName = c.petName,
                         petImageBase64 = c.petImageUri?.let { platform.uriToBase64(it) },
-                        notes = c.notes
+                        notes = c.notes,
+                        createdAt = c.createdAt,
+                        lastModifiedAt = c.lastModifiedAt
                     )
                 }
             )
@@ -325,6 +500,7 @@ class FriendViewModel(
                             firstName = fwc.friend.firstName,
                             middleName = fwc.friend.middleName,
                             lastName = fwc.friend.lastName,
+                            nickname = fwc.friend.nickname,
                             address = fwc.friend.address,
                             cellPhone = fwc.friend.cellPhone,
                             officePhone = fwc.friend.officePhone,
@@ -333,6 +509,7 @@ class FriendViewModel(
                             partnerFirstName = fwc.friend.partnerFirstName,
                             partnerMiddleName = fwc.friend.partnerMiddleName,
                             partnerLastName = fwc.friend.partnerLastName,
+                            partnerNickname = fwc.friend.partnerNickname,
                             partnerPhone = fwc.friend.partnerPhone,
                             partnerEmail = fwc.friend.partnerEmail,
                             partnerWorkEmail = fwc.friend.partnerWorkEmail,
@@ -357,15 +534,19 @@ class FriendViewModel(
                             isFavorite = fwc.friend.isFavorite,
                             isPinned = fwc.friend.isPinned,
                             imageUri = fwc.friend.imageBase64?.let { platform.base64ToUri(it, "friend") },
+                            secondaryImageUri = fwc.friend.secondaryImageBase64?.let { platform.base64ToUri(it, "friend_pic") },
                             petName = fwc.friend.petName,
                             petImageUri = fwc.friend.petImageBase64?.let { platform.base64ToUri(it, "friend_pet") },
-                            notes = fwc.friend.notes
+                            notes = fwc.friend.notes,
+                            createdAt = fwc.friend.createdAt,
+                            lastModifiedAt = fwc.friend.lastModifiedAt
                         )
                         val children = fwc.children.map { c ->
                             Child(
                                 friendId = 0L,
                                 firstName = c.firstName,
                                 middleName = c.middleName,
+                                nickname = c.nickname,
                                 phoneNumber = c.phoneNumber,
                                 email = c.email,
                                 workEmail = c.workEmail,
@@ -380,24 +561,27 @@ class FriendViewModel(
                                 partnerFirstName = c.partnerFirstName,
                                 partnerMiddleName = c.partnerMiddleName,
                                 partnerLastName = c.partnerLastName,
+                                partnerNickname = c.partnerNickname,
                                 partnerPhone = c.partnerPhone,
                                 partnerEmail = c.partnerEmail,
                                 partnerWorkEmail = c.partnerWorkEmail,
                                 partnerType = c.partnerType,
+                                partnerCompanyName = c.partnerCompanyName,
+                                partnerCollegeSchoolName = c.partnerCollegeSchoolName,
                                 partnerImageUri = c.partnerImageBase64?.let { platform.base64ToUri(it, "child_partner") },
                                 partnerSiblings = c.partnerSiblings,
                                 partnerDateOfBirth = c.partnerDateOfBirth,
                                 partnerBirthDay = c.partnerBirthDay,
                                 partnerBirthMonth = c.partnerBirthMonth,
-                                partnerCompanyName = c.partnerCompanyName,
-                                partnerCollegeSchoolName = c.partnerCollegeSchoolName,
                                 anniversaryDate = c.anniversaryDate,
                                 anniversaryDay = c.anniversaryDay,
                                 anniversaryMonth = c.anniversaryMonth,
                                 imageUri = c.imageBase64?.let { platform.base64ToUri(it, "child") },
                                 petName = c.petName,
                                 petImageUri = c.petImageBase64?.let { platform.base64ToUri(it, "child_pet") },
-                                notes = c.notes
+                                notes = c.notes,
+                                createdAt = c.createdAt,
+                                lastModifiedAt = c.lastModifiedAt
                             )
                         }
                         friendRepository.insertFriendWithChildren(friend, children)

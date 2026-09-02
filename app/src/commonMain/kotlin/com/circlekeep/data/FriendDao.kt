@@ -34,13 +34,13 @@ interface FriendDao {
     @Query("DELETE FROM children WHERE friendId = :friendId")
     suspend fun deleteChildrenForFriend(friendId: Long)
 
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertGroup(group: Group)
 
     @Delete
     suspend fun deleteGroup(group: Group)
 
-    @Query("SELECT * FROM groups ORDER BY name ASC")
+    @Query("SELECT * FROM groups ORDER BY sortOrder ASC, name ASC")
     fun getAllGroupsStream(): Flow<List<Group>>
 
     @Query("DELETE FROM friends")

@@ -36,6 +36,8 @@ fun PartnerSectionEdit(
     onPartnerMiddleNameChange: (String) -> Unit,
     partnerLastName: String,
     onPartnerLastNameChange: (String) -> Unit,
+    partnerNickname: String,
+    onPartnerNicknameChange: (String) -> Unit,
     partnerPhone: String,
     onPartnerPhoneChange: (String) -> Unit,
     partnerEmail: String,
@@ -128,6 +130,17 @@ fun PartnerSectionEdit(
                 value = partnerLastName,
                 onValueChange = onPartnerLastNameChange,
                 label = { Text("Last Name") },
+                modifier = modifier,
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(
+                    capitalization = KeyboardCapitalization.Words,
+                    imeAction = ImeAction.Next
+                )
+            )
+            OutlinedTextField(
+                value = partnerNickname,
+                onValueChange = onPartnerNicknameChange,
+                label = { Text("Nickname") },
                 modifier = modifier,
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(

@@ -6,6 +6,9 @@ interface Platform {
     fun base64ToUri(base64: String, fileNamePrefix: String): String?
     fun formatDisplayDate(dateString: String?): String
     fun formatPartialDate(day: String, month: String): String
+    fun formatTimestamp(timestamp: Long): String
+    fun getDayOfMonth(): Int
+    fun getMonth(): Int
     fun calculateAge(dobString: String?): Int?
     fun parseDateToDayMonth(dateString: String): Pair<String, String>?
     fun isDayValidForMonth(day: String, month: String): Boolean

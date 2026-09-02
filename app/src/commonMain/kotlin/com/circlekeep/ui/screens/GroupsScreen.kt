@@ -1,16 +1,17 @@
 package com.circlekeep.ui.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Add
-import androidx.compose.material.icons.rounded.Delete
-import androidx.compose.material.icons.rounded.Edit
-import androidx.compose.material.icons.rounded.Group
+import androidx.compose.material.icons.rounded.*
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -18,12 +19,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.circlekeep.data.Group
 import com.circlekeep.ui.components.PlaceholderAvatar
 import com.circlekeep.viewmodel.FriendViewModel
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
 fun GroupsScreen(
     viewModel: FriendViewModel,
@@ -41,12 +41,19 @@ fun GroupsScreen(
     var newGroupName by remember { mutableStateOf("") }
     var editGroupName by remember { mutableStateOf("") }
     var groupToDelete by remember { mutableStateOf<Group?>(null) }
+    var isReorderMode by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text("Groups") },
                 actions = {
+                    IconButton(onClick = { isReorderMode = !isReorderMode }) {
+                        Icon(
+                            imageVector = if (isReorderMode) Icons.Rounded.Check else Icons.Rounded.Reorder, 
+                            contentDescription = "Toggle Reorder"
+                        )
+                    }
                     IconButton(onClick = { showAddDialog = true }) {
                         Icon(Icons.Rounded.Add, contentDescription = "Add Group")
                     }
@@ -56,14 +63,13 @@ fun GroupsScreen(
     ) { padding ->
         if (groups.isEmpty()) {
             Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
-                Text("No friends yet")
+                Text("No groups yet")
             }
         } else {
             LazyColumn(modifier = Modifier.padding(padding)) {
-                items(groups) { group ->
+                itemsIndexed(groups) { index, group ->
                     val count = friends.count { it.friend.groups.contains(group.name) }
                     ListItem(
-                        modifier = Modifier.clickable { onGroupClick(group.name) },
                         headlineContent = { Text("${group.name} ($count)") },
                         leadingContent = { 
                             Surface(
@@ -74,19 +80,56 @@ fun GroupsScreen(
                             }
                         },
                         trailingContent = {
-                            Row {
-                                IconButton(onClick = { 
-                                    groupToEdit = group
-                                    editGroupName = group.name
-                                    showEditDialog = true
-                                }) {
-                                    Icon(Icons.Rounded.Edit, contentDescription = "Rename Group")
+                            if (isReorderMode) {
+                                Row {
+                                    IconButton(
+                                        onClick = {
+                                            if (index > 0) {
+                                                val newList = groups.toMutableList()
+                                                val tmp = newList[index]
+                                                newList[index] = newList[index - 1]
+                                                newList[index - 1] = tmp
+                                                viewModel.updateGroupOrder(newList)
+                                            }
+                                        },
+                                        enabled = index > 0
+                                    ) {
+                                        Icon(Icons.Default.ArrowUpward, contentDescription = "Move Up")
+                                    }
+                                    IconButton(
+                                        onClick = {
+                                            if (index < groups.size - 1) {
+                                                val newList = groups.toMutableList()
+                                                val tmp = newList[index]
+                                                newList[index] = newList[index + 1]
+                                                newList[index + 1] = tmp
+                                                viewModel.updateGroupOrder(newList)
+                                            }
+                                        },
+                                        enabled = index < groups.size - 1
+                                    ) {
+                                        Icon(Icons.Default.ArrowDownward, contentDescription = "Move Down")
+                                    }
                                 }
-                                IconButton(onClick = { groupToDelete = group }) {
-                                    Icon(Icons.Rounded.Delete, contentDescription = "Delete Group")
+                            } else {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    IconButton(onClick = { 
+                                        groupToEdit = group
+                                        editGroupName = group.name
+                                        showEditDialog = true
+                                    }) {
+                                        Icon(Icons.Rounded.Edit, contentDescription = "Rename Group")
+                                    }
+                                    IconButton(onClick = { groupToDelete = group }) {
+                                        Icon(Icons.Rounded.Delete, contentDescription = "Delete Group")
+                                    }
                                 }
                             }
-                        }
+                        },
+                        modifier = Modifier.combinedClickable(
+                            onClick = { if (!isReorderMode) onGroupClick(group.name) },
+                            onLongClick = { isReorderMode = true }
+                        )
                     )
                 }
             }

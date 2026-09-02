@@ -13,6 +13,8 @@ interface PlatformUI {
     fun exitApp()
     fun launchPurchaseFlow(productId: String)
     fun queryPurchases()
+    fun encodeUrl(text: String): String
+    fun requestNotificationPermission()
 }
 
 @Composable

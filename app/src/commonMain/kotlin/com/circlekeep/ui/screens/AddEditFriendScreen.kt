@@ -27,11 +27,13 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.platform.LocalFocusManager
+import coil3.compose.AsyncImage
 import coil3.compose.SubcomposeAsyncImage
 import com.circlekeep.*
 import androidx.compose.ui.platform.testTag
 import com.circlekeep.data.Child
 import com.circlekeep.data.Friend
+import com.circlekeep.data.trimFields
 import com.circlekeep.getPlatform
 import com.circlekeep.ui.components.ChildItemEdit
 import com.circlekeep.ui.components.PartnerSectionEdit
@@ -75,6 +77,7 @@ fun AddEditFriendScreen(
     var firstName by remember { mutableStateOf(initialFriend?.firstName ?: "") }
     var middleName by remember { mutableStateOf(initialFriend?.middleName ?: "") }
     var lastName by remember { mutableStateOf(initialFriend?.lastName ?: "") }
+    var nickname by remember { mutableStateOf(initialFriend?.nickname ?: "") }
     var address by remember { mutableStateOf(initialFriend?.address ?: "") }
     var cellPhone by remember { mutableStateOf(initialFriend?.cellPhone ?: "") }
     var officePhone by remember { mutableStateOf(initialFriend?.officePhone ?: "") }
@@ -84,6 +87,7 @@ fun AddEditFriendScreen(
     var partnerFirstName by remember { mutableStateOf(initialFriend?.partnerFirstName ?: "") }
     var partnerMiddleName by remember { mutableStateOf(initialFriend?.partnerMiddleName ?: "") }
     var partnerLastName by remember { mutableStateOf(initialFriend?.partnerLastName ?: "") }
+    var partnerNickname by remember { mutableStateOf(initialFriend?.partnerNickname ?: "") }
     var partnerPhone by remember { mutableStateOf(initialFriend?.partnerPhone ?: "") }
     var partnerEmail by remember { mutableStateOf(initialFriend?.partnerEmail ?: "") }
     var partnerWorkEmail by remember { mutableStateOf(initialFriend?.partnerWorkEmail ?: "") }
@@ -110,6 +114,7 @@ fun AddEditFriendScreen(
 
     var notes by remember { mutableStateOf(initialFriend?.notes ?: "") }
     var imageUri by remember { mutableStateOf(initialFriend?.imageUri) }
+    var secondaryImageUri by remember { mutableStateOf(initialFriend?.secondaryImageUri) }
     var partnerImageUri by remember { mutableStateOf(initialFriend?.partnerImageUri) }
     var petName by remember { mutableStateOf(initialFriend?.petName ?: "") }
     var petImageUri by remember { mutableStateOf(initialFriend?.petImageUri) }
@@ -227,23 +232,25 @@ fun AddEditFriendScreen(
                             if (isFormValid && !isSaving) {
                                 val friend = Friend(
                                     id = initialFriend?.id ?: 0L,
-                                    firstName = firstName,
-                                    middleName = middleName,
-                                    lastName = lastName,
-                                    address = address,
-                                    cellPhone = cellPhone,
-                                    officePhone = officePhone,
-                                    email = email,
-                                    workEmail = workEmail,
-                                    partnerFirstName = partnerFirstName,
-                                    partnerMiddleName = partnerMiddleName,
-                                    partnerLastName = partnerLastName,
-                                    partnerPhone = partnerPhone,
+                                    firstName = firstName.trim(),
+                                    middleName = middleName.trim(),
+                                    lastName = lastName.trim(),
+                                    nickname = nickname.trim(),
+                                    address = address.trim(),
+                                    cellPhone = cellPhone.trim(),
+                                    officePhone = officePhone.trim(),
+                                    email = email.trim(),
+                                    workEmail = workEmail.trim(),
+                                    partnerFirstName = partnerFirstName.trim(),
+                                    partnerMiddleName = partnerMiddleName.trim(),
+                                    partnerLastName = partnerLastName.trim(),
+                                    partnerNickname = partnerNickname.trim(),
+                                    partnerPhone = partnerPhone.trim(),
                                     partnerType = partnerType,
                                     partnerImageUri = partnerImageUri,
-                                    partnerSiblings = partnerSiblings,
-                                    partnerCompanyName = partnerCompanyName,
-                                    partnerCollegeSchoolName = partnerCollegeSchoolName,
+                                    partnerSiblings = partnerSiblings.trim(),
+                                    partnerCompanyName = partnerCompanyName.trim(),
+                                    partnerCollegeSchoolName = partnerCollegeSchoolName.trim(),
                                     dateOfBirth = dateOfBirth,
                                     birthDay = birthDay,
                                     birthMonth = birthMonth,
@@ -253,19 +260,20 @@ fun AddEditFriendScreen(
                                     anniversaryDate = anniversaryDate,
                                     anniversaryDay = anniversaryDay,
                                     anniversaryMonth = anniversaryMonth,
-                                    companyName = companyName,
-                                    collegeSchoolName = collegeSchoolName,
-                                    siblings = siblings,
+                                    companyName = companyName.trim(),
+                                    collegeSchoolName = collegeSchoolName.trim(),
+                                    siblings = siblings.trim(),
                                     groups = selectedGroups.toList(),
                                     isFavorite = initialFriend?.isFavorite ?: false,
                                     isPinned = initialFriend?.isPinned ?: false,
                                     imageUri = imageUri,
-                                    petName = petName,
+                                    secondaryImageUri = secondaryImageUri,
+                                    petName = petName.trim(),
                                     petImageUri = petImageUri,
-                                    notes = notes
+                                    notes = notes.trim()
                                 )
                                 
-                                if (friendCount >= 2 && !isPaid) {
+                                if (friendCount >= 15 && !isPaid) {
                                     platformUI.showInterstitialAd {
                                         isSaving = true
                                         scope.launch {
@@ -273,11 +281,11 @@ fun AddEditFriendScreen(
                                                 saveDelaySeconds = i
                                                 delay(1.seconds)
                                             }
-                                            onSave(friend, children.toList())
+                                            onSave(friend, children.map { it.trimFields() })
                                         }
                                     }
                                 } else {
-                                    onSave(friend, children.toList())
+                                    onSave(friend, children.map { it.trimFields() })
                                 }
                             }
                         },
@@ -342,6 +350,40 @@ fun AddEditFriendScreen(
                             }
                         }
                     }
+
+                    Spacer(Modifier.height(12.dp))
+                    var secondaryImagePickerTrigger by remember { mutableStateOf(false) }
+                    ImagePicker(
+                        trigger = secondaryImagePickerTrigger,
+                        onTriggerReset = { secondaryImagePickerTrigger = false },
+                        onImagePicked = { secondaryImageUri = it }
+                    )
+                    Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                        Surface(
+                            modifier = Modifier.size(60.dp).clip(MaterialTheme.shapes.small).clickable { secondaryImagePickerTrigger = true },
+                            color = MaterialTheme.colorScheme.surfaceVariant
+                        ) {
+                            if (secondaryImageUri != null) {
+                                AsyncImage(model = secondaryImageUri, contentDescription = null, modifier = Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
+                            } else {
+                                Icon(Icons.Rounded.AddAPhoto, contentDescription = null, modifier = Modifier.padding(16.dp))
+                            }
+                        }
+                        Spacer(Modifier.width(12.dp))
+                        Column {
+                            Text("Memory Photo", fontWeight = FontWeight.Bold)
+                            Row {
+                                TextButton(onClick = { secondaryImagePickerTrigger = true }) {
+                                    Text("Select Picture")
+                                }
+                                if (secondaryImageUri != null) {
+                                    TextButton(onClick = { secondaryImageUri = null }) {
+                                        Text("Remove", color = MaterialTheme.colorScheme.error)
+                                    }
+                                }
+                            }
+                        }
+                    }
                     
                     Spacer(Modifier.height(8.dp))
                     
@@ -379,6 +421,17 @@ fun AddEditFriendScreen(
                         )
                     )
                     OutlinedTextField(
+                        value = nickname, 
+                        onValueChange = { nickname = it }, 
+                        label = { Text("Nickname") },
+                        modifier = modifierWithTabHandler,
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(
+                            capitalization = KeyboardCapitalization.Words,
+                            imeAction = ImeAction.Next
+                        )
+                    )
+                    OutlinedTextField(
                         value = cellPhone, 
                         onValueChange = { cellPhone = it }, 
                         label = { Text("Cell Phone") }, 
@@ -404,8 +457,9 @@ fun AddEditFriendScreen(
                         value = address, 
                         onValueChange = { address = it }, 
                         label = { Text("Address") }, 
-                        modifier = modifierWithTabHandler,
-                        singleLine = true,
+                        modifier = modifierWithTabHandler.heightIn(max = 120.dp).verticalScroll(rememberScrollState()),
+                        singleLine = false,
+                        maxLines = 4,
                         keyboardOptions = KeyboardOptions(
                             capitalization = KeyboardCapitalization.Words,
                             imeAction = ImeAction.Next
@@ -657,6 +711,8 @@ fun AddEditFriendScreen(
                         onPartnerMiddleNameChange = { partnerMiddleName = it },
                         partnerLastName = partnerLastName,
                         onPartnerLastNameChange = { partnerLastName = it },
+                        partnerNickname = partnerNickname,
+                        onPartnerNicknameChange = { partnerNickname = it },
                         partnerPhone = partnerPhone,
                         onPartnerPhoneChange = { partnerPhone = it },
                         partnerEmail = partnerEmail,

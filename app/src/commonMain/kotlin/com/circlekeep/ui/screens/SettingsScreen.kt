@@ -1,7 +1,10 @@
 package com.circlekeep.ui.screens
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.DeleteForever
@@ -15,15 +18,20 @@ import androidx.compose.ui.unit.dp
 import com.circlekeep.FilePicker
 import com.circlekeep.FilePickerMode
 import com.circlekeep.LocalPlatformUI
+import com.circlekeep.getPlatform
 import com.circlekeep.viewmodel.FriendViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsScreen(viewModel: FriendViewModel) {
+fun SettingsScreen(
+    viewModel: FriendViewModel,
+    onBackClick: () -> Unit
+) {
     val themePreference by viewModel.themeState.collectAsState()
     val isPaid by viewModel.isPaidState.collectAsState()
+    val remindersEnabled by viewModel.remindersEnabledState.collectAsState()
     val platformUI = LocalPlatformUI.current
-    val platform = com.circlekeep.getPlatform()
+    val platform = getPlatform()
     
     var importTrigger by remember { mutableStateOf(false) }
     var importData by remember { mutableStateOf<String?>(null) }
@@ -61,15 +69,27 @@ fun SettingsScreen(viewModel: FriendViewModel) {
 
     Scaffold(
         topBar = {
-            TopAppBar(title = {
-                Column {
-                    Text("CircleKeep", style = MaterialTheme.typography.titleLarge)
-                    Text("Settings", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            TopAppBar(
+                title = {
+                    Column {
+                        Text("CircleKeep", style = MaterialTheme.typography.titleLarge)
+                        Text("Settings", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                },
+                navigationIcon = {
+                    IconButton(onClick = onBackClick) {
+                        Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = "Back")
+                    }
                 }
-            })
+            )
         }
     ) { padding ->
-        Column(modifier = Modifier.padding(padding).padding(16.dp)) {
+        Column(
+            modifier = Modifier
+                .padding(padding)
+                .padding(16.dp)
+                .verticalScroll(rememberScrollState())
+        ) {
             Text("Theme", style = MaterialTheme.typography.titleMedium)
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
                 FilterChip(
@@ -90,6 +110,26 @@ fun SettingsScreen(viewModel: FriendViewModel) {
             }
             
             Spacer(Modifier.height(24.dp))
+            HorizontalDivider()
+            Spacer(Modifier.height(16.dp))
+
+            ListItem(
+                headlineContent = { Text("Event Notifications") },
+                supportingContent = { Text("Notify for birthdays and marriage anniversaries") },
+                trailingContent = {
+                    Switch(
+                        checked = remindersEnabled,
+                        onCheckedChange = { 
+                            viewModel.onRemindersToggle(it) 
+                            if (it) {
+                                platformUI.requestNotificationPermission()
+                            }
+                        }
+                    )
+                }
+            )
+            
+            Spacer(Modifier.height(12.dp))
             HorizontalDivider()
             Spacer(Modifier.height(16.dp))
             

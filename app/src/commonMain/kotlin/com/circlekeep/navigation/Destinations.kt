@@ -18,4 +18,6 @@ sealed interface Destination {
     data object Groups : Destination
     @Serializable
     data object Settings : Destination
+    @Serializable
+    data object UpcomingEvents : Destination
 }

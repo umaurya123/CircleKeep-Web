@@ -125,6 +125,22 @@ class IOSPlatformUI : PlatformUI {
         platformProviderState.value?.queryPurchases()
     }
 
+    override fun encodeUrl(text: String): String {
+        val nsString = text as NSString
+        return nsString.stringByAddingPercentEncodingWithAllowedCharacters(
+            NSCharacterSet.URLQueryAllowedCharacterSet()
+        ) ?: text
+    }
+
+    override fun requestNotificationPermission() {
+        val center = platform.UserNotifications.UNUserNotificationCenter.currentNotificationCenter()
+        center.requestAuthorizationWithOptions(
+            platform.UserNotifications.UNAuthorizationOptionAlert or platform.UserNotifications.UNAuthorizationOptionSound
+        ) { granted, error ->
+            // Handle result if needed
+        }
+    }
+
     companion object {
         fun getTopViewController(): UIViewController? {
             val window = UIApplication.sharedApplication.windows.filterIsInstance<UIWindow>().firstOrNull { it.isKeyWindow() }

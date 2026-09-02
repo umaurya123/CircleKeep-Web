@@ -44,6 +44,25 @@ class IOSPlatform: Platform {
         return "$monthName $day"
     }
 
+    override fun formatTimestamp(timestamp: Long): String {
+        if (timestamp == 0L) return ""
+        val date = NSDate.dateWithTimeIntervalSince1970(timestamp / 1000.0)
+        val formatter = NSDateFormatter()
+        formatter.dateStyle = NSDateFormatterMediumStyle
+        formatter.timeStyle = NSDateFormatterShortStyle
+        return formatter.stringFromDate(date)
+    }
+
+    override fun getDayOfMonth(): Int {
+        val calendar = NSCalendar.currentCalendar
+        return calendar.component(NSCalendarUnitDay, fromDate = NSDate()).toInt()
+    }
+
+    override fun getMonth(): Int {
+        val calendar = NSCalendar.currentCalendar
+        return calendar.component(NSCalendarUnitMonth, fromDate = NSDate()).toInt()
+    }
+
     override fun calculateAge(dobString: String?): Int? {
         val date = parseDate(dobString) ?: return null
         val calendar = NSCalendar.currentCalendar

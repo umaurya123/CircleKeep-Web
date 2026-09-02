@@ -28,12 +28,46 @@ class FriendRepository(private val friendDao: FriendDao) {
     }
 
     suspend fun updateFriendWithChildren(friend: Friend, children: List<Child>) {
-        friendDao.updateFriendWithChildren(friend, children)
+        val now = currentTimeMillis()
+        val friendToSave = if (friend.id == 0L) {
+            friend.copy(createdAt = now, lastModifiedAt = now)
+        } else {
+            friend.copy(lastModifiedAt = now)
+        }
+        
+        val friendId = if (friend.id == 0L) {
+            friendDao.insertFriend(friendToSave)
+        } else {
+            friendDao.updateFriend(friendToSave)
+            friend.id
+        }
+
+        friendDao.deleteChildrenForFriend(friendId)
+        children.forEach {
+            val childToSave = if (it.id == 0L) {
+                it.copy(friendId = friendId, createdAt = now, lastModifiedAt = now)
+            } else {
+                it.copy(friendId = friendId, lastModifiedAt = now)
+            }
+            friendDao.insertChild(childToSave)
+        }
     }
+
+    private fun currentTimeMillis(): Long = com.circlekeep.getPlatform().currentTimeMillis()
 
     fun getAllGroupsStream(): Flow<List<Group>> = friendDao.getAllGroupsStream()
 
-    suspend fun addGroup(name: String) = friendDao.insertGroup(Group(name))
+    suspend fun addGroup(name: String) {
+        val groups = friendDao.getAllGroupsStream().first()
+        val nextOrder = (groups.maxOfOrNull { it.sortOrder } ?: -1) + 1
+        friendDao.insertGroup(Group(name, nextOrder))
+    }
+
+    suspend fun updateGroupOrder(orderedGroups: List<Group>) {
+        orderedGroups.forEachIndexed { index, group ->
+            friendDao.insertGroup(group.copy(sortOrder = index))
+        }
+    }
 
     suspend fun deleteGroup(group: Group) = friendDao.deleteGroup(group)
 

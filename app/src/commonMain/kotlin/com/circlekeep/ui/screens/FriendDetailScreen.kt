@@ -1,5 +1,6 @@
 package com.circlekeep.ui.screens
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -52,6 +53,50 @@ fun FriendDetailScreen(
                         }) {
                             Icon(Icons.Rounded.PushPin, contentDescription = "Pin", tint = if (friendWithChildren.friend.isPinned) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant)
                         }
+                        var showQrDialog by remember { mutableStateOf(false) }
+                        IconButton(onClick = { showQrDialog = true }) {
+                            Icon(Icons.Rounded.QrCode, contentDescription = "Share QR")
+                        }
+                        if (showQrDialog) {
+                            val qrContent = buildString {
+                                append("CIRCLEKEEP:1.0\n")
+                                append("FN:${friendWithChildren.friend.firstName}\n")
+                                append("MN:${friendWithChildren.friend.middleName}\n")
+                                append("LN:${friendWithChildren.friend.lastName}\n")
+                                append("NN:${friendWithChildren.friend.nickname}\n")
+                                append("TEL:${friendWithChildren.friend.cellPhone}\n")
+                                append("EML:${friendWithChildren.friend.email}\n")
+                                append("ADR:${friendWithChildren.friend.address}\n")
+                                append("GRP:${friendWithChildren.friend.groups.joinToString(",")}\n")
+                                append("DOB:${friendWithChildren.friend.dateOfBirth}\n")
+                                append("ANN:${friendWithChildren.friend.anniversaryDate}\n")
+                                append("NTS:${friendWithChildren.friend.notes}\n")
+                                // For full data including children, we'd need a more compact format (JSON/Protobuf) 
+                                // and potentially multiple QRs if it exceeds 3KB, but this covers the main fields.
+                            }
+                            val qrUrl = "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${platformUI.encodeUrl(qrContent)}"
+                            
+                            AlertDialog(
+                                onDismissRequest = { showQrDialog = false },
+                                title = { Text("Share Contact") },
+                                text = {
+                                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                        AsyncImage(
+                                            model = qrUrl,
+                                            contentDescription = "QR Code",
+                                            modifier = Modifier.size(200.dp)
+                                        )
+                                        Spacer(Modifier.height(8.dp))
+                                        Text("Scan to add to contacts", style = MaterialTheme.typography.labelMedium)
+                                    }
+                                },
+                                confirmButton = {
+                                    TextButton(onClick = { showQrDialog = false }) {
+                                        Text("Close")
+                                    }
+                                }
+                            )
+                        }
                         IconButton(onClick = { 
                             onEditClick(friendWithChildren.friend.id, null)
                         }) {
@@ -101,6 +146,7 @@ fun FriendDetailScreen(
                             Text(
                                 text = buildString {
                                     append(friendWithChildren.friend.firstName)
+                                    if (friendWithChildren.friend.nickname.isNotBlank()) append(" '${friendWithChildren.friend.nickname}'")
                                     if (friendWithChildren.friend.middleName.isNotBlank()) append(" ${friendWithChildren.friend.middleName}")
                                     if (friendWithChildren.friend.lastName.isNotBlank()) append(" ${friendWithChildren.friend.lastName}")
                                 },
@@ -130,6 +176,48 @@ fun FriendDetailScreen(
                 }
 
                 item {
+                    if (friendWithChildren.friend.secondaryImageUri != null) {
+                        var showFullScreen by remember { mutableStateOf(false) }
+                        
+                        Card(modifier = Modifier.padding(vertical = 8.dp).fillMaxWidth()) {
+                            Column(modifier = Modifier.padding(8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text("Memory Photo", style = MaterialTheme.typography.labelMedium)
+                                Spacer(Modifier.height(4.dp))
+                                AsyncImage(
+                                    model = friendWithChildren.friend.secondaryImageUri,
+                                    contentDescription = null,
+                                    modifier = Modifier
+                                        .size(120.dp)
+                                        .clip(MaterialTheme.shapes.small)
+                                        .clickable { showFullScreen = true },
+                                    contentScale = ContentScale.Crop
+                                )
+                                TextButton(onClick = { showFullScreen = true }) {
+                                    Text("View Full")
+                                }
+                            }
+                        }
+
+                        if (showFullScreen) {
+                            AlertDialog(
+                                onDismissRequest = { showFullScreen = false },
+                                text = {
+                                    AsyncImage(
+                                        model = friendWithChildren.friend.secondaryImageUri,
+                                        contentDescription = null,
+                                        modifier = Modifier.fillMaxWidth().aspectRatio(1f),
+                                        contentScale = ContentScale.Fit
+                                    )
+                                },
+                                confirmButton = {
+                                    TextButton(onClick = { showFullScreen = false }) {
+                                        Text("Close")
+                                    }
+                                }
+                            )
+                        }
+                    }
+
                     DetailRow(Icons.Rounded.LocationOn, friendWithChildren.friend.address, onClick = {
                         platformUI.openMap(friendWithChildren.friend.address)
                     })
@@ -184,6 +272,18 @@ fun FriendDetailScreen(
                     }
 
                     DetailRow(Icons.AutoMirrored.Rounded.Notes, friendWithChildren.friend.notes)
+
+                    Spacer(Modifier.height(16.dp))
+                    Text(
+                        text = "Created: ${platform.formatTimestamp(friendWithChildren.friend.createdAt)}",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                    )
+                    Text(
+                        text = "Last Modified: ${platform.formatTimestamp(friendWithChildren.friend.lastModifiedAt)}",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                    )
                 }
 
                 if (friendWithChildren.friend.partnerFirstName.isNotBlank()) {
@@ -222,6 +322,7 @@ fun FriendDetailScreen(
                                     Column {
                                         val partnerDisplayName = buildString {
                                             append(friendWithChildren.friend.partnerFirstName)
+                                            if (friendWithChildren.friend.partnerNickname.isNotBlank()) append(" '${friendWithChildren.friend.partnerNickname}'")
                                             if (friendWithChildren.friend.partnerMiddleName.isNotBlank()) append(" ${friendWithChildren.friend.partnerMiddleName}")
                                             if (friendWithChildren.friend.partnerLastName.isNotBlank()) append(" ${friendWithChildren.friend.partnerLastName}")
                                         }
@@ -307,6 +408,7 @@ fun FriendDetailScreen(
                                     Column(modifier = Modifier.weight(1f)) {
                                         val childDisplayName = buildString {
                                             append(child.firstName)
+                                            if (child.nickname.isNotBlank()) append(" '${child.nickname}'")
                                             if (child.middleName.isNotBlank()) append(" ${child.middleName}")
                                             if (child.lastName.isNotBlank()) append(" ${child.lastName}")
                                         }
@@ -393,6 +495,7 @@ fun FriendDetailScreen(
                                     
                                     val childPartnerDisplayName = buildString {
                                         append(child.partnerFirstName)
+                                        if (child.partnerNickname.isNotBlank()) append(" '${child.partnerNickname}'")
                                         if (child.partnerMiddleName.isNotBlank()) append(" ${child.partnerMiddleName}")
                                         if (child.partnerLastName.isNotBlank()) append(" ${child.partnerLastName}")
                                     }

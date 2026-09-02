@@ -80,6 +80,21 @@ class AndroidPlatformUI(
     override fun queryPurchases() {
         billingManager?.queryPurchases()
     }
+
+    override fun encodeUrl(text: String): String {
+        return java.net.URLEncoder.encode(text, "UTF-8")
+    }
+
+    override fun requestNotificationPermission() {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            val activity = context as? Activity ?: return
+            androidx.core.app.ActivityCompat.requestPermissions(
+                activity,
+                arrayOf(android.Manifest.permission.POST_NOTIFICATIONS),
+                1001
+            )
+        }
+    }
 }
 
 @Composable

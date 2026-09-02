@@ -8,6 +8,9 @@ import com.circlekeep.data.getDatabaseBuilder
 import com.circlekeep.data.getRoomDatabase
 import com.circlekeep.initPlatform
 import com.google.android.gms.ads.MobileAds
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.os.Build
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -36,5 +39,36 @@ class CircleKeepApplication : Application() {
         super.onCreate()
         initPlatform(this)
         MobileAds.initialize(this) {}
+        createNotificationChannel()
+        scheduleEventReminders()
+    }
+
+    private fun scheduleEventReminders() {
+        val workRequest = androidx.work.PeriodicWorkRequestBuilder<EventReminderWorker>(
+            24, java.util.concurrent.TimeUnit.HOURS
+        ).setConstraints(
+            androidx.work.Constraints.Builder()
+                .setRequiredNetworkType(androidx.work.NetworkType.NOT_REQUIRED)
+                .build()
+        ).build()
+
+        androidx.work.WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+            "EventReminders",
+            androidx.work.ExistingPeriodicWorkPolicy.KEEP,
+            workRequest
+        )
+    }
+
+    private fun createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val name = "Event Reminders"
+            val descriptionText = "Notifications for birthdays and anniversaries"
+            val importance = NotificationManager.IMPORTANCE_DEFAULT
+            val channel = NotificationChannel("EVENT_REMINDERS", name, importance).apply {
+                description = descriptionText
+            }
+            val notificationManager: NotificationManager = getSystemService(NotificationManager::class.java)
+            notificationManager.createNotificationChannel(channel)
+        }
     }
 }

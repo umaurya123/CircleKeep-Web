@@ -19,6 +19,7 @@ data class FriendBackup(
     val firstName: String = "",
     val middleName: String = "",
     val lastName: String = "",
+    val nickname: String = "",
     val address: String = "",
     val cellPhone: String = "",
     val officePhone: String = "",
@@ -27,6 +28,7 @@ data class FriendBackup(
     val partnerFirstName: String = "",
     val partnerMiddleName: String = "",
     val partnerLastName: String = "",
+    val partnerNickname: String = "",
     val partnerPhone: String = "",
     val partnerEmail: String = "",
     val partnerWorkEmail: String = "",
@@ -52,16 +54,20 @@ data class FriendBackup(
     val isPinned: Boolean = false,
     val imageUri: String? = null,
     val imageBase64: String? = null,
+    val secondaryImageBase64: String? = null,
     val partnerImageBase64: String? = null,
     val petName: String = "",
     val petImageBase64: String? = null,
-    val notes: String = ""
+    val notes: String = "",
+    val createdAt: Long = 0L,
+    val lastModifiedAt: Long = 0L
 )
 
 @Serializable
 data class ChildBackup(
     val firstName: String = "",
     val middleName: String = "",
+    val nickname: String = "",
     val phoneNumber: String = "",
     val email: String = "",
     val workEmail: String = "",
@@ -76,6 +82,7 @@ data class ChildBackup(
     val partnerFirstName: String = "",
     val partnerMiddleName: String = "",
     val partnerLastName: String = "",
+    val partnerNickname: String = "",
     val partnerPhone: String = "",
     val partnerEmail: String = "",
     val partnerWorkEmail: String = "",
@@ -95,5 +102,7 @@ data class ChildBackup(
     val partnerImageBase64: String? = null,
     val petName: String = "",
     val petImageBase64: String? = null,
-    val notes: String = ""
+    val notes: String = "",
+    val createdAt: Long = 0L,
+    val lastModifiedAt: Long = 0L
 )

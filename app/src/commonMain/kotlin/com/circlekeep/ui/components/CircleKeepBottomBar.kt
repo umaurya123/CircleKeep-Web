@@ -5,6 +5,7 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.rounded.CalendarToday
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -17,6 +18,7 @@ fun CircleKeepBottomBar(
     currentDestination: Destination,
     friendCount: Int,
     favoriteCount: Int,
+    eventsCount: Int,
     onNavigate: (Destination) -> Unit
 ) {
     NavigationBar {
@@ -39,10 +41,10 @@ fun CircleKeepBottomBar(
             onClick = { onNavigate(Destination.Groups) }
         )
         NavigationBarItem(
-            icon = { Icon(Icons.Default.Settings, contentDescription = null) },
-            label = { Text("Settings") },
-            selected = currentDestination is Destination.Settings,
-            onClick = { onNavigate(Destination.Settings) }
+            icon = { Icon(Icons.Rounded.CalendarToday, contentDescription = null) },
+            label = { Text("Events ($eventsCount)") },
+            selected = currentDestination is Destination.UpcomingEvents,
+            onClick = { onNavigate(Destination.UpcomingEvents) }
         )
     }
 }
