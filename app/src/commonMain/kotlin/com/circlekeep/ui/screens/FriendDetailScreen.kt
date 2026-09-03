@@ -31,6 +31,7 @@ fun FriendDetailScreen(
     onEditClick: (Long, Long?) -> Unit,
     onDeleteClick: (Friend) -> Unit,
     onTogglePin: (Friend) -> Unit,
+    onConvertPartnerClick: (FriendWithChildren) -> Unit,
     onBackClick: () -> Unit
 ) {
     val platformUI = LocalPlatformUI.current
@@ -294,8 +295,13 @@ fun FriendDetailScreen(
                         
                         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                             Text(partnerHeader, style = MaterialTheme.typography.titleLarge)
-                            IconButton(onClick = { onEditClick(friendWithChildren.friend.id, -1L) }) {
-                                Icon(Icons.Rounded.Edit, contentDescription = "Edit")
+                            Row {
+                                IconButton(onClick = { onConvertPartnerClick(friendWithChildren) }) {
+                                    Icon(Icons.Rounded.PersonAdd, contentDescription = "Add as Contact", tint = MaterialTheme.colorScheme.primary)
+                                }
+                                IconButton(onClick = { onEditClick(friendWithChildren.friend.id, -1L) }) {
+                                    Icon(Icons.Rounded.Edit, contentDescription = "Edit")
+                                }
                             }
                         }
                         Card(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)) {

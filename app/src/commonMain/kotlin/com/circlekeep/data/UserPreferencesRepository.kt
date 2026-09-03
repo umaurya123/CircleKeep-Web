@@ -19,6 +19,7 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
         val GROUP_ORDER = stringPreferencesKey("group_order")
         val GROUP_FILTER_MODE = stringPreferencesKey("group_filter_mode")
         val REMINDERS_ENABLED = booleanPreferencesKey("reminders_enabled")
+        val LANGUAGE = stringPreferencesKey("language")
     }
 
     val themeStream: Flow<String> = dataStore.data
@@ -61,6 +62,12 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
             preferences[PreferencesKeys.REMINDERS_ENABLED] ?: false
         }
 
+    val languageStream: Flow<String> = dataStore.data
+        .catch { emit(emptyPreferences()) }
+        .map { preferences ->
+            preferences[PreferencesKeys.LANGUAGE] ?: "English"
+        }
+
     suspend fun updateTheme(theme: String) {
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.THEME] = theme
@@ -94,6 +101,12 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
     suspend fun updateRemindersEnabled(enabled: Boolean) {
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.REMINDERS_ENABLED] = enabled
+        }
+    }
+
+    suspend fun updateLanguage(language: String) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.LANGUAGE] = language
         }
     }
 }

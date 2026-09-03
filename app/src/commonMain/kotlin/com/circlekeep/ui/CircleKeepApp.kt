@@ -22,6 +22,7 @@ import com.circlekeep.viewmodel.getFriendViewModelFactory
 fun CircleKeepApp() {
     val viewModel: FriendViewModel = viewModel(factory = getFriendViewModelFactory())
     val themePreference by viewModel.themeState.collectAsState()
+    val languagePreference by viewModel.languageState.collectAsState()
     val isPaid by viewModel.isPaidState.collectAsState()
     val platformUI = rememberPlatformUI()
     val platform = getPlatform()
@@ -44,7 +45,7 @@ fun CircleKeepApp() {
         }
     }
 
-    CircleKeepTheme(themePreference = themePreference) {
+    CircleKeepTheme(themePreference = themePreference, languagePreference = languagePreference) {
         CompositionLocalProvider(LocalPlatformUI provides platformUI) {
             val navBackStackEntry by navController.currentBackStackEntryAsState()
             val currentRoute = navBackStackEntry?.destination?.route ?: ""
@@ -163,6 +164,12 @@ fun CircleKeepApp() {
                                 navController.popBackStack()
                             },
                             onTogglePin = { friend -> viewModel.togglePin(friend) },
+                            onConvertPartnerClick = { fwc -> 
+                                viewModel.convertPartnerToFriend(fwc) { isUpdate ->
+                                    val message = if (isUpdate) "Partner record has been updated" else "Partner added as contact"
+                                    platformUI.showToast(message)
+                                }
+                            },
                             onBackClick = { navController.popBackStack() }
                         )
                     }

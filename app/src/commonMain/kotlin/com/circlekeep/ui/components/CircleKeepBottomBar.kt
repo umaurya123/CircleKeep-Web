@@ -12,6 +12,7 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import com.circlekeep.navigation.Destination
+import com.circlekeep.ui.theme.LocalAppStrings
 
 @Composable
 fun CircleKeepBottomBar(
@@ -21,28 +22,29 @@ fun CircleKeepBottomBar(
     eventsCount: Int,
     onNavigate: (Destination) -> Unit
 ) {
+    val strings = LocalAppStrings.current
     NavigationBar {
         NavigationBarItem(
             icon = { Icon(Icons.Default.Home, contentDescription = null) },
-            label = { Text("Home ($friendCount)") },
+            label = { Text("${strings.home} ($friendCount)") },
             selected = currentDestination is Destination.Home || currentDestination is Destination.FriendDetail || currentDestination is Destination.AddFriend || currentDestination is Destination.EditFriend,
             onClick = { onNavigate(Destination.Home) }
         )
         NavigationBarItem(
             icon = { Icon(Icons.Default.Favorite, contentDescription = null) },
-            label = { Text("Favorites ($favoriteCount)") },
+            label = { Text("${strings.favorites} ($favoriteCount)") },
             selected = currentDestination is Destination.Favorites,
             onClick = { onNavigate(Destination.Favorites) }
         )
         NavigationBarItem(
             icon = { Icon(Icons.Default.Person, contentDescription = null) },
-            label = { Text("Groups") },
+            label = { Text(strings.groups) },
             selected = currentDestination is Destination.Groups,
             onClick = { onNavigate(Destination.Groups) }
         )
         NavigationBarItem(
             icon = { Icon(Icons.Rounded.CalendarToday, contentDescription = null) },
-            label = { Text("Events ($eventsCount)") },
+            label = { Text("${strings.events} ($eventsCount)") },
             selected = currentDestination is Destination.UpcomingEvents,
             onClick = { onNavigate(Destination.UpcomingEvents) }
         )

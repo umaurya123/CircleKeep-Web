@@ -86,6 +86,13 @@ class FriendViewModel(
             initialValue = "OR"
         )
 
+    val languageState: StateFlow<String> = userPreferencesRepository.languageStream
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = "English"
+        )
+
     val groupsState: StateFlow<List<Group>> =
         friendRepository.getAllGroupsStream()
             .stateIn(
@@ -303,6 +310,118 @@ class FriendViewModel(
 
     fun getFriend(id: Long) = friendRepository.getFriendStream(id)
 
+    fun convertPartnerToFriend(current: FriendWithChildren, onComplete: (Boolean) -> Unit) {
+        viewModelScope.launch {
+            val partnerFirstName = current.friend.partnerFirstName.trim()
+            val partnerLastName = current.friend.partnerLastName.trim()
+            if (partnerFirstName.isBlank()) return@launch
+
+            val allFriends = friendRepository.getAllFriendsStream().first()
+            val existing = allFriends.find { 
+                it.friend.firstName.trim().equals(partnerFirstName, ignoreCase = true) && 
+                it.friend.lastName.trim().equals(partnerLastName, ignoreCase = true)
+            }
+
+            val updatedChildren = current.children.map { it.copy(id = 0L) }
+
+            if (existing != null) {
+                // Update existing friend with data from partner section
+                val updatedFriend = existing.friend.copy(
+                    middleName = current.friend.partnerMiddleName,
+                    nickname = current.friend.partnerNickname,
+                    cellPhone = current.friend.partnerPhone,
+                    email = current.friend.partnerEmail,
+                    workEmail = current.friend.partnerWorkEmail,
+                    companyName = current.friend.partnerCompanyName,
+                    collegeSchoolName = current.friend.partnerCollegeSchoolName,
+                    dateOfBirth = current.friend.partnerDateOfBirth,
+                    birthDay = current.friend.partnerBirthDay,
+                    birthMonth = current.friend.partnerBirthMonth,
+                    imageUri = current.friend.partnerImageUri,
+                    siblings = current.friend.partnerSiblings,
+                    
+                    // Also sync shared family fields from main contact
+                    address = current.friend.address,
+                    anniversaryDate = current.friend.anniversaryDate,
+                    anniversaryDay = current.friend.anniversaryDay,
+                    anniversaryMonth = current.friend.anniversaryMonth,
+                    groups = current.friend.groups,
+                    petName = current.friend.petName,
+                    petImageUri = current.friend.petImageUri,
+                    secondaryImageUri = current.friend.secondaryImageUri,
+
+                    // Update reverse relationship info
+                    partnerFirstName = current.friend.firstName,
+                    partnerMiddleName = current.friend.middleName,
+                    partnerLastName = current.friend.lastName,
+                    partnerNickname = current.friend.nickname,
+                    partnerPhone = current.friend.cellPhone,
+                    partnerEmail = current.friend.email,
+                    partnerWorkEmail = current.friend.workEmail,
+                    partnerCompanyName = current.friend.companyName,
+                    partnerCollegeSchoolName = current.friend.collegeSchoolName,
+                    partnerDateOfBirth = current.friend.dateOfBirth,
+                    partnerBirthDay = current.friend.birthDay,
+                    partnerBirthMonth = current.friend.birthMonth,
+                    partnerImageUri = current.friend.imageUri,
+                    partnerSiblings = current.friend.siblings,
+                    partnerType = current.friend.partnerType
+                )
+                
+                friendRepository.updateFriendWithChildren(updatedFriend, updatedChildren.map { it.copy(friendId = existing.friend.id) })
+                onComplete(true) // True for update
+            } else {
+                // Create new friend from partner info
+                val newFriend = Friend(
+                    firstName = partnerFirstName,
+                    middleName = current.friend.partnerMiddleName,
+                    lastName = partnerLastName,
+                    nickname = current.friend.partnerNickname,
+                    cellPhone = current.friend.partnerPhone,
+                    email = current.friend.partnerEmail,
+                    workEmail = current.friend.partnerWorkEmail,
+                    companyName = current.friend.partnerCompanyName,
+                    collegeSchoolName = current.friend.partnerCollegeSchoolName,
+                    dateOfBirth = current.friend.partnerDateOfBirth,
+                    birthDay = current.friend.partnerBirthDay,
+                    birthMonth = current.friend.partnerBirthMonth,
+                    imageUri = current.friend.partnerImageUri,
+                    siblings = current.friend.partnerSiblings,
+                    
+                    // Shared family fields
+                    address = current.friend.address,
+                    anniversaryDate = current.friend.anniversaryDate,
+                    anniversaryDay = current.friend.anniversaryDay,
+                    anniversaryMonth = current.friend.anniversaryMonth,
+                    groups = current.friend.groups,
+                    petName = current.friend.petName,
+                    petImageUri = current.friend.petImageUri,
+                    secondaryImageUri = current.friend.secondaryImageUri,
+                    
+                    // Reverse the partner relationship
+                    partnerFirstName = current.friend.firstName,
+                    partnerMiddleName = current.friend.middleName,
+                    partnerLastName = current.friend.lastName,
+                    partnerNickname = current.friend.nickname,
+                    partnerPhone = current.friend.cellPhone,
+                    partnerEmail = current.friend.email,
+                    partnerWorkEmail = current.friend.workEmail,
+                    partnerCompanyName = current.friend.companyName,
+                    partnerCollegeSchoolName = current.friend.collegeSchoolName,
+                    partnerDateOfBirth = current.friend.dateOfBirth,
+                    partnerBirthDay = current.friend.birthDay,
+                    partnerBirthMonth = current.friend.birthMonth,
+                    partnerImageUri = current.friend.imageUri,
+                    partnerSiblings = current.friend.siblings,
+                    partnerType = current.friend.partnerType
+                )
+                
+                friendRepository.insertFriendWithChildren(newFriend, updatedChildren)
+                onComplete(false) // False for new add
+            }
+        }
+    }
+
     fun saveFriend(friend: Friend, children: List<Child>) {
         viewModelScope.launch {
             if (friend.id == 0L) {
@@ -358,6 +477,12 @@ class FriendViewModel(
     fun onGroupFilterModeChange(mode: String) {
         viewModelScope.launch {
             userPreferencesRepository.updateGroupFilterMode(mode)
+        }
+    }
+
+    fun onLanguageChange(language: String) {
+        viewModelScope.launch {
+            userPreferencesRepository.updateLanguage(language)
         }
     }
 

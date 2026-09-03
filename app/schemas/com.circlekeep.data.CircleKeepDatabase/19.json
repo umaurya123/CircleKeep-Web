@@ -1,0 +1,581 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 19,
+    "identityHash": "0f97a0edd30287537275595e6930175e",
+    "entities": [
+      {
+        "tableName": "friends",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `firstName` TEXT NOT NULL, `middleName` TEXT NOT NULL, `lastName` TEXT NOT NULL, `nickname` TEXT NOT NULL, `address` TEXT NOT NULL, `cellPhone` TEXT NOT NULL, `officePhone` TEXT NOT NULL, `email` TEXT NOT NULL, `workEmail` TEXT NOT NULL, `partnerFirstName` TEXT NOT NULL, `partnerMiddleName` TEXT NOT NULL, `partnerLastName` TEXT NOT NULL, `partnerNickname` TEXT NOT NULL, `partnerPhone` TEXT NOT NULL, `partnerEmail` TEXT NOT NULL, `partnerWorkEmail` TEXT NOT NULL, `partnerType` TEXT NOT NULL, `partnerImageUri` TEXT, `partnerSiblings` TEXT NOT NULL, `partnerDateOfBirth` TEXT NOT NULL, `partnerBirthDay` TEXT NOT NULL, `partnerBirthMonth` TEXT NOT NULL, `partnerCompanyName` TEXT NOT NULL, `partnerCollegeSchoolName` TEXT NOT NULL, `dateOfBirth` TEXT NOT NULL, `birthDay` TEXT NOT NULL, `birthMonth` TEXT NOT NULL, `anniversaryDate` TEXT NOT NULL, `anniversaryDay` TEXT NOT NULL, `anniversaryMonth` TEXT NOT NULL, `companyName` TEXT NOT NULL, `collegeSchoolName` TEXT NOT NULL, `siblings` TEXT NOT NULL, `groups` TEXT NOT NULL, `isFavorite` INTEGER NOT NULL, `isPinned` INTEGER NOT NULL, `imageUri` TEXT, `secondaryImageUri` TEXT, `petName` TEXT NOT NULL, `petImageUri` TEXT, `notes` TEXT NOT NULL, `createdAt` INTEGER NOT NULL, `lastModifiedAt` INTEGER NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "firstName",
+            "columnName": "firstName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "middleName",
+            "columnName": "middleName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lastName",
+            "columnName": "lastName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "nickname",
+            "columnName": "nickname",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "address",
+            "columnName": "address",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "cellPhone",
+            "columnName": "cellPhone",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "officePhone",
+            "columnName": "officePhone",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "email",
+            "columnName": "email",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "workEmail",
+            "columnName": "workEmail",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "partnerFirstName",
+            "columnName": "partnerFirstName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "partnerMiddleName",
+            "columnName": "partnerMiddleName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "partnerLastName",
+            "columnName": "partnerLastName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "partnerNickname",
+            "columnName": "partnerNickname",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "partnerPhone",
+            "columnName": "partnerPhone",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "partnerEmail",
+            "columnName": "partnerEmail",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "partnerWorkEmail",
+            "columnName": "partnerWorkEmail",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "partnerType",
+            "columnName": "partnerType",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "partnerImageUri",
+            "columnName": "partnerImageUri",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "partnerSiblings",
+            "columnName": "partnerSiblings",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "partnerDateOfBirth",
+            "columnName": "partnerDateOfBirth",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "partnerBirthDay",
+            "columnName": "partnerBirthDay",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "partnerBirthMonth",
+            "columnName": "partnerBirthMonth",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "partnerCompanyName",
+            "columnName": "partnerCompanyName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "partnerCollegeSchoolName",
+            "columnName": "partnerCollegeSchoolName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "dateOfBirth",
+            "columnName": "dateOfBirth",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "birthDay",
+            "columnName": "birthDay",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "birthMonth",
+            "columnName": "birthMonth",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "anniversaryDate",
+            "columnName": "anniversaryDate",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "anniversaryDay",
+            "columnName": "anniversaryDay",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "anniversaryMonth",
+            "columnName": "anniversaryMonth",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "companyName",
+            "columnName": "companyName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "collegeSchoolName",
+            "columnName": "collegeSchoolName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "siblings",
+            "columnName": "siblings",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "groups",
+            "columnName": "groups",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isFavorite",
+            "columnName": "isFavorite",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isPinned",
+            "columnName": "isPinned",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "imageUri",
+            "columnName": "imageUri",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "secondaryImageUri",
+            "columnName": "secondaryImageUri",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "petName",
+            "columnName": "petName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "petImageUri",
+            "columnName": "petImageUri",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "notes",
+            "columnName": "notes",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "createdAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lastModifiedAt",
+            "columnName": "lastModifiedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "children",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `friendId` INTEGER NOT NULL, `firstName` TEXT NOT NULL, `middleName` TEXT NOT NULL, `nickname` TEXT NOT NULL, `phoneNumber` TEXT NOT NULL, `email` TEXT NOT NULL, `workEmail` TEXT NOT NULL, `lastName` TEXT NOT NULL, `siblings` TEXT NOT NULL, `collegeSchoolName` TEXT NOT NULL, `dateOfBirth` TEXT NOT NULL, `birthDay` TEXT NOT NULL, `birthMonth` TEXT NOT NULL, `age` INTEGER, `ageUnit` TEXT NOT NULL, `partnerFirstName` TEXT NOT NULL, `partnerMiddleName` TEXT NOT NULL, `partnerLastName` TEXT NOT NULL, `partnerNickname` TEXT NOT NULL, `partnerPhone` TEXT NOT NULL, `partnerEmail` TEXT NOT NULL, `partnerWorkEmail` TEXT NOT NULL, `partnerType` TEXT NOT NULL, `partnerCompanyName` TEXT NOT NULL, `partnerCollegeSchoolName` TEXT NOT NULL, `partnerImageUri` TEXT, `partnerSiblings` TEXT NOT NULL, `partnerDateOfBirth` TEXT NOT NULL, `partnerBirthDay` TEXT NOT NULL, `partnerBirthMonth` TEXT NOT NULL, `anniversaryDate` TEXT NOT NULL, `anniversaryDay` TEXT NOT NULL, `anniversaryMonth` TEXT NOT NULL, `imageUri` TEXT, `petName` TEXT NOT NULL, `petImageUri` TEXT, `notes` TEXT NOT NULL, `createdAt` INTEGER NOT NULL, `lastModifiedAt` INTEGER NOT NULL, FOREIGN KEY(`friendId`) REFERENCES `friends`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "friendId",
+            "columnName": "friendId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "firstName",
+            "columnName": "firstName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "middleName",
+            "columnName": "middleName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "nickname",
+            "columnName": "nickname",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "phoneNumber",
+            "columnName": "phoneNumber",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "email",
+            "columnName": "email",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "workEmail",
+            "columnName": "workEmail",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lastName",
+            "columnName": "lastName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "siblings",
+            "columnName": "siblings",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "collegeSchoolName",
+            "columnName": "collegeSchoolName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "dateOfBirth",
+            "columnName": "dateOfBirth",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "birthDay",
+            "columnName": "birthDay",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "birthMonth",
+            "columnName": "birthMonth",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "age",
+            "columnName": "age",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "ageUnit",
+            "columnName": "ageUnit",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "partnerFirstName",
+            "columnName": "partnerFirstName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "partnerMiddleName",
+            "columnName": "partnerMiddleName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "partnerLastName",
+            "columnName": "partnerLastName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "partnerNickname",
+            "columnName": "partnerNickname",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "partnerPhone",
+            "columnName": "partnerPhone",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "partnerEmail",
+            "columnName": "partnerEmail",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "partnerWorkEmail",
+            "columnName": "partnerWorkEmail",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "partnerType",
+            "columnName": "partnerType",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "partnerCompanyName",
+            "columnName": "partnerCompanyName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "partnerCollegeSchoolName",
+            "columnName": "partnerCollegeSchoolName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "partnerImageUri",
+            "columnName": "partnerImageUri",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "partnerSiblings",
+            "columnName": "partnerSiblings",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "partnerDateOfBirth",
+            "columnName": "partnerDateOfBirth",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "partnerBirthDay",
+            "columnName": "partnerBirthDay",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "partnerBirthMonth",
+            "columnName": "partnerBirthMonth",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "anniversaryDate",
+            "columnName": "anniversaryDate",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "anniversaryDay",
+            "columnName": "anniversaryDay",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "anniversaryMonth",
+            "columnName": "anniversaryMonth",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "imageUri",
+            "columnName": "imageUri",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "petName",
+            "columnName": "petName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "petImageUri",
+            "columnName": "petImageUri",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "notes",
+            "columnName": "notes",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "createdAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lastModifiedAt",
+            "columnName": "lastModifiedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_children_friendId",
+            "unique": false,
+            "columnNames": [
+              "friendId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_children_friendId` ON `${TABLE_NAME}` (`friendId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "friends",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "friendId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "groups",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`name` TEXT NOT NULL, `sortOrder` INTEGER NOT NULL, PRIMARY KEY(`name`))",
+        "fields": [
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sortOrder",
+            "columnName": "sortOrder",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "name"
+          ]
+        }
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '0f97a0edd30287537275595e6930175e')"
+    ]
+  }
+}

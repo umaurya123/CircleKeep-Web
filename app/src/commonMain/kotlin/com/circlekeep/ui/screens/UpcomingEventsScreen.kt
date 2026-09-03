@@ -1,7 +1,6 @@
 package com.circlekeep.ui.screens
 
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.layout.*
@@ -23,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.circlekeep.viewmodel.FriendViewModel
 import com.circlekeep.viewmodel.UpcomingEvent
+import com.circlekeep.ui.theme.LocalAppStrings
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
@@ -30,6 +30,7 @@ fun UpcomingEventsScreen(
     viewModel: FriendViewModel,
     onEventClick: (Long) -> Unit
 ) {
+    val strings = LocalAppStrings.current
     val events by viewModel.upcomingEventsState.collectAsState()
 
     // Group events by timeframe
@@ -49,7 +50,7 @@ fun UpcomingEventsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Upcoming Events") },
+                title = { Text(strings.events) },
                 actions = {
                     IconButton(onClick = { /* Implement global reminder settings */ }) {
                         Icon(Icons.Rounded.Notifications, contentDescription = "Reminders")
@@ -101,6 +102,7 @@ fun UpcomingEventsScreen(
 
 @Composable
 fun EventCard(event: UpcomingEvent, onClick: () -> Unit) {
+    val strings = LocalAppStrings.current
     Card(
         modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
@@ -139,7 +141,10 @@ fun EventCard(event: UpcomingEvent, onClick: () -> Unit) {
 
                 Spacer(Modifier.width(16.dp))
                 Column(modifier = Modifier.weight(1f)) {
-                    val displayType = event.type.replace("Wedding Anniversary", "Marriage Anniversary")
+                    val displayType = event.type
+                        .replace("Wedding Anniversary", strings.marriageAnniversary)
+                        .replace("Marriage Anniversary", strings.marriageAnniversary)
+                        .replace("Birthday", strings.birthday)
                     Text(event.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                     Text(displayType, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Text(event.date, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium)

@@ -39,6 +39,7 @@ private val DarkColorScheme = darkColorScheme(
 @Composable
 fun CircleKeepTheme(
     themePreference: String = "System",
+    languagePreference: String = "English",
     content: @Composable () -> Unit
 ) {
     val darkTheme = when (themePreference) {
@@ -49,9 +50,17 @@ fun CircleKeepTheme(
     
     val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
 
-    MaterialTheme(
-        colorScheme = colorScheme,
-        typography = Typography,
-        content = content
-    )
+    val strings = when (languagePreference) {
+        "Hindi" -> HiStrings
+        "Spanish" -> EsStrings
+        else -> EnStrings
+    }
+
+    androidx.compose.runtime.CompositionLocalProvider(LocalAppStrings provides strings) {
+        MaterialTheme(
+            colorScheme = colorScheme,
+            typography = Typography,
+            content = content
+        )
+    }
 }

@@ -150,3 +150,7 @@ dependencies {
     ksp(libs.moshi.kotlin.codegen)
     debugImplementation("androidx.compose.ui:ui-test-manifest:1.7.3")
 }
+
+ksp {
+    arg("room.schemaLocation", "$projectDir/schemas")
+}

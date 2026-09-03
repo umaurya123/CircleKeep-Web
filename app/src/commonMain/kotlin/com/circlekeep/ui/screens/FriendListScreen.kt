@@ -23,6 +23,7 @@ import com.circlekeep.data.Group
 import com.circlekeep.viewmodel.SortOrder
 import com.circlekeep.ui.components.FriendItem
 import com.circlekeep.LocalPlatformUI
+import com.circlekeep.ui.theme.LocalAppStrings
 
 @OptIn(ExperimentalMaterial3Api::class, androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
@@ -51,6 +52,7 @@ fun FriendListScreen(
     onDeleteFriends: (Set<Long>) -> Unit,
     onNavigateToSettings: () -> Unit
 ) {
+    val strings = LocalAppStrings.current
     var showSortMenu by remember { mutableStateOf(false) }
     var showMoreMenu by remember { mutableStateOf(false) }
     var selectedFriendIds by remember { mutableStateOf(setOf<Long>()) }
@@ -81,12 +83,12 @@ fun FriendListScreen(
                 TopAppBar(
                     title = {
                         if (selectionMode) {
-                            Text("${selectedFriendIds.size} selected")
+                            Text("${selectedFriendIds.size} ${strings.selected}")
                         } else {
                             TextField(
                                 value = searchQuery,
                                 onValueChange = onSearchQueryChange,
-                                placeholder = { Text("Search (${friends.size})") },
+                                placeholder = { Text("${strings.search} (${friends.size})") },
                                 modifier = Modifier.fillMaxWidth(),
                                 colors = TextFieldDefaults.colors(
                                     focusedContainerColor = Color.Transparent,
@@ -153,7 +155,7 @@ fun FriendListScreen(
                                         }
                                     )
                                     DropdownMenuItem(
-                                        text = { Text("Group") },
+                                        text = { Text(strings.groups) },
                                         leadingIcon = { if (currentSortOrder == SortOrder.GROUP) Icon(Icons.Rounded.Check, contentDescription = null) },
                                         onClick = {
                                             onSortChange(SortOrder.GROUP)
@@ -161,7 +163,7 @@ fun FriendListScreen(
                                         }
                                     )
                                     DropdownMenuItem(
-                                        text = { Text("Birthday") },
+                                        text = { Text(strings.birthday) },
                                         leadingIcon = { if (currentSortOrder == SortOrder.BIRTHDAY) Icon(Icons.Rounded.Check, contentDescription = null) },
                                         onClick = {
                                             onSortChange(SortOrder.BIRTHDAY)
@@ -169,7 +171,7 @@ fun FriendListScreen(
                                         }
                                     )
                                     DropdownMenuItem(
-                                        text = { Text("Marriage Anniversary") },
+                                        text = { Text(strings.marriageAnniversary) },
                                         leadingIcon = { if (currentSortOrder == SortOrder.MARRIAGE_ANNIVERSARY) Icon(Icons.Rounded.Check, contentDescription = null) },
                                         onClick = {
                                             onSortChange(SortOrder.MARRIAGE_ANNIVERSARY)
@@ -203,7 +205,7 @@ fun FriendListScreen(
                                     onDismissRequest = { showMoreMenu = false }
                                 ) {
                                     DropdownMenuItem(
-                                        text = { Text("Settings") },
+                                        text = { Text(strings.settings) },
                                         leadingIcon = { Icon(Icons.Rounded.Settings, contentDescription = null) },
                                         onClick = {
                                             showMoreMenu = false
@@ -228,7 +230,7 @@ fun FriendListScreen(
                                 isGroupMultiSelectMode = false
                                 onGroupClear()
                             },
-                            label = { Text("All") }
+                            label = { Text(strings.all) }
                         )
                     }
                     
@@ -303,7 +305,7 @@ fun FriendListScreen(
         if (friends.isEmpty()) {
             Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
                 Text(
-                    text = if (searchQuery.isNotBlank() || selectedGroups.isNotEmpty()) "No results found" else "No contacts found",
+                    text = if (searchQuery.isNotBlank() || selectedGroups.isNotEmpty()) strings.noResults else strings.noContacts,
                     color = MaterialTheme.colorScheme.outline
                 )
             }

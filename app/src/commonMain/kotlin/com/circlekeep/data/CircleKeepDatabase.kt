@@ -7,7 +7,7 @@ import androidx.room.RoomDatabaseConstructor
 import androidx.room.TypeConverters
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 
-@Database(entities = [Friend::class, Child::class, Group::class], version = 18, exportSchema = false)
+@Database(entities = [Friend::class, Child::class, Group::class], version = 19, exportSchema = true)
 @TypeConverters(Converters::class)
 @ConstructedBy(AppDatabaseConstructor::class)
 abstract class CircleKeepDatabase : RoomDatabase() {
@@ -23,6 +23,6 @@ fun getRoomDatabase(
 ): CircleKeepDatabase {
     return builder
         .setDriver(BundledSQLiteDriver())
-        .fallbackToDestructiveMigration(true)
+        .addMigrations(MIGRATION_18_19)
         .build()
 }

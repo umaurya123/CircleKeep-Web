@@ -19,6 +19,7 @@ import com.circlekeep.FilePicker
 import com.circlekeep.FilePickerMode
 import com.circlekeep.LocalPlatformUI
 import com.circlekeep.getPlatform
+import com.circlekeep.ui.theme.LocalAppStrings
 import com.circlekeep.viewmodel.FriendViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -27,7 +28,9 @@ fun SettingsScreen(
     viewModel: FriendViewModel,
     onBackClick: () -> Unit
 ) {
+    val strings = LocalAppStrings.current
     val themePreference by viewModel.themeState.collectAsState()
+    val languagePreference by viewModel.languageState.collectAsState()
     val isPaid by viewModel.isPaidState.collectAsState()
     val remindersEnabled by viewModel.remindersEnabledState.collectAsState()
     val platformUI = LocalPlatformUI.current
@@ -72,8 +75,8 @@ fun SettingsScreen(
             TopAppBar(
                 title = {
                     Column {
-                        Text("CircleKeep", style = MaterialTheme.typography.titleLarge)
-                        Text("Settings", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(strings.appName, style = MaterialTheme.typography.titleLarge)
+                        Text(strings.settings, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 },
                 navigationIcon = {
@@ -90,32 +93,52 @@ fun SettingsScreen(
                 .padding(16.dp)
                 .verticalScroll(rememberScrollState())
         ) {
-            Text("Theme", style = MaterialTheme.typography.titleMedium)
+            Text(strings.theme, style = MaterialTheme.typography.titleMedium)
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
                 FilterChip(
                     selected = themePreference == "Light",
                     onClick = { viewModel.onThemeChange("Light") },
-                    label = { Text("Light") }
+                    label = { Text(strings.light) }
                 )
                 FilterChip(
                     selected = themePreference == "Dark",
                     onClick = { viewModel.onThemeChange("Dark") },
-                    label = { Text("Dark") }
+                    label = { Text(strings.dark) }
                 )
                 FilterChip(
                     selected = themePreference == "System",
                     onClick = { viewModel.onThemeChange("System") },
-                    label = { Text("System") }
+                    label = { Text(strings.system) }
                 )
             }
             
+            Spacer(Modifier.height(16.dp))
+            Text(strings.language, style = MaterialTheme.typography.titleMedium)
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
+                FilterChip(
+                    selected = languagePreference == "English",
+                    onClick = { viewModel.onLanguageChange("English") },
+                    label = { Text("English") }
+                )
+                FilterChip(
+                    selected = languagePreference == "Hindi",
+                    onClick = { viewModel.onLanguageChange("Hindi") },
+                    label = { Text("हिन्दी") }
+                )
+                FilterChip(
+                    selected = languagePreference == "Spanish",
+                    onClick = { viewModel.onLanguageChange("Spanish") },
+                    label = { Text("Español") }
+                )
+            }
+
             Spacer(Modifier.height(24.dp))
             HorizontalDivider()
             Spacer(Modifier.height(16.dp))
 
             ListItem(
-                headlineContent = { Text("Event Notifications") },
-                supportingContent = { Text("Notify for birthdays and marriage anniversaries") },
+                headlineContent = { Text(strings.eventNotifications) },
+                supportingContent = { Text(strings.eventNotificationsDesc) },
                 trailingContent = {
                     Switch(
                         checked = remindersEnabled,
@@ -144,7 +167,7 @@ fun SettingsScreen(
                 ) {
                     Icon(Icons.Default.Build, contentDescription = null)
                     Spacer(Modifier.width(8.dp))
-                    Text("Purchase App (Remove Ads)")
+                    Text(strings.purchaseApp)
                 }
                 Spacer(Modifier.height(12.dp))
 
@@ -154,7 +177,7 @@ fun SettingsScreen(
                 ) {
                     Icon(Icons.Default.Build, contentDescription = null)
                     Spacer(Modifier.width(8.dp))
-                    Text("Restore Purchases")
+                    Text(strings.restorePurchases)
                 }
                 Spacer(Modifier.height(12.dp))
             }
@@ -165,7 +188,7 @@ fun SettingsScreen(
             ) {
                 Icon(Icons.Default.Share, contentDescription = null)
                 Spacer(Modifier.width(8.dp))
-                Text("Export Data")
+                Text(strings.exportData)
             }
             
             Spacer(Modifier.height(12.dp))
@@ -173,7 +196,7 @@ fun SettingsScreen(
             OutlinedButton(onClick = { importTrigger = true }, modifier = Modifier.fillMaxWidth()) {
                 Icon(Icons.Default.ArrowDownward, contentDescription = null)
                 Spacer(Modifier.width(8.dp))
-                Text("Import Data")
+                Text(strings.importData)
             }
 
             Spacer(Modifier.height(12.dp))
@@ -184,7 +207,7 @@ fun SettingsScreen(
             ) {
                 Icon(Icons.Default.Email, contentDescription = null)
                 Spacer(Modifier.width(8.dp))
-                Text("Send Feedback")
+                Text(strings.sendFeedback)
             }
 
             val isDebugOrBeta = platform.buildVariant.lowercase().let { it == "debug" || it == "beta" } || 
@@ -202,25 +225,25 @@ fun SettingsScreen(
                 ) {
                     Icon(Icons.Default.DeleteForever, contentDescription = null)
                     Spacer(Modifier.width(8.dp))
-                    Text("Delete All Records")
+                    Text(strings.deleteAllRecords)
                 }
             }
 
             Spacer(Modifier.weight(1f))
             
             ListItem(
-                headlineContent = { Text("App Version") },
+                headlineContent = { Text(strings.appVersion) },
                 supportingContent = { Text("${platform.appVersion} (${platform.buildVariant})") }
             )
             HorizontalDivider()
             ListItem(
-                headlineContent = { Text("Developer") },
+                headlineContent = { Text(strings.developer) },
                 supportingContent = { Text("CircleKeep Team") }
             )
             if (isPaid) {
                 ListItem(
-                    headlineContent = { Text("Status") },
-                    supportingContent = { Text("Pro Version Active", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold) }
+                    headlineContent = { Text(strings.status) },
+                    supportingContent = { Text(strings.proVersionActive, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold) }
                 )
             }
         }
@@ -229,7 +252,7 @@ fun SettingsScreen(
     if (showImportDialog && importData != null) {
         AlertDialog(
             onDismissRequest = { showImportDialog = false },
-            title = { Text("Import Data") },
+            title = { Text(strings.importData) },
             text = { Text("Are you sure you want to import this data? Existing matches will be skipped.") },
             confirmButton = {
                 TextButton(
@@ -239,12 +262,12 @@ fun SettingsScreen(
                         importData = null
                     }
                 ) {
-                    Text("Import")
+                    Text(strings.importData)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showImportDialog = false }) {
-                    Text("Cancel")
+                    Text(strings.cancel)
                 }
             }
         )
@@ -253,7 +276,7 @@ fun SettingsScreen(
     if (showDeleteAllDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteAllDialog = false },
-            title = { Text("Delete All Records") },
+            title = { Text(strings.deleteAllRecords) },
             text = { Text("Are you sure you want to delete all friends, children, and groups? This action cannot be undone.") },
             confirmButton = {
                 TextButton(
@@ -265,12 +288,12 @@ fun SettingsScreen(
                         contentColor = MaterialTheme.colorScheme.error
                     )
                 ) {
-                    Text("Delete All")
+                    Text(strings.delete)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDeleteAllDialog = false }) {
-                    Text("Cancel")
+                    Text(strings.cancel)
                 }
             }
         )
