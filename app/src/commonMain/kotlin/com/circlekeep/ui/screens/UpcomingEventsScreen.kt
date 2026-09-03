@@ -1,6 +1,7 @@
 package com.circlekeep.ui.screens
 
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.layout.*
@@ -33,19 +34,19 @@ fun UpcomingEventsScreen(
     val strings = LocalAppStrings.current
     val events by viewModel.upcomingEventsState.collectAsState()
 
-    // Group events by timeframe
-    val groupedEvents = remember(events) {
+    // Map timeframes to localized strings
+    val groupedEvents = remember(events, strings) {
         events.groupBy {
             when {
-                it.daysRemaining == 0 -> "Today"
-                it.daysRemaining == 1 -> "Tomorrow"
-                it.daysRemaining <= 7 -> "This Week"
-                else -> "Later this Month"
+                it.daysRemaining == 0 -> strings.today
+                it.daysRemaining == 1 -> strings.tomorrow
+                it.daysRemaining <= 7 -> strings.thisWeek
+                else -> strings.laterThisMonth
             }
         }
     }
 
-    val categories = listOf("Today", "Tomorrow", "This Week", "Later this Month")
+    val categories = listOf(strings.today, strings.tomorrow, strings.thisWeek, strings.laterThisMonth)
 
     Scaffold(
         topBar = {
@@ -64,7 +65,7 @@ fun UpcomingEventsScreen(
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Icon(Icons.Rounded.Notifications, contentDescription = null, modifier = Modifier.size(64.dp), tint = MaterialTheme.colorScheme.outline)
                     Spacer(Modifier.height(16.dp))
-                    Text("No events in the next 30 days", color = MaterialTheme.colorScheme.outline)
+                    Text(strings.noEvents, color = MaterialTheme.colorScheme.outline)
                 }
             }
         } else {
@@ -84,7 +85,7 @@ fun UpcomingEventsScreen(
                                     text = category,
                                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                                     style = MaterialTheme.typography.titleSmall,
-                                    color = if (category == "Today") MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary
+                                    color = if (category == strings.today) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary
                                 )
                             }
                         }
@@ -151,9 +152,9 @@ fun EventCard(event: UpcomingEvent, onClick: () -> Unit) {
                 }
                 Column(horizontalAlignment = Alignment.End) {
                     val dayText = when (event.daysRemaining) {
-                        0 -> "Today!"
-                        1 -> "Tomorrow"
-                        else -> "In ${event.daysRemaining} days"
+                        0 -> strings.today + "!"
+                        1 -> strings.tomorrow
+                        else -> "In ${event.daysRemaining} days" // Need to localize "In X days" if possible
                     }
                     Text(
                         text = dayText,

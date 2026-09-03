@@ -23,6 +23,7 @@ import com.circlekeep.data.Friend
 import com.circlekeep.data.FriendWithChildren
 import com.circlekeep.getPlatform
 import com.circlekeep.ui.components.DetailRow
+import com.circlekeep.ui.theme.LocalAppStrings
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -34,6 +35,7 @@ fun FriendDetailScreen(
     onConvertPartnerClick: (FriendWithChildren) -> Unit,
     onBackClick: () -> Unit
 ) {
+    val strings = LocalAppStrings.current
     val platformUI = LocalPlatformUI.current
     val platform = getPlatform()
     var showDeleteDialog by remember { mutableStateOf(false) }
@@ -41,10 +43,10 @@ fun FriendDetailScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("CircleKeep") },
+                title = { Text(strings.appName) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = null)
+                        Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = strings.cancel)
                     }
                 },
                 actions = {
@@ -56,7 +58,7 @@ fun FriendDetailScreen(
                         }
                         var showQrDialog by remember { mutableStateOf(false) }
                         IconButton(onClick = { showQrDialog = true }) {
-                            Icon(Icons.Rounded.QrCode, contentDescription = "Share QR")
+                            Icon(Icons.Rounded.QrCode, contentDescription = strings.shareContact)
                         }
                         if (showQrDialog) {
                             val qrContent = buildString {
@@ -72,14 +74,12 @@ fun FriendDetailScreen(
                                 append("DOB:${friendWithChildren.friend.dateOfBirth}\n")
                                 append("ANN:${friendWithChildren.friend.anniversaryDate}\n")
                                 append("NTS:${friendWithChildren.friend.notes}\n")
-                                // For full data including children, we'd need a more compact format (JSON/Protobuf) 
-                                // and potentially multiple QRs if it exceeds 3KB, but this covers the main fields.
                             }
                             val qrUrl = "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${platformUI.encodeUrl(qrContent)}"
                             
                             AlertDialog(
                                 onDismissRequest = { showQrDialog = false },
-                                title = { Text("Share Contact") },
+                                title = { Text(strings.shareContact) },
                                 text = {
                                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                         AsyncImage(
@@ -88,12 +88,12 @@ fun FriendDetailScreen(
                                             modifier = Modifier.size(200.dp)
                                         )
                                         Spacer(Modifier.height(8.dp))
-                                        Text("Scan to add to contacts", style = MaterialTheme.typography.labelMedium)
+                                        Text(strings.scanToAdd, style = MaterialTheme.typography.labelMedium)
                                     }
                                 },
                                 confirmButton = {
                                     TextButton(onClick = { showQrDialog = false }) {
-                                        Text("Close")
+                                        Text(strings.close)
                                     }
                                 }
                             )
@@ -101,10 +101,10 @@ fun FriendDetailScreen(
                         IconButton(onClick = { 
                             onEditClick(friendWithChildren.friend.id, null)
                         }) {
-                            Icon(Icons.Rounded.Edit, contentDescription = "Edit")
+                            Icon(Icons.Rounded.Edit, contentDescription = strings.editContact)
                         }
                         IconButton(onClick = { showDeleteDialog = true }) {
-                            Icon(Icons.Rounded.Delete, contentDescription = "Delete")
+                            Icon(Icons.Rounded.Delete, contentDescription = strings.delete)
                         }
                     }
                 }
@@ -182,7 +182,7 @@ fun FriendDetailScreen(
                         
                         Card(modifier = Modifier.padding(vertical = 8.dp).fillMaxWidth()) {
                             Column(modifier = Modifier.padding(8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                                Text("Memory Photo", style = MaterialTheme.typography.labelMedium)
+                                Text(strings.memoryPhoto, style = MaterialTheme.typography.labelMedium)
                                 Spacer(Modifier.height(4.dp))
                                 AsyncImage(
                                     model = friendWithChildren.friend.secondaryImageUri,
@@ -194,7 +194,7 @@ fun FriendDetailScreen(
                                     contentScale = ContentScale.Crop
                                 )
                                 TextButton(onClick = { showFullScreen = true }) {
-                                    Text("View Full")
+                                    Text(strings.viewFull)
                                 }
                             }
                         }
@@ -212,7 +212,7 @@ fun FriendDetailScreen(
                                 },
                                 confirmButton = {
                                     TextButton(onClick = { showFullScreen = false }) {
-                                        Text("Close")
+                                        Text(strings.close)
                                     }
                                 }
                             )
@@ -229,37 +229,37 @@ fun FriendDetailScreen(
                         platformUI.sendEmail(friendWithChildren.friend.email)
                     })
                     if (friendWithChildren.friend.workEmail.isNotBlank()) {
-                        DetailRow(Icons.Rounded.Email, friendWithChildren.friend.workEmail, label = "Work Email", onClick = {
+                        DetailRow(Icons.Rounded.Email, friendWithChildren.friend.workEmail, label = strings.workEmail, onClick = {
                             platformUI.sendEmail(friendWithChildren.friend.workEmail)
                         })
                     }
                     DetailRow(Icons.Rounded.Cake, platform.formatDisplayDate(friendWithChildren.friend.dateOfBirth), label = buildString {
-                        append("DOB")
+                        append(strings.dob)
                         platform.calculateAge(friendWithChildren.friend.dateOfBirth)?.let { append(" ($it yrs)") }
                     })
                     if (friendWithChildren.friend.dateOfBirth.isBlank() && friendWithChildren.friend.birthDay.isNotBlank() && friendWithChildren.friend.birthMonth.isNotBlank()) {
                         DetailRow(
                             icon = Icons.Rounded.Cake,
                             text = platform.formatPartialDate(friendWithChildren.friend.birthDay, friendWithChildren.friend.birthMonth),
-                            label = "Birthday"
+                            label = strings.birthday
                         )
                     }
                     DetailRow(Icons.Rounded.Favorite, platform.formatDisplayDate(friendWithChildren.friend.anniversaryDate), label = buildString {
-                        append("Marriage Date")
+                        append(strings.marriageAnniversary)
                         platform.calculateAge(friendWithChildren.friend.anniversaryDate)?.let { append(" ($it yrs)") }
                     })
                     if (friendWithChildren.friend.anniversaryDate.isBlank() && friendWithChildren.friend.anniversaryDay.isNotBlank() && friendWithChildren.friend.anniversaryMonth.isNotBlank()) {
                         DetailRow(
                             icon = Icons.Rounded.Favorite,
                             text = platform.formatPartialDate(friendWithChildren.friend.anniversaryDay, friendWithChildren.friend.anniversaryMonth),
-                            label = "Marriage Day"
+                            label = strings.marriageAnniversary
                         )
                     }
-                    DetailRow(Icons.Rounded.People, friendWithChildren.friend.siblings, label = "Siblings")
+                    DetailRow(Icons.Rounded.People, friendWithChildren.friend.siblings, label = strings.siblings)
                     DetailRow(Icons.Rounded.Group, friendWithChildren.friend.groups.joinToString(", "))
                     
                     if (friendWithChildren.friend.petName.isNotBlank()) {
-                        DetailRow(Icons.Rounded.Pets, friendWithChildren.friend.petName, label = "Pet Name")
+                        DetailRow(Icons.Rounded.Pets, friendWithChildren.friend.petName, label = strings.petName)
                         if (friendWithChildren.friend.petImageUri != null) {
                             Card(modifier = Modifier.padding(start = 44.dp, top = 4.dp, bottom = 8.dp).size(100.dp)) {
                                 AsyncImage(
@@ -276,12 +276,12 @@ fun FriendDetailScreen(
 
                     Spacer(Modifier.height(16.dp))
                     Text(
-                        text = "Created: ${platform.formatTimestamp(friendWithChildren.friend.createdAt)}",
+                        text = "${strings.created}: ${platform.formatTimestamp(friendWithChildren.friend.createdAt)}",
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
                     )
                     Text(
-                        text = "Last Modified: ${platform.formatTimestamp(friendWithChildren.friend.lastModifiedAt)}",
+                        text = "${strings.lastModified}: ${platform.formatTimestamp(friendWithChildren.friend.lastModifiedAt)}",
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
                     )
@@ -290,17 +290,17 @@ fun FriendDetailScreen(
                 if (friendWithChildren.friend.partnerFirstName.isNotBlank()) {
                     item {
                         Spacer(Modifier.height(16.dp))
-                        val partnerTypeStr = friendWithChildren.friend.partnerType
-                        val partnerHeader = partnerTypeStr.ifBlank { "Partner" }
+                        val partnerTypeKey = friendWithChildren.friend.partnerType
+                        val partnerHeader = if (partnerTypeKey.isBlank()) strings.partner else (strings.partnerTypes[partnerTypeKey] ?: partnerTypeKey)
                         
                         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                             Text(partnerHeader, style = MaterialTheme.typography.titleLarge)
                             Row {
                                 IconButton(onClick = { onConvertPartnerClick(friendWithChildren) }) {
-                                    Icon(Icons.Rounded.PersonAdd, contentDescription = "Add as Contact", tint = MaterialTheme.colorScheme.primary)
+                                    Icon(Icons.Rounded.PersonAdd, contentDescription = strings.addContact, tint = MaterialTheme.colorScheme.primary)
                                 }
                                 IconButton(onClick = { onEditClick(friendWithChildren.friend.id, -1L) }) {
-                                    Icon(Icons.Rounded.Edit, contentDescription = "Edit")
+                                    Icon(Icons.Rounded.Edit, contentDescription = strings.editContact)
                                 }
                             }
                         }
@@ -344,10 +344,10 @@ fun FriendDetailScreen(
                                     }
                                 }
                                 if (friendWithChildren.friend.partnerCompanyName.isNotBlank()) {
-                                    DetailRow(Icons.Rounded.Business, friendWithChildren.friend.partnerCompanyName, label = "Company")
+                                    DetailRow(Icons.Rounded.Business, friendWithChildren.friend.partnerCompanyName, label = strings.companyName)
                                 }
                                 if (friendWithChildren.friend.partnerCollegeSchoolName.isNotBlank()) {
-                                    DetailRow(Icons.Rounded.School, friendWithChildren.friend.partnerCollegeSchoolName, label = "College/School")
+                                    DetailRow(Icons.Rounded.School, friendWithChildren.friend.partnerCollegeSchoolName, label = strings.collegeName)
                                 }
                                 if (friendWithChildren.friend.partnerEmail.isNotBlank()) {
                                     DetailRow(Icons.Rounded.Email, friendWithChildren.friend.partnerEmail, onClick = {
@@ -355,7 +355,7 @@ fun FriendDetailScreen(
                                     })
                                 }
                                 if (friendWithChildren.friend.partnerWorkEmail.isNotBlank()) {
-                                    DetailRow(Icons.Rounded.Email, friendWithChildren.friend.partnerWorkEmail, label = "Work Email", onClick = {
+                                    DetailRow(Icons.Rounded.Email, friendWithChildren.friend.partnerWorkEmail, label = strings.workEmail, onClick = {
                                         platformUI.sendEmail(friendWithChildren.friend.partnerWorkEmail)
                                     })
                                 }
@@ -364,7 +364,7 @@ fun FriendDetailScreen(
                                         icon = Icons.Rounded.Cake,
                                         text = platform.formatDisplayDate(friendWithChildren.friend.partnerDateOfBirth),
                                         label = buildString {
-                                            append("DOB")
+                                            append(strings.dob)
                                             platform.calculateAge(friendWithChildren.friend.partnerDateOfBirth)?.let { append(" ($it yrs)") }
                                         }
                                     )
@@ -372,11 +372,11 @@ fun FriendDetailScreen(
                                     DetailRow(
                                         icon = Icons.Rounded.Cake,
                                         text = platform.formatPartialDate(friendWithChildren.friend.partnerBirthDay, friendWithChildren.friend.partnerBirthMonth),
-                                        label = "Birthday"
+                                        label = strings.birthday
                                     )
                                 }
                                 if (friendWithChildren.friend.partnerSiblings.isNotBlank()) {
-                                    DetailRow(Icons.Rounded.People, friendWithChildren.friend.partnerSiblings, label = "Siblings")
+                                    DetailRow(Icons.Rounded.People, friendWithChildren.friend.partnerSiblings, label = strings.siblings)
                                 }
                             }
                         }
@@ -386,7 +386,7 @@ fun FriendDetailScreen(
                 if (friendWithChildren.children.isNotEmpty()) {
                     item {
                         Spacer(Modifier.height(16.dp))
-                        Text("Children", style = MaterialTheme.typography.titleLarge)
+                        Text(strings.children, style = MaterialTheme.typography.titleLarge)
                         HorizontalDivider(Modifier.padding(vertical = 8.dp))
                     }
                     items(friendWithChildren.children) { child ->
@@ -429,7 +429,7 @@ fun FriendDetailScreen(
                                         }
                                     }
                                     IconButton(onClick = { onEditClick(friendWithChildren.friend.id, child.id) }) {
-                                        Icon(Icons.Rounded.Edit, contentDescription = "Edit")
+                                        Icon(Icons.Rounded.Edit, contentDescription = strings.editContact)
                                     }
                                 }
                                 if (child.collegeSchoolName.isNotBlank()) {
@@ -441,13 +441,13 @@ fun FriendDetailScreen(
                                     })
                                 }
                                 if (child.workEmail.isNotBlank()) {
-                                    DetailRow(Icons.Rounded.Email, child.workEmail, label = "Work Email", onClick = {
+                                    DetailRow(Icons.Rounded.Email, child.workEmail, label = strings.workEmail, onClick = {
                                         platformUI.sendEmail(child.workEmail)
                                     })
                                 }
                                 if (child.dateOfBirth.isNotBlank()) {
                                     DetailRow(Icons.Rounded.Cake, platform.formatDisplayDate(child.dateOfBirth), label = buildString {
-                                        append("DOB")
+                                        append(strings.dob)
                                         platform.calculateAge(child.dateOfBirth)?.let { append(" ($it yrs)") }
                                     })
                                 } else {
@@ -455,24 +455,24 @@ fun FriendDetailScreen(
                                         DetailRow(
                                             icon = Icons.Rounded.Cake,
                                             text = platform.formatPartialDate(child.birthDay, child.birthMonth),
-                                            label = "Birthday"
+                                            label = strings.birthday
                                         )
                                     }
                                     if (child.age != null) {
                                         DetailRow(
                                             icon = Icons.Rounded.Cake,
-                                            text = "${child.age} ${child.ageUnit}",
-                                            label = "Age"
+                                            text = "${child.age} ${if (child.ageUnit.contains("Month")) strings.monthUnit else strings.yearUnit}",
+                                            label = strings.age
                                         )
                                     }
                                 }
                                 
                                 if (child.siblings.isNotBlank()) {
-                                    DetailRow(Icons.Rounded.People, child.siblings, label = "Siblings")
+                                    DetailRow(Icons.Rounded.People, child.siblings, label = strings.siblings)
                                 }
                                 
                                 if (child.petName.isNotBlank()) {
-                                    DetailRow(Icons.Rounded.Pets, child.petName, label = "Pet Name")
+                                    DetailRow(Icons.Rounded.Pets, child.petName, label = strings.petName)
                                     if (child.petImageUri != null) {
                                         Card(modifier = Modifier.padding(start = 44.dp, top = 4.dp, bottom = 8.dp).size(80.dp)) {
                                             AsyncImage(model = child.petImageUri, contentDescription = null, modifier = Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
@@ -487,17 +487,17 @@ fun FriendDetailScreen(
                                 if (child.partnerFirstName.isNotBlank()) {
                                     Spacer(Modifier.height(8.dp))
                                     if (child.anniversaryDate.isNotBlank()) {
-                                        DetailRow(Icons.Rounded.Favorite, platform.formatDisplayDate(child.anniversaryDate), label = "Marriage Date")
+                                        DetailRow(Icons.Rounded.Favorite, platform.formatDisplayDate(child.anniversaryDate), label = strings.marriageAnniversary)
                                     } else if (child.anniversaryDay.isNotBlank() && child.anniversaryMonth.isNotBlank()) {
                                         DetailRow(
                                             icon = Icons.Rounded.Favorite,
                                             text = platform.formatPartialDate(child.anniversaryDay, child.anniversaryMonth),
-                                            label = "Marriage Day"
+                                            label = strings.marriageAnniversary
                                         )
                                     }
                                     
-                                    val partnerTypeStr = child.partnerType
-                                    val partnerLabel = partnerTypeStr.ifBlank { "Partner" }
+                                    val partnerTypeKey = child.partnerType
+                                    val partnerLabel = if (partnerTypeKey.isBlank()) strings.partner else (strings.partnerTypes[partnerTypeKey] ?: partnerTypeKey)
                                     
                                     val childPartnerDisplayName = buildString {
                                         append(child.partnerFirstName)
@@ -520,10 +520,10 @@ fun FriendDetailScreen(
                                         })
                                     }
                                     if (child.partnerCompanyName.isNotBlank()) {
-                                        DetailRow(Icons.Rounded.Business, child.partnerCompanyName, label = "Company")
+                                        DetailRow(Icons.Rounded.Business, child.partnerCompanyName, label = strings.companyName)
                                     }
                                     if (child.partnerCollegeSchoolName.isNotBlank()) {
-                                        DetailRow(Icons.Rounded.School, child.partnerCollegeSchoolName, label = "College/School")
+                                        DetailRow(Icons.Rounded.School, child.partnerCollegeSchoolName, label = strings.collegeName)
                                     }
                                     if (child.partnerEmail.isNotBlank()) {
                                         DetailRow(Icons.Rounded.Email, child.partnerEmail, onClick = {
@@ -531,7 +531,7 @@ fun FriendDetailScreen(
                                         })
                                     }
                                     if (child.partnerWorkEmail.isNotBlank()) {
-                                        DetailRow(Icons.Rounded.Email, child.partnerWorkEmail, label = "Work Email", onClick = {
+                                        DetailRow(Icons.Rounded.Email, child.partnerWorkEmail, label = strings.workEmail, onClick = {
                                             platformUI.sendEmail(child.partnerWorkEmail)
                                         })
                                     }
@@ -540,7 +540,7 @@ fun FriendDetailScreen(
                                             icon = Icons.Rounded.Cake,
                                             text = platform.formatDisplayDate(child.partnerDateOfBirth),
                                             label = buildString {
-                                                append("DOB")
+                                                append(strings.dob)
                                                 platform.calculateAge(child.partnerDateOfBirth)?.let { append(" ($it yrs)") }
                                             }
                                         )
@@ -548,11 +548,11 @@ fun FriendDetailScreen(
                                         DetailRow(
                                             icon = Icons.Rounded.Cake,
                                             text = platform.formatPartialDate(child.partnerBirthDay, child.partnerBirthMonth),
-                                            label = "Birthday"
+                                            label = strings.birthday
                                         )
                                     }
                                     if (child.partnerSiblings.isNotBlank()) {
-                                        DetailRow(Icons.Rounded.People, child.partnerSiblings, label = "Siblings")
+                                        DetailRow(Icons.Rounded.People, child.partnerSiblings, label = strings.siblings)
                                     }
                                 }
                             }
@@ -566,7 +566,7 @@ fun FriendDetailScreen(
     if (showDeleteDialog && friendWithChildren != null) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
-            title = { Text("Delete Friend") },
+            title = { Text(strings.delete) },
             text = { Text("Are you sure you want to delete this friend?") },
             confirmButton = {
                 TextButton(
@@ -575,12 +575,12 @@ fun FriendDetailScreen(
                         showDeleteDialog = false
                     }
                 ) {
-                    Text("Delete")
+                    Text(strings.delete)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDeleteDialog = false }) {
-                    Text("Cancel")
+                    Text(strings.cancel)
                 }
             }
         )

@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import com.circlekeep.data.Group
 import com.circlekeep.ui.components.PlaceholderAvatar
 import com.circlekeep.viewmodel.FriendViewModel
+import com.circlekeep.ui.theme.LocalAppStrings
 
 @OptIn(ExperimentalMaterial3Api::class, androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
@@ -33,6 +34,7 @@ fun GroupsScreen(
     onDeleteGroup: (Group) -> Unit,
     onRenameGroup: (String, String) -> Unit
 ) {
+    val strings = LocalAppStrings.current
     val friends by viewModel.friendsState.collectAsState()
 
     var showAddDialog by remember { mutableStateOf(false) }
@@ -46,7 +48,7 @@ fun GroupsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Groups") },
+                title = { Text(strings.groups) },
                 actions = {
                     IconButton(onClick = { isReorderMode = !isReorderMode }) {
                         Icon(
@@ -63,7 +65,7 @@ fun GroupsScreen(
     ) { padding ->
         if (groups.isEmpty()) {
             Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
-                Text("No groups yet")
+                Text(strings.noContacts) // Or a more specific string
             }
         } else {
             LazyColumn(modifier = Modifier.padding(padding)) {
@@ -139,12 +141,12 @@ fun GroupsScreen(
     if (showAddDialog) {
         AlertDialog(
             onDismissRequest = { showAddDialog = false },
-            title = { Text("Add New Group") },
+            title = { Text(strings.groups) }, // "Add New Group"
             text = {
                 OutlinedTextField(
                     value = newGroupName,
                     onValueChange = { newGroupName = it },
-                    label = { Text("Group Name") },
+                    label = { Text(strings.groups) }, // "Group Name"
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words)
                 )
@@ -159,12 +161,12 @@ fun GroupsScreen(
                         }
                     }
                 ) {
-                    Text("OK")
+                    Text(strings.ok)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showAddDialog = false }) {
-                    Text("Cancel")
+                    Text(strings.cancel)
                 }
             }
         )
@@ -173,12 +175,12 @@ fun GroupsScreen(
     if (showEditDialog && groupToEdit != null) {
         AlertDialog(
             onDismissRequest = { showEditDialog = false },
-            title = { Text("Rename Group") },
+            title = { Text(strings.editContact) }, // "Rename Group"
             text = {
                 OutlinedTextField(
                     value = editGroupName,
                     onValueChange = { editGroupName = it },
-                    label = { Text("Group Name") },
+                    label = { Text(strings.groups) }, // "Group Name"
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words)
                 )
@@ -195,12 +197,12 @@ fun GroupsScreen(
                         }
                     }
                 ) {
-                    Text("OK")
+                    Text(strings.ok)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showEditDialog = false }) {
-                    Text("Cancel")
+                    Text(strings.cancel)
                 }
             }
         )
@@ -209,8 +211,8 @@ fun GroupsScreen(
     if (groupToDelete != null) {
         AlertDialog(
             onDismissRequest = { groupToDelete = null },
-            title = { Text("Delete Group") },
-            text = { Text("Are you sure you want to delete group \"${groupToDelete?.name}\"?") },
+            title = { Text(strings.delete) }, // "Delete Group"
+            text = { Text("${strings.delete} \"${groupToDelete?.name}\"?") },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -218,12 +220,12 @@ fun GroupsScreen(
                         groupToDelete = null
                     }
                 ) {
-                    Text("Delete") 
+                    Text(strings.delete) 
                 }
             },
             dismissButton = {
                 TextButton(onClick = { groupToDelete = null }) {
-                    Text("Cancel")
+                    Text(strings.cancel)
                 }
             }
         )

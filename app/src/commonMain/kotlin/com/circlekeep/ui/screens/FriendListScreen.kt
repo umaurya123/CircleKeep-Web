@@ -139,7 +139,7 @@ fun FriendListScreen(
                                     onDismissRequest = { showSortMenu = false }
                                 ) {
                                     DropdownMenuItem(
-                                        text = { Text("First, Last Name") },
+                                        text = { Text(strings.sortFirstLast) },
                                         leadingIcon = { if (currentSortOrder == SortOrder.FIRST_LAST_NAME) Icon(Icons.Rounded.Check, contentDescription = null) },
                                         onClick = {
                                             onSortChange(SortOrder.FIRST_LAST_NAME)
@@ -147,7 +147,7 @@ fun FriendListScreen(
                                         }
                                     )
                                     DropdownMenuItem(
-                                        text = { Text("Last, First Name") },
+                                        text = { Text(strings.sortLastFirst) },
                                         leadingIcon = { if (currentSortOrder == SortOrder.LAST_FIRST_NAME) Icon(Icons.Rounded.Check, contentDescription = null) },
                                         onClick = {
                                             onSortChange(SortOrder.LAST_FIRST_NAME)
@@ -155,7 +155,7 @@ fun FriendListScreen(
                                         }
                                     )
                                     DropdownMenuItem(
-                                        text = { Text(strings.groups) },
+                                        text = { Text(strings.sortGroup) },
                                         leadingIcon = { if (currentSortOrder == SortOrder.GROUP) Icon(Icons.Rounded.Check, contentDescription = null) },
                                         onClick = {
                                             onSortChange(SortOrder.GROUP)
@@ -163,7 +163,7 @@ fun FriendListScreen(
                                         }
                                     )
                                     DropdownMenuItem(
-                                        text = { Text(strings.birthday) },
+                                        text = { Text(strings.sortBirthday) },
                                         leadingIcon = { if (currentSortOrder == SortOrder.BIRTHDAY) Icon(Icons.Rounded.Check, contentDescription = null) },
                                         onClick = {
                                             onSortChange(SortOrder.BIRTHDAY)
@@ -171,7 +171,7 @@ fun FriendListScreen(
                                         }
                                     )
                                     DropdownMenuItem(
-                                        text = { Text(strings.marriageAnniversary) },
+                                        text = { Text(strings.sortAnniversary) },
                                         leadingIcon = { if (currentSortOrder == SortOrder.MARRIAGE_ANNIVERSARY) Icon(Icons.Rounded.Check, contentDescription = null) },
                                         onClick = {
                                             onSortChange(SortOrder.MARRIAGE_ANNIVERSARY)
@@ -179,7 +179,7 @@ fun FriendListScreen(
                                         }
                                     )
                                     DropdownMenuItem(
-                                        text = { Text("Creation Date") },
+                                        text = { Text(strings.sortCreationDate) },
                                         leadingIcon = { if (currentSortOrder == SortOrder.CREATION_DATE) Icon(Icons.Rounded.Check, contentDescription = null) },
                                         onClick = {
                                             onSortChange(SortOrder.CREATION_DATE)
@@ -187,7 +187,7 @@ fun FriendListScreen(
                                         }
                                     )
                                     DropdownMenuItem(
-                                        text = { Text("Last Modified") },
+                                        text = { Text(strings.sortLastModified) },
                                         leadingIcon = { if (currentSortOrder == SortOrder.LAST_MODIFIED) Icon(Icons.Rounded.Check, contentDescription = null) },
                                         onClick = {
                                             onSortChange(SortOrder.LAST_MODIFIED)

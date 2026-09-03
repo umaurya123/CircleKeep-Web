@@ -23,6 +23,7 @@ import coil3.compose.AsyncImage
 import coil3.compose.SubcomposeAsyncImage
 import com.circlekeep.getPlatform
 import com.circlekeep.DatePickerField
+import com.circlekeep.ui.theme.LocalAppStrings
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -61,6 +62,7 @@ fun PartnerSectionEdit(
     onPartnerImageUriChange: (String?) -> Unit,
     onSelectImage: () -> Unit
 ) {
+    val strings = LocalAppStrings.current
     var showMore by remember { mutableStateOf(false) }
     val focusManager = LocalFocusManager.current
     val platform = getPlatform()
@@ -92,11 +94,11 @@ fun PartnerSectionEdit(
                 Column(modifier = Modifier.weight(1f)) {
                     Row {
                         TextButton(onClick = { onSelectImage() }) {
-                            Text("Select Image")
+                            Text(strings.selectImage)
                         }
                         if (partnerImageUri != null) {
                             TextButton(onClick = { onPartnerImageUriChange(null) }) {
-                                Text("Remove Image", color = MaterialTheme.colorScheme.error)
+                                Text(strings.removeImage, color = MaterialTheme.colorScheme.error)
                             }
                         }
                     }
@@ -107,7 +109,7 @@ fun PartnerSectionEdit(
             OutlinedTextField(
                 value = partnerFirstName,
                 onValueChange = onPartnerFirstNameChange,
-                label = { Text("First Name") },
+                label = { Text(strings.firstName) },
                 modifier = modifier,
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(
@@ -118,7 +120,7 @@ fun PartnerSectionEdit(
             OutlinedTextField(
                 value = partnerMiddleName,
                 onValueChange = onPartnerMiddleNameChange,
-                label = { Text("Middle Name") },
+                label = { Text(strings.middleName) },
                 modifier = modifier,
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(
@@ -129,7 +131,7 @@ fun PartnerSectionEdit(
             OutlinedTextField(
                 value = partnerLastName,
                 onValueChange = onPartnerLastNameChange,
-                label = { Text("Last Name") },
+                label = { Text(strings.lastName) },
                 modifier = modifier,
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(
@@ -140,7 +142,7 @@ fun PartnerSectionEdit(
             OutlinedTextField(
                 value = partnerNickname,
                 onValueChange = onPartnerNicknameChange,
-                label = { Text("Nickname") },
+                label = { Text(strings.nickname) },
                 modifier = modifier,
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(
@@ -151,7 +153,7 @@ fun PartnerSectionEdit(
             OutlinedTextField(
                 value = partnerPhone,
                 onValueChange = onPartnerPhoneChange,
-                label = { Text("Partner Phone") },
+                label = { Text(strings.cellPhone) },
                 modifier = modifier,
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(
@@ -162,7 +164,7 @@ fun PartnerSectionEdit(
             OutlinedTextField(
                 value = partnerEmail,
                 onValueChange = onPartnerEmailChange,
-                label = { Text("Email") },
+                label = { Text(strings.email) },
                 modifier = modifier,
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(
@@ -173,7 +175,7 @@ fun PartnerSectionEdit(
             OutlinedTextField(
                 value = partnerWorkEmail,
                 onValueChange = onPartnerWorkEmailChange,
-                label = { Text("Work Email") },
+                label = { Text(strings.workEmail) },
                 modifier = modifier,
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(
@@ -198,14 +200,14 @@ fun PartnerSectionEdit(
                         } catch (_: Exception) {}
                     }
                 },
-                label = "Partner DOB",
+                label = strings.partnerDob,
                 modifier = modifier
             )
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 OutlinedTextField(
                     value = partnerBirthDay,
                     onValueChange = onPartnerBirthDayChange,
-                    label = { Text("Day") },
+                    label = { Text(strings.day) },
                     modifier = modifier.weight(0.4f).onPreviewKeyEvent { 
                         if (it.key == Key.Tab && it.type == KeyEventType.KeyDown) {
                             focusManager.moveFocus(if (it.isShiftPressed) FocusDirection.Previous else FocusDirection.Next)
@@ -227,7 +229,7 @@ fun PartnerSectionEdit(
                 OutlinedTextField(
                     value = partnerSiblings,
                     onValueChange = onPartnerSiblingsChange,
-                    label = { Text("Siblings") },
+                    label = { Text(strings.siblings) },
                     modifier = modifier,
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(
@@ -238,7 +240,7 @@ fun PartnerSectionEdit(
                 OutlinedTextField(
                     value = partnerCompanyName,
                     onValueChange = onPartnerCompanyNameChange,
-                    label = { Text("Company Name") },
+                    label = { Text(strings.companyName) },
                     modifier = modifier,
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(
@@ -249,7 +251,7 @@ fun PartnerSectionEdit(
                 OutlinedTextField(
                     value = partnerCollegeSchoolName,
                     onValueChange = onPartnerCollegeSchoolNameChange,
-                    label = { Text("College Name") },
+                    label = { Text(strings.collegeName) },
                     modifier = modifier,
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(
@@ -268,7 +270,7 @@ fun PartnerSectionEdit(
                     contentDescription = null
                 )
                 Spacer(Modifier.width(8.dp))
-                Text(if (showMore) "Show Less" else "Show More")
+                Text(if (showMore) strings.showLess else strings.showMore)
             }
         }
     }
@@ -281,11 +283,9 @@ fun MonthDropdown(
     onValueChange: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val strings = LocalAppStrings.current
     var expanded by remember { mutableStateOf(false) }
-    val months = listOf(
-        "January", "February", "March", "April", "May", "June",
-        "July", "August", "September", "October", "November", "December"
-    )
+    val months = strings.months
     
     val monthName = if (value.toIntOrNull() in 1..12) months[value.toInt() - 1] else value
 
@@ -293,7 +293,7 @@ fun MonthDropdown(
         OutlinedTextField(
             value = monthName,
             onValueChange = { },
-            label = { Text("Month") },
+            label = { Text(strings.month) },
             modifier = Modifier.fillMaxWidth().clickable { expanded = true },
             enabled = false,
             readOnly = true,
@@ -331,15 +331,17 @@ fun PartnerTypeDropdown(
     onValueChange: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val strings = LocalAppStrings.current
     var expanded by remember { mutableStateOf(false) }
-    val types = listOf("", "Spouse", "Fiance", "Boyfriend", "Girlfriend", "Other")
+    val types = strings.partnerTypes
 
     Box(modifier = modifier) {
+        val displayText = types[value] ?: value
         OutlinedTextField(
-            value = value,
+            value = displayText,
             onValueChange = { },
-            label = { Text("Partner Type") },
-            placeholder = { Text("Select Type") },
+            label = { Text(strings.partner) },
+            placeholder = { Text(types[""] ?: "Select Type") },
             modifier = Modifier.fillMaxWidth().clickable { expanded = true },
             enabled = false,
             readOnly = true,
@@ -358,15 +360,11 @@ fun PartnerTypeDropdown(
             expanded = expanded,
             onDismissRequest = { expanded = false }
         ) {
-            types.forEach { type ->
-                val displayType = when (type) {
-                    "" -> "None"
-                    else -> type
-                }
+            types.forEach { (key, label) ->
                 DropdownMenuItem(
-                    text = { Text(displayType) },
+                    text = { Text(label) },
                     onClick = {
-                        onValueChange(type)
+                        onValueChange(key)
                         expanded = false
                     }
                 )
@@ -374,4 +372,3 @@ fun PartnerTypeDropdown(
         }
     }
 }
-

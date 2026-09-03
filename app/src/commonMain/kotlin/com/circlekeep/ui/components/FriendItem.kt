@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.SubcomposeAsyncImage
 import com.circlekeep.data.FriendWithChildren
 import com.circlekeep.viewmodel.SortOrder
+import com.circlekeep.ui.theme.LocalAppStrings
 
 @Composable
 fun FriendItem(
@@ -32,6 +33,7 @@ fun FriendItem(
     onToggleFavorite: () -> Unit,
     onTogglePin: () -> Unit
 ) {
+    val strings = LocalAppStrings.current
     val friend = friendWithChildren.friend
     val displayName = if (currentSortOrder == SortOrder.LAST_FIRST_NAME) {
         buildString {
@@ -94,14 +96,13 @@ fun FriendItem(
                 }
                 
                 val importantDates = buildString {
+                    val months = listOf("") + strings.months
                     if (friend.birthDay.isNotBlank() && friend.birthMonth.isNotBlank()) {
-                        val months = listOf("", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
                         val monthName = friend.birthMonth.toIntOrNull()?.let { if (it in 1..12) months[it] else friend.birthMonth } ?: friend.birthMonth
                         append("🎂 $monthName ${friend.birthDay}")
                     }
                     if (friend.anniversaryDay.isNotBlank() && friend.anniversaryMonth.isNotBlank()) {
                         if (isNotEmpty()) append(" • ")
-                        val months = listOf("", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
                         val monthName = friend.anniversaryMonth.toIntOrNull()?.let { if (it in 1..12) months[it] else friend.anniversaryMonth } ?: friend.anniversaryMonth
                         append("💍 $monthName ${friend.anniversaryDay}")
                     }
@@ -113,8 +114,8 @@ fun FriendItem(
                 if (showInline) {
                     if (friend.partnerFirstName.isNotBlank()) {
                         Spacer(Modifier.height(2.dp))
-                        val partnerTypeStr = friend.partnerType
-                        val label = partnerTypeStr.ifBlank { "Partner" }
+                        val partnerTypeKey = friend.partnerType
+                        val label = if (partnerTypeKey.isBlank()) strings.partner else (strings.partnerTypes[partnerTypeKey] ?: partnerTypeKey)
                         val partnerDisplayName = buildString {
                             append(friend.partnerFirstName)
                             if (friend.partnerNickname.isNotBlank()) append(" '${friend.partnerNickname}'")
@@ -134,7 +135,7 @@ fun FriendItem(
                     if (friendWithChildren?.children?.isNotEmpty() == true) {
                         Spacer(Modifier.height(4.dp))
                         Text(
-                            text = "Children",
+                            text = strings.children,
                             style = MaterialTheme.typography.labelMedium,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -146,7 +147,10 @@ fun FriendItem(
                             if (child.nickname.isNotBlank()) append(" '${child.nickname}'")
                             if (child.middleName.isNotBlank()) append(" ${child.middleName}")
                             if (child.lastName.isNotBlank()) append(" ${child.lastName}")
-                            if (child.age != null) append(" (${child.age} ${child.ageUnit})")
+                            if (child.age != null) {
+                                val unit = if (child.ageUnit.contains("Month")) strings.monthUnit else strings.yearUnit
+                                append(" (${child.age} $unit)")
+                            }
                             if (child.phoneNumber.isNotBlank()) append(" - ${child.phoneNumber}")
                         }
                         Text(

@@ -37,6 +37,7 @@ import com.circlekeep.data.trimFields
 import com.circlekeep.getPlatform
 import com.circlekeep.ui.components.ChildItemEdit
 import com.circlekeep.ui.components.PartnerSectionEdit
+import com.circlekeep.ui.theme.LocalAppStrings
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.seconds
@@ -68,6 +69,7 @@ fun AddEditFriendScreen(
     onSave: (Friend, List<Child>) -> Unit,
     onCancel: () -> Unit
 ) {
+    val strings = LocalAppStrings.current
     val platform = getPlatform()
     val platformUI = LocalPlatformUI.current
     val scope = rememberCoroutineScope()
@@ -217,15 +219,15 @@ fun AddEditFriendScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(if (initialFriend == null) "Add Friend" else "Edit Friend") },
+                title = { Text(if (initialFriend == null) strings.addContact else strings.editContact) },
                 navigationIcon = {
                     IconButton(onClick = onCancel) {
-                        Icon(Icons.Rounded.Close, contentDescription = "Cancel")
+                        Icon(Icons.Rounded.Close, contentDescription = strings.cancel)
                     }
                 },
                 actions = {
                     IconButton(onClick = { contactPickerTrigger = true }) {
-                        Icon(Icons.Rounded.PersonAdd, contentDescription = "Import")
+                        Icon(Icons.Rounded.PersonAdd, contentDescription = strings.import)
                     }
                     IconButton(
                         onClick = {
@@ -294,7 +296,7 @@ fun AddEditFriendScreen(
                         if (isSaving) {
                             Text("$saveDelaySeconds", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
                         } else {
-                            Icon(Icons.Rounded.Check, contentDescription = "Save")
+                            Icon(Icons.Rounded.Check, contentDescription = strings.save)
                         }
                     }
                 }
@@ -340,11 +342,11 @@ fun AddEditFriendScreen(
                             }
                             Row {
                                 TextButton(onClick = { mainImagePickerTrigger = true }) {
-                                    Text("Select Image")
+                                    Text(strings.selectImage)
                                 }
                                 if (imageUri != null) {
                                     TextButton(onClick = { imageUri = null }) {
-                                        Text("Remove Image", color = MaterialTheme.colorScheme.error)
+                                        Text(strings.removeImage, color = MaterialTheme.colorScheme.error)
                                     }
                                 }
                             }
@@ -371,14 +373,14 @@ fun AddEditFriendScreen(
                         }
                         Spacer(Modifier.width(12.dp))
                         Column {
-                            Text("Memory Photo", fontWeight = FontWeight.Bold)
+                            Text(strings.memoryPhoto, fontWeight = FontWeight.Bold)
                             Row {
                                 TextButton(onClick = { secondaryImagePickerTrigger = true }) {
-                                    Text("Select Picture")
+                                    Text(strings.selectPicture)
                                 }
                                 if (secondaryImageUri != null) {
                                     TextButton(onClick = { secondaryImageUri = null }) {
-                                        Text("Remove", color = MaterialTheme.colorScheme.error)
+                                        Text(strings.delete, color = MaterialTheme.colorScheme.error)
                                     }
                                 }
                             }
@@ -390,7 +392,7 @@ fun AddEditFriendScreen(
                     OutlinedTextField(
                         value = firstName, 
                         onValueChange = { firstName = it }, 
-                        label = { Text("First Name") }, 
+                        label = { Text(strings.firstName) }, 
                         modifier = modifierWithTabHandler,
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(
@@ -401,7 +403,7 @@ fun AddEditFriendScreen(
                     OutlinedTextField(
                         value = middleName, 
                         onValueChange = { middleName = it }, 
-                        label = { Text("Middle Name") }, 
+                        label = { Text(strings.middleName) }, 
                         modifier = modifierWithTabHandler,
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(
@@ -412,7 +414,7 @@ fun AddEditFriendScreen(
                     OutlinedTextField(
                         value = lastName, 
                         onValueChange = { lastName = it }, 
-                        label = { Text("Last Name") }, 
+                        label = { Text(strings.lastName) }, 
                         modifier = modifierWithTabHandler,
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(
@@ -423,7 +425,7 @@ fun AddEditFriendScreen(
                     OutlinedTextField(
                         value = nickname, 
                         onValueChange = { nickname = it }, 
-                        label = { Text("Nickname") },
+                        label = { Text(strings.nickname) },
                         modifier = modifierWithTabHandler,
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(
@@ -434,7 +436,7 @@ fun AddEditFriendScreen(
                     OutlinedTextField(
                         value = cellPhone, 
                         onValueChange = { cellPhone = it }, 
-                        label = { Text("Cell Phone") }, 
+                        label = { Text(strings.cellPhone) }, 
                         modifier = modifierWithTabHandler,
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(
@@ -445,7 +447,7 @@ fun AddEditFriendScreen(
                     OutlinedTextField(
                         value = officePhone, 
                         onValueChange = { officePhone = it }, 
-                        label = { Text("Office Phone") }, 
+                        label = { Text(strings.officePhone) }, 
                         modifier = modifierWithTabHandler,
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(
@@ -456,7 +458,7 @@ fun AddEditFriendScreen(
                     OutlinedTextField(
                         value = address, 
                         onValueChange = { address = it }, 
-                        label = { Text("Address") }, 
+                        label = { Text(strings.address) }, 
                         modifier = modifierWithTabHandler.heightIn(max = 120.dp).verticalScroll(rememberScrollState()),
                         singleLine = false,
                         maxLines = 4,
@@ -483,7 +485,7 @@ fun AddEditFriendScreen(
                             }
                         },
                         label = buildString {
-                            append("DOB")
+                            append(strings.dob)
                             try {
                                 platform.calculateAge(dateOfBirth)?.let { append(" ($it yrs)") }
                             } catch (_: Exception) {}
@@ -494,7 +496,7 @@ fun AddEditFriendScreen(
                         OutlinedTextField(
                             value = birthDay, 
                             onValueChange = { birthDay = it }, 
-                            label = { Text("Day") }, 
+                            label = { Text(strings.day) }, 
                             modifier = Modifier.weight(0.4f).onPreviewKeyEvent { 
                                 if (it.key == Key.Tab && it.type == KeyEventType.KeyDown) {
                                     focusManager.moveFocus(if (it.isShiftPressed) FocusDirection.Previous else FocusDirection.Next)
@@ -507,7 +509,7 @@ fun AddEditFriendScreen(
                                 imeAction = ImeAction.Next
                             ),
                             isError = !isDobValid,
-                            supportingText = { if (!isDobValid) Text("Invalid day") }
+                            supportingText = { if (!isDobValid) Text(strings.invalidDay) }
                         )
                         com.circlekeep.ui.components.MonthDropdown(value = birthMonth, onValueChange = { birthMonth = it }, modifier = Modifier.weight(0.6f))
                     }
@@ -528,14 +530,14 @@ fun AddEditFriendScreen(
                                 } catch (_: Exception) {}
                             }
                         },
-                        label = "Marriage Date",
+                        label = strings.marriageDate,
                         modifier = modifierWithTabHandler
                     )
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         OutlinedTextField(
                             value = anniversaryDay, 
                             onValueChange = { anniversaryDay = it }, 
-                            label = { Text("Day") }, 
+                            label = { Text(strings.day) }, 
                             modifier = Modifier.weight(0.4f).onPreviewKeyEvent { 
                                 if (it.key == Key.Tab && it.type == KeyEventType.KeyDown) {
                                     focusManager.moveFocus(if (it.isShiftPressed) FocusDirection.Previous else FocusDirection.Next)
@@ -548,7 +550,7 @@ fun AddEditFriendScreen(
                                 imeAction = ImeAction.Next
                             ),
                             isError = !isAnniversaryValid,
-                            supportingText = { if (!isAnniversaryValid) Text("Invalid day") }
+                            supportingText = { if (!isAnniversaryValid) Text(strings.invalidDay) }
                         )
                         com.circlekeep.ui.components.MonthDropdown(value = anniversaryMonth, onValueChange = { anniversaryMonth = it }, modifier = Modifier.weight(0.6f))
                     }
@@ -557,7 +559,7 @@ fun AddEditFriendScreen(
                         OutlinedTextField(
                             value = selectedGroups.joinToString(", "),
                             onValueChange = { },
-                            label = { Text("Groups") },
+                            label = { Text(strings.groups) },
                             modifier = modifierWithTabHandler,
                             readOnly = true,
                             enabled = true,
@@ -576,7 +578,7 @@ fun AddEditFriendScreen(
                         OutlinedTextField(
                             value = companyName, 
                             onValueChange = { companyName = it }, 
-                            label = { Text("Company Name") }, 
+                            label = { Text(strings.companyName) }, 
                             modifier = modifierWithTabHandler,
                             singleLine = true,
                             keyboardOptions = KeyboardOptions(
@@ -587,7 +589,7 @@ fun AddEditFriendScreen(
                         OutlinedTextField(
                             value = collegeSchoolName, 
                             onValueChange = { collegeSchoolName = it }, 
-                            label = { Text("College Name") },
+                            label = { Text(strings.collegeName) },
                             modifier = modifierWithTabHandler,
                             singleLine = true,
                             keyboardOptions = KeyboardOptions(
@@ -598,7 +600,7 @@ fun AddEditFriendScreen(
                         OutlinedTextField(
                             value = siblings, 
                             onValueChange = { siblings = it }, 
-                            label = { Text("Siblings") }, 
+                            label = { Text(strings.siblings) }, 
                             modifier = modifierWithTabHandler,
                             singleLine = true,
                             keyboardOptions = KeyboardOptions(
@@ -609,7 +611,7 @@ fun AddEditFriendScreen(
                         OutlinedTextField(
                             value = email, 
                             onValueChange = { email = it }, 
-                            label = { Text("Email") }, 
+                            label = { Text(strings.email) }, 
                             modifier = modifierWithTabHandler, 
                             singleLine = true,
                             keyboardOptions = KeyboardOptions(
@@ -617,12 +619,12 @@ fun AddEditFriendScreen(
                                 imeAction = ImeAction.Next
                             ),
                             isError = !isEmailValid,
-                            supportingText = { if (!isEmailValid) Text("Invalid email format") }
+                            supportingText = { if (!isEmailValid) Text(strings.invalidEmail) }
                         )
                         OutlinedTextField(
                             value = workEmail, 
                             onValueChange = { workEmail = it }, 
-                            label = { Text("Work Email") }, 
+                            label = { Text(strings.workEmail) }, 
                             modifier = modifierWithTabHandler, 
                             singleLine = true,
                             keyboardOptions = KeyboardOptions(
@@ -633,7 +635,7 @@ fun AddEditFriendScreen(
                         OutlinedTextField(
                             value = notes, 
                             onValueChange = { notes = it }, 
-                            label = { Text("Notes") }, 
+                            label = { Text(strings.notes) }, 
                             modifier = modifierWithTabHandler.heightIn(max = 200.dp).verticalScroll(rememberScrollState()),
                             minLines = 3,
                             keyboardOptions = KeyboardOptions(
@@ -644,7 +646,7 @@ fun AddEditFriendScreen(
                         OutlinedTextField(
                             value = petName,
                             onValueChange = { petName = it },
-                            label = { Text("Pet Name") },
+                            label = { Text(strings.petName) },
                             modifier = modifierWithTabHandler,
                             singleLine = true,
                             keyboardOptions = KeyboardOptions(
@@ -675,11 +677,11 @@ fun AddEditFriendScreen(
                             Spacer(Modifier.width(12.dp))
                             Row {
                                 TextButton(onClick = { petImagePickerTrigger = true }) {
-                                    Text("Select Pet Image")
+                                    Text(strings.selectImage)
                                 }
                                 if (petImageUri != null) {
                                     TextButton(onClick = { petImageUri = null }) {
-                                        Text("Remove Image", color = MaterialTheme.colorScheme.error)
+                                        Text(strings.removeImage, color = MaterialTheme.colorScheme.error)
                                     }
                                 }
                             }
@@ -695,12 +697,12 @@ fun AddEditFriendScreen(
                             contentDescription = null
                         )
                         Spacer(Modifier.width(8.dp))
-                        Text(if (showMore) "Show Less" else "Show More")
+                        Text(if (showMore) strings.showLess else strings.showMore)
                     }
                 }
 
                 item {
-                    Text("Partner", style = MaterialTheme.typography.titleLarge)
+                    Text(strings.partner, style = MaterialTheme.typography.titleLarge)
                     PartnerSectionEdit(
                         modifier = modifierWithTabHandler,
                         partnerType = partnerType,
@@ -748,7 +750,7 @@ fun AddEditFriendScreen(
 
                 item {
                     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        Text("Children", style = MaterialTheme.typography.titleLarge)
+                        Text(strings.children, style = MaterialTheme.typography.titleLarge)
                         TextButton(onClick = {
                             val lastChildEmpty = children.lastOrNull()?.let { 
                                 it.firstName.isBlank() && it.lastName.isBlank() 
@@ -760,7 +762,7 @@ fun AddEditFriendScreen(
                             }
                         }) {
                             Icon(Icons.Rounded.Add, contentDescription = null)
-                            Text("Add Child")
+                            Text(strings.addChild)
                         }
                     }
                 }
@@ -807,10 +809,10 @@ fun AddEditFriendScreen(
                             strokeWidth = 8.dp
                         )
                         Spacer(Modifier.height(16.dp))
-                        Text("Saving in $saveDelaySeconds seconds...", style = MaterialTheme.typography.titleMedium)
+                        Text("${strings.savingIn} $saveDelaySeconds ${strings.seconds}...", style = MaterialTheme.typography.titleMedium)
                         Spacer(Modifier.height(8.dp))
                         Text(
-                            "Purchase Pro version to skip ads and saving delay!",
+                            strings.purchaseProToSkip,
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.secondary
                         )
@@ -824,7 +826,7 @@ fun AddEditFriendScreen(
         val groups = (availableGroups + "General" + "Family" + "Work" + "School" + "Sports").distinct().sorted()
         AlertDialog(
             onDismissRequest = { showGroupDialog = false },
-            title = { Text("Select Groups") },
+            title = { Text(strings.selectGroups) },
             text = {
                 LazyColumn {
                     items(groups) { group ->
@@ -853,7 +855,7 @@ fun AddEditFriendScreen(
             },
             confirmButton = {
                 TextButton(onClick = { showGroupDialog = false }) {
-                    Text("OK")
+                    Text(strings.ok)
                 }
             }
         )
@@ -862,10 +864,10 @@ fun AddEditFriendScreen(
     if (showImportTargetDialog && pendingContact != null) {
         AlertDialog(
             onDismissRequest = { showImportTargetDialog = false; pendingContact = null },
-            title = { Text("Import Contact To...") },
+            title = { Text(strings.importContactTo) },
             text = {
                 Column {
-                    Text("Choose where to import this contact's details.")
+                    Text(strings.chooseWhereToImport)
                 }
             },
             confirmButton = {
@@ -888,7 +890,7 @@ fun AddEditFriendScreen(
                     ) {
                         Icon(Icons.Rounded.Person, contentDescription = null)
                         Spacer(Modifier.width(8.dp))
-                        Text("Main Friend Section")
+                        Text(strings.mainFriendSection)
                     }
                     TextButton(
                         modifier = Modifier.fillMaxWidth(),
@@ -906,7 +908,7 @@ fun AddEditFriendScreen(
                     ) {
                         Icon(Icons.Rounded.Favorite, contentDescription = null)
                         Spacer(Modifier.width(8.dp))
-                        Text("Partner Section")
+                        Text(strings.partnerSection)
                     }
                     
                     HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
@@ -934,7 +936,7 @@ fun AddEditFriendScreen(
                     ) {
                         Icon(Icons.Rounded.Add, contentDescription = null)
                         Spacer(Modifier.width(8.dp))
-                        Text("New Child Record")
+                        Text(strings.newChildRecord)
                     }
                     if (children.isNotEmpty()) {
                         TextButton(
@@ -946,14 +948,14 @@ fun AddEditFriendScreen(
                         ) {
                             Icon(Icons.Rounded.Edit, contentDescription = null)
                             Spacer(Modifier.width(8.dp))
-                            Text("Update Existing Child...")
+                            Text(strings.updateExistingChild)
                         }
                     }
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showImportTargetDialog = false; pendingContact = null }) {
-                    Text("Cancel")
+                    Text(strings.cancel)
                 }
             }
         )
@@ -962,7 +964,7 @@ fun AddEditFriendScreen(
     if (showChildPickerForImport && pendingContact != null) {
         AlertDialog(
             onDismissRequest = { showChildPickerForImport = false; pendingContact = null },
-            title = { Text("Select Child to Update") },
+            title = { Text(strings.selectChildToUpdate) },
             text = {
                 LazyColumn {
                     items(children.size) { index ->
@@ -994,7 +996,7 @@ fun AddEditFriendScreen(
             confirmButton = {},
             dismissButton = {
                 TextButton(onClick = { showChildPickerForImport = false; pendingContact = null }) {
-                    Text("Cancel")
+                    Text(strings.cancel)
                 }
             }
         )

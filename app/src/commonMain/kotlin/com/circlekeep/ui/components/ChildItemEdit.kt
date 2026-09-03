@@ -24,13 +24,12 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import coil3.compose.AsyncImage
 import coil3.compose.SubcomposeAsyncImage
 import com.circlekeep.DatePickerField
 import com.circlekeep.data.Child
 import com.circlekeep.getPlatform
+import com.circlekeep.ui.theme.LocalAppStrings
 
 @Composable
 fun ChildItemEdit(
@@ -44,6 +43,7 @@ fun ChildItemEdit(
     onSelectPartnerImage: () -> Unit,
     onSelectPetImage: () -> Unit
 ) {
+    val strings = LocalAppStrings.current
     var showMore by remember { mutableStateOf(initiallyExpanded) }
     val focusRequester = remember { FocusRequester() }
     val focusManager = LocalFocusManager.current
@@ -85,27 +85,27 @@ fun ChildItemEdit(
                     }
                     Spacer(Modifier.width(12.dp))
                     Column {
-                        Text("Child", fontWeight = FontWeight.Bold)
+                        Text(strings.child, fontWeight = FontWeight.Bold)
                         Row {
                             TextButton(onClick = { onSelectImage() }) {
-                                Text("Select Image", style = MaterialTheme.typography.labelSmall)
+                                Text(strings.selectImage, style = MaterialTheme.typography.labelSmall)
                             }
                             if (child.imageUri != null) {
                                 TextButton(onClick = { onChildChange(child.copy(imageUri = null)) }) {
-                                    Text("Remove Image", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.labelSmall)
+                                    Text(strings.removeImage, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.labelSmall)
                                 }
                             }
                         }
                     }
                 }
                 IconButton(onClick = onDelete) {
-                    Icon(Icons.Rounded.Delete, contentDescription = "Delete Child")
+                    Icon(Icons.Rounded.Delete, contentDescription = strings.delete)
                 }
             }
             OutlinedTextField(
                 value = child.firstName, 
                 onValueChange = { onChildChange(child.copy(firstName = it)) }, 
-                label = { Text("First Name") }, 
+                label = { Text(strings.firstName) }, 
                 modifier = modifier
                     .focusRequester(focusRequester),
                 singleLine = true,
@@ -117,7 +117,7 @@ fun ChildItemEdit(
             OutlinedTextField(
                 value = child.middleName, 
                 onValueChange = { onChildChange(child.copy(middleName = it)) }, 
-                label = { Text("Middle Name") }, 
+                label = { Text(strings.middleName) }, 
                 modifier = modifier,
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(
@@ -128,7 +128,7 @@ fun ChildItemEdit(
             OutlinedTextField(
                 value = child.lastName, 
                 onValueChange = { onChildChange(child.copy(lastName = it)) }, 
-                label = { Text("Last Name") }, 
+                label = { Text(strings.lastName) }, 
                 modifier = modifier,
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(
@@ -139,7 +139,7 @@ fun ChildItemEdit(
             OutlinedTextField(
                 value = child.nickname, 
                 onValueChange = { onChildChange(child.copy(nickname = it)) }, 
-                label = { Text("Nickname") },
+                label = { Text(strings.nickname) },
                 modifier = modifier,
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(
@@ -150,7 +150,7 @@ fun ChildItemEdit(
             OutlinedTextField(
                 value = child.phoneNumber, 
                 onValueChange = { onChildChange(child.copy(phoneNumber = it)) }, 
-                label = { Text("Cell Phone") }, 
+                label = { Text(strings.cellPhone) }, 
                 modifier = modifier,
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(
@@ -163,7 +163,7 @@ fun ChildItemEdit(
                 OutlinedTextField(
                     value = child.collegeSchoolName, 
                     onValueChange = { onChildChange(child.copy(collegeSchoolName = it)) },
-                    label = { Text("College Name") }, 
+                    label = { Text(strings.collegeName) }, 
                     modifier = modifier,
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(
@@ -186,14 +186,14 @@ fun ChildItemEdit(
                         }
                         onChildChange(newChild)
                     },
-                    label = "DOB",
+                    label = strings.dob,
                     modifier = modifier
                 )
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     OutlinedTextField(
                         value = child.birthDay, 
                         onValueChange = { onChildChange(child.copy(birthDay = it)) }, 
-                        label = { Text("Day") }, 
+                        label = { Text(strings.day) }, 
                         modifier = modifier.weight(0.4f).onPreviewKeyEvent { 
                             if (it.key == Key.Tab && it.type == KeyEventType.KeyDown) {
                                 focusManager.moveFocus(if (it.isShiftPressed) FocusDirection.Previous else FocusDirection.Next)
@@ -206,7 +206,7 @@ fun ChildItemEdit(
                             imeAction = ImeAction.Next
                         ),
                         isError = !isDobValid,
-                        supportingText = { if (!isDobValid) Text("Invalid day") }
+                        supportingText = { if (!isDobValid) Text(strings.invalidDay) }
                     )
                     MonthDropdown(value = child.birthMonth, onValueChange = { onChildChange(child.copy(birthMonth = it)) }, modifier = Modifier.weight(0.6f))
                 }
@@ -214,15 +214,16 @@ fun ChildItemEdit(
                     OutlinedTextField(
                         value = child.age?.toString() ?: "",
                         onValueChange = { onChildChange(child.copy(age = it.toIntOrNull())) },
-                        label = { Text("Age") },
+                        label = { Text(strings.age) },
                         modifier = Modifier.weight(0.4f),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                     )
                     
                     var showAgeUnitMenu by remember { mutableStateOf(false) }
                     Box(modifier = Modifier.weight(0.6f)) {
+                        val unitLabel = if (child.ageUnit.contains("Month")) strings.monthUnit else strings.yearUnit
                         OutlinedTextField(
-                            value = child.ageUnit,
+                            value = unitLabel,
                             onValueChange = { },
                             label = { },
                             modifier = Modifier.fillMaxWidth().clickable { showAgeUnitMenu = true },
@@ -240,14 +241,14 @@ fun ChildItemEdit(
                             onDismissRequest = { showAgeUnitMenu = false }
                         ) {
                             DropdownMenuItem(
-                                text = { Text("Year(s)") },
+                                text = { Text(strings.yearUnit) },
                                 onClick = {
                                     onChildChange(child.copy(ageUnit = "Year(s)"))
                                     showAgeUnitMenu = false
                                 }
                             )
                             DropdownMenuItem(
-                                text = { Text("Month(s)") },
+                                text = { Text(strings.monthUnit) },
                                 onClick = {
                                     onChildChange(child.copy(ageUnit = "Month(s)"))
                                     showAgeUnitMenu = false
@@ -260,7 +261,7 @@ fun ChildItemEdit(
                 OutlinedTextField(
                     value = child.workEmail, 
                     onValueChange = { onChildChange(child.copy(workEmail = it)) }, 
-                    label = { Text("Work Email") }, 
+                    label = { Text(strings.workEmail) }, 
                     modifier = modifier, 
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(
@@ -271,7 +272,7 @@ fun ChildItemEdit(
                 OutlinedTextField(
                     value = child.siblings, 
                     onValueChange = { onChildChange(child.copy(siblings = it)) }, 
-                    label = { Text("Siblings") }, 
+                    label = { Text(strings.siblings) }, 
                     modifier = modifier,
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(
@@ -282,7 +283,7 @@ fun ChildItemEdit(
                 OutlinedTextField(
                     value = child.notes, 
                     onValueChange = { onChildChange(child.copy(notes = it)) }, 
-                    label = { Text("Notes") }, 
+                    label = { Text(strings.notes) }, 
                     modifier = modifier
                         .heightIn(max = 200.dp)
                         .verticalScroll(rememberScrollState()),
@@ -297,7 +298,7 @@ fun ChildItemEdit(
                 OutlinedTextField(
                     value = child.petName,
                     onValueChange = { onChildChange(child.copy(petName = it)) },
-                    label = { Text("Pet Name") },
+                    label = { Text(strings.petName) },
                     modifier = modifier,
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(
@@ -319,18 +320,18 @@ fun ChildItemEdit(
                     Spacer(Modifier.width(12.dp))
                     Row {
                         TextButton(onClick = { onSelectPetImage() }) {
-                            Text("Select Pet Image", style = MaterialTheme.typography.labelSmall)
+                            Text(strings.selectImage, style = MaterialTheme.typography.labelSmall)
                         }
                         if (child.petImageUri != null) {
                             TextButton(onClick = { onChildChange(child.copy(petImageUri = null)) }) {
-                                Text("Remove Image", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.labelSmall)
+                                Text(strings.removeImage, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.labelSmall)
                             }
                         }
                     }
                 }
 
                 Spacer(Modifier.height(8.dp))
-                Text("Child's Partner", style = MaterialTheme.typography.labelLarge)
+                Text(strings.childsPartner, style = MaterialTheme.typography.labelLarge)
                 Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
                     Surface(
                         modifier = Modifier.size(40.dp).clip(CircleShape).clickable { onSelectPartnerImage() },
@@ -353,11 +354,11 @@ fun ChildItemEdit(
                     Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         Row {
                             TextButton(onClick = { onSelectPartnerImage() }) {
-                                Text("Select Image", style = MaterialTheme.typography.labelSmall)
+                                Text(strings.selectImage, style = MaterialTheme.typography.labelSmall)
                             }
                             if (child.partnerImageUri != null) {
                                 TextButton(onClick = { onChildChange(child.copy(partnerImageUri = null)) }) {
-                                    Text("Remove Image", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.labelSmall)
+                                    Text(strings.removeImage, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.labelSmall)
                                 }
                             }
                         }
@@ -365,70 +366,70 @@ fun ChildItemEdit(
                         OutlinedTextField(
                             value = child.partnerFirstName, 
                             onValueChange = { onChildChange(child.copy(partnerFirstName = it)) }, 
-                            label = { Text("First Name") }, 
+                            label = { Text(strings.firstName) }, 
                             modifier = Modifier.fillMaxWidth(),
                             keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words)
                         )
                         OutlinedTextField(
                             value = child.partnerMiddleName, 
                             onValueChange = { onChildChange(child.copy(partnerMiddleName = it)) }, 
-                            label = { Text("Middle Name") }, 
+                            label = { Text(strings.middleName) }, 
                             modifier = Modifier.fillMaxWidth(),
                             keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words)
                         )
                         OutlinedTextField(
                             value = child.partnerLastName, 
                             onValueChange = { onChildChange(child.copy(partnerLastName = it)) }, 
-                            label = { Text("Last Name") }, 
+                            label = { Text(strings.lastName) }, 
                             modifier = Modifier.fillMaxWidth(),
                             keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words)
                         )
                         OutlinedTextField(
                             value = child.partnerNickname, 
                             onValueChange = { onChildChange(child.copy(partnerNickname = it)) }, 
-                            label = { Text("Nickname") },
+                            label = { Text(strings.nickname) },
                             modifier = Modifier.fillMaxWidth(),
                             keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words)
                         )
                         OutlinedTextField(
                             value = child.partnerPhone, 
                             onValueChange = { onChildChange(child.copy(partnerPhone = it)) }, 
-                            label = { Text("Partner Phone") }, 
+                            label = { Text(strings.cellPhone) }, 
                             modifier = Modifier.fillMaxWidth(), 
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone)
                         )
                         OutlinedTextField(
                             value = child.partnerEmail, 
                             onValueChange = { onChildChange(child.copy(partnerEmail = it)) }, 
-                            label = { Text("Partner Email") }, 
+                            label = { Text(strings.email) }, 
                             modifier = Modifier.fillMaxWidth(), 
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
                         )
                         OutlinedTextField(
                             value = child.partnerWorkEmail, 
                             onValueChange = { onChildChange(child.copy(partnerWorkEmail = it)) }, 
-                            label = { Text("Partner Work Email") }, 
+                            label = { Text(strings.workEmail) }, 
                             modifier = Modifier.fillMaxWidth(), 
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
                         )
                         OutlinedTextField(
                             value = child.partnerSiblings, 
                             onValueChange = { onChildChange(child.copy(partnerSiblings = it)) }, 
-                            label = { Text("Siblings") }, 
+                            label = { Text(strings.siblings) }, 
                             modifier = Modifier.fillMaxWidth(),
                             keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words)
                         )
                         OutlinedTextField(
                             value = child.partnerCompanyName,
                             onValueChange = { onChildChange(child.copy(partnerCompanyName = it)) },
-                            label = { Text("Company Name") },
+                            label = { Text(strings.companyName) },
                             modifier = Modifier.fillMaxWidth(),
                             keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words)
                         )
                         OutlinedTextField(
                             value = child.partnerCollegeSchoolName,
                             onValueChange = { onChildChange(child.copy(partnerCollegeSchoolName = it)) },
-                            label = { Text("College Name") },
+                            label = { Text(strings.collegeName) },
                             modifier = Modifier.fillMaxWidth(),
                             keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words)
                         )
@@ -449,14 +450,14 @@ fun ChildItemEdit(
                         }
                         onChildChange(newChild)
                     },
-                    label = "Partner DOB",
+                    label = strings.partnerDob,
                     modifier = modifier
                 )
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     OutlinedTextField(
                         value = child.partnerBirthDay, 
                         onValueChange = { onChildChange(child.copy(partnerBirthDay = it)) }, 
-                        label = { Text("Day") }, 
+                        label = { Text(strings.day) }, 
                         modifier = modifier.weight(0.4f).onPreviewKeyEvent { 
                             if (it.key == Key.Tab && it.type == KeyEventType.KeyDown) {
                                 focusManager.moveFocus(if (it.isShiftPressed) FocusDirection.Previous else FocusDirection.Next)
@@ -469,7 +470,7 @@ fun ChildItemEdit(
                             imeAction = ImeAction.Next
                         ),
                         isError = !isPartnerDobValid,
-                        supportingText = { if (!isPartnerDobValid) Text("Invalid day") }
+                        supportingText = { if (!isPartnerDobValid) Text(strings.invalidDay) }
                     )
                     MonthDropdown(value = child.partnerBirthMonth, onValueChange = { onChildChange(child.copy(partnerBirthMonth = it)) }, modifier = Modifier.weight(0.6f))
                 }
@@ -488,14 +489,14 @@ fun ChildItemEdit(
                         }
                         onChildChange(newChild)
                     },
-                    label = "Marriage Date",
+                    label = strings.marriageDate,
                     modifier = modifier
                 )
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     OutlinedTextField(
                         value = child.anniversaryDay, 
                         onValueChange = { onChildChange(child.copy(anniversaryDay = it)) }, 
-                        label = { Text("Day") }, 
+                        label = { Text(strings.day) }, 
                         modifier = modifier.weight(0.4f).onPreviewKeyEvent { 
                             if (it.key == Key.Tab && it.type == KeyEventType.KeyDown) {
                                 focusManager.moveFocus(if (it.isShiftPressed) FocusDirection.Previous else FocusDirection.Next)
@@ -508,7 +509,7 @@ fun ChildItemEdit(
                             imeAction = ImeAction.Next
                         ),
                         isError = !isAnniversaryValid,
-                        supportingText = { if (!isAnniversaryValid) Text("Invalid day") }
+                        supportingText = { if (!isAnniversaryValid) Text(strings.invalidDay) }
                     )
                     MonthDropdown(value = child.anniversaryMonth, onValueChange = { onChildChange(child.copy(anniversaryMonth = it)) }, modifier = Modifier.weight(0.6f))
                 }
@@ -523,7 +524,7 @@ fun ChildItemEdit(
                     contentDescription = null
                 )
                 Spacer(Modifier.width(8.dp))
-                Text(if (showMore) "Show Less" else "Show More")
+                Text(if (showMore) strings.showLess else strings.showMore)
             }
         }
     }
