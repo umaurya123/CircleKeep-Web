@@ -136,9 +136,6 @@ fun FriendListScreen(
                                 Icon(Icons.Rounded.Delete, contentDescription = "Delete selected")
                             }
                         } else {
-                            IconButton(onClick = { qrScannerTrigger = true }) {
-                                Icon(Icons.Rounded.QrCodeScanner, contentDescription = "Scan QR")
-                            }
                             IconButton(onClick = onToggleInline) {
                                 Icon(
                                     imageVector = if (showInlineData) Icons.Rounded.ViewStream else Icons.AutoMirrored.Rounded.ViewList,
@@ -311,8 +308,18 @@ fun FriendListScreen(
         },
         floatingActionButton = {
             if (!selectionMode) {
-                FloatingActionButton(onClick = onAddFriendClick) {
-                    Icon(Icons.Rounded.Add, contentDescription = "Add Friend")
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    FloatingActionButton(
+                        onClick = { qrScannerTrigger = true },
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                    ) {
+                        Icon(Icons.Rounded.QrCodeScanner, contentDescription = "Scan QR")
+                    }
+                    Spacer(Modifier.width(16.dp))
+                    FloatingActionButton(onClick = onAddFriendClick) {
+                        Icon(Icons.Rounded.Add, contentDescription = "Add Friend")
+                    }
                 }
             }
         }
