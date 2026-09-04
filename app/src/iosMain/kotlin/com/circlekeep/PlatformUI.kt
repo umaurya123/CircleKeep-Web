@@ -375,6 +375,25 @@ actual fun ImagePicker(
 }
 
 @Composable
+actual fun QRScanner(
+    onCodeScanned: (String) -> Unit,
+    onCancel: () -> Unit,
+    trigger: Boolean,
+    onTriggerReset: () -> Unit
+) {
+    // For now, iOS implementation is a stub. 
+    // In a real app, I'd use AVFoundation to implement this.
+    // Since I cannot easily implement a full camera preview with analyzer in this context without more complex bindings,
+    // I'll leave it as a TODO or a simple dialog if triggered.
+    if (trigger) {
+        LaunchedEffect(Unit) {
+            onTriggerReset()
+            onCancel()
+        }
+    }
+}
+
+@Composable
 actual fun BannerAdView() {
     val provider by platformProviderState
     

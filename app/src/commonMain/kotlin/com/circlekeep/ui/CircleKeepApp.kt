@@ -164,6 +164,12 @@ fun CircleKeepApp() {
                             },
                             onToggleFavorite = viewModel::toggleFavorite,
                             onTogglePin = viewModel::togglePin,
+                            onQRScanned = { raw ->
+                                viewModel.parseQrToFriend(raw)?.let { friend ->
+                                    viewModel.saveFriend(friend, emptyList())
+                                    platformUI.showToast("Contact imported from QR")
+                                } ?: platformUI.showToast("Invalid QR Code")
+                            },
                             onDeleteFriends = viewModel::deleteFriends,
                             onNavigateToSettings = {
                                 navController.navigate(Destination.Settings)
@@ -269,6 +275,12 @@ fun CircleKeepApp() {
                             onAddFriendClick = { navController.navigate(Destination.AddFriend) },
                             onToggleFavorite = viewModel::toggleFavorite,
                             onTogglePin = viewModel::togglePin,
+                            onQRScanned = { raw ->
+                                viewModel.parseQrToFriend(raw)?.let { friend ->
+                                    viewModel.saveFriend(friend, emptyList())
+                                    platformUI.showToast("Contact imported from QR")
+                                } ?: platformUI.showToast("Invalid QR Code")
+                            },
                             onDeleteFriends = viewModel::deleteFriends,
                             onNavigateToSettings = {
                                 navController.navigate(Destination.Settings)

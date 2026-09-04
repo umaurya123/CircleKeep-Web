@@ -54,6 +54,14 @@ expect fun ImagePicker(
 )
 
 @Composable
+expect fun QRScanner(
+    onCodeScanned: (String) -> Unit,
+    onCancel: () -> Unit,
+    trigger: Boolean,
+    onTriggerReset: () -> Unit
+)
+
+@Composable
 expect fun BannerAdView()
 
 @Composable

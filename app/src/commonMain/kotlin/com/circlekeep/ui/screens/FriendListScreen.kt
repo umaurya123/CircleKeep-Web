@@ -49,6 +49,7 @@ fun FriendListScreen(
     onAddFriendClick: () -> Unit,
     onToggleFavorite: (Friend) -> Unit,
     onTogglePin: (Friend) -> Unit,
+    onQRScanned: (String) -> Unit,
     onDeleteFriends: (Set<Long>) -> Unit,
     onNavigateToSettings: () -> Unit
 ) {
@@ -60,6 +61,17 @@ fun FriendListScreen(
     val platformUI = LocalPlatformUI.current
     
     var isGroupMultiSelectMode by remember { mutableStateOf(selectedGroups.size > 1) }
+    var qrScannerTrigger by remember { mutableStateOf(false) }
+
+    com.circlekeep.QRScanner(
+        trigger = qrScannerTrigger,
+        onTriggerReset = { qrScannerTrigger = false },
+        onCodeScanned = { raw ->
+            onQRScanned(raw)
+            qrScannerTrigger = false
+        },
+        onCancel = { qrScannerTrigger = false }
+    )
     
     // Sync mode when groups are loaded or changed
     LaunchedEffect(selectedGroups) {
@@ -124,6 +136,9 @@ fun FriendListScreen(
                                 Icon(Icons.Rounded.Delete, contentDescription = "Delete selected")
                             }
                         } else {
+                            IconButton(onClick = { qrScannerTrigger = true }) {
+                                Icon(Icons.Rounded.QrCodeScanner, contentDescription = "Scan QR")
+                            }
                             IconButton(onClick = onToggleInline) {
                                 Icon(
                                     imageVector = if (showInlineData) Icons.Rounded.ViewStream else Icons.AutoMirrored.Rounded.ViewList,

@@ -8,18 +8,27 @@ import android.provider.ContactsContract
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.CalendarToday
+import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
+import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.circlekeep.ui.BannerAd
 import com.yalantis.ucrop.UCrop
 import java.io.File
@@ -406,6 +415,121 @@ actual fun ImagePicker(
     if (trigger) {
         SideEffect {
             launcher.launch("image/*")
+        }
+    }
+}
+
+@Composable
+actual fun QRScanner(
+    onCodeScanned: (String) -> Unit,
+    onCancel: () -> Unit,
+    trigger: Boolean,
+    onTriggerReset: () -> Unit
+) {
+    val context = LocalContext.current
+    var showScanner by remember { mutableStateOf(false) }
+
+    val cameraPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+        onResult = { isGranted ->
+            if (isGranted) {
+                showScanner = true
+            } else {
+                Toast.makeText(context, "Camera permission is required to scan QR codes", Toast.LENGTH_SHORT).show()
+                onTriggerReset()
+            }
+        }
+    )
+
+    LaunchedEffect(trigger) {
+        if (trigger) {
+            if (androidx.core.content.ContextCompat.checkSelfPermission(context, android.Manifest.permission.CAMERA) == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                showScanner = true
+            } else {
+                cameraPermissionLauncher.launch(android.Manifest.permission.CAMERA)
+            }
+        }
+    }
+
+    if (showScanner) {
+        Dialog(
+            onDismissRequest = { 
+                showScanner = false
+                onCancel()
+                onTriggerReset()
+            },
+            properties = DialogProperties(usePlatformDefaultWidth = false)
+        ) {
+            Box(modifier = Modifier.fillMaxSize().background(Color.Black)) {
+                val lifecycleOwner = LocalLifecycleOwner.current
+                val cameraProviderFuture = remember { androidx.camera.lifecycle.ProcessCameraProvider.getInstance(context) }
+                
+                AndroidView(
+                    factory = { ctx ->
+                        val previewView = androidx.camera.view.PreviewView(ctx)
+                        val executor = ContextCompat.getMainExecutor(ctx)
+                        cameraProviderFuture.addListener({
+                            val cameraProvider = cameraProviderFuture.get()
+                            val preview = androidx.camera.core.Preview.Builder().build().also {
+                                it.setSurfaceProvider(previewView.surfaceProvider)
+                            }
+
+                            val scanner = com.google.mlkit.vision.barcode.BarcodeScanning.getClient()
+                            val imageAnalysis = androidx.camera.core.ImageAnalysis.Builder()
+                                .setBackpressureStrategy(androidx.camera.core.ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                                .build()
+
+                            imageAnalysis.setAnalyzer(executor) { imageProxy ->
+                                val mediaImage = imageProxy.image
+                                if (mediaImage != null) {
+                                    val image = com.google.mlkit.vision.common.InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
+                                    scanner.process(image)
+                                        .addOnSuccessListener { barcodes ->
+                                            for (barcode in barcodes) {
+                                                barcode.rawValue?.let { code ->
+                                                    onCodeScanned(code)
+                                                    showScanner = false
+                                                    onTriggerReset()
+                                                }
+                                            }
+                                        }
+                                        .addOnCompleteListener { imageProxy.close() }
+                                } else {
+                                    imageProxy.close()
+                                }
+                            }
+
+                            val cameraSelector = androidx.camera.core.CameraSelector.DEFAULT_BACK_CAMERA
+                            try {
+                                cameraProvider.unbindAll()
+                                cameraProvider.bindToLifecycle(lifecycleOwner, cameraSelector, preview, imageAnalysis)
+                            } catch (e: Exception) {
+                                android.util.Log.e("CircleKeep", "Use case binding failed", e)
+                            }
+                        }, executor)
+                        previewView
+                    },
+                    modifier = Modifier.fillMaxSize()
+                )
+
+                IconButton(
+                    onClick = { 
+                        showScanner = false
+                        onCancel()
+                        onTriggerReset()
+                    },
+                    modifier = Modifier.align(Alignment.TopStart).padding(16.dp)
+                ) {
+                    Icon(Icons.Rounded.Close, contentDescription = "Close", tint = Color.White)
+                }
+                
+                Text(
+                    "Scan QR Code",
+                    modifier = Modifier.align(Alignment.TopCenter).padding(top = 24.dp),
+                    color = Color.White,
+                    style = MaterialTheme.typography.titleLarge
+                )
+            }
         }
     }
 }

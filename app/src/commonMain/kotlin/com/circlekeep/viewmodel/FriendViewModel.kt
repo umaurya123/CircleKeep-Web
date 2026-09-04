@@ -191,17 +191,29 @@ class FriendViewModel(
             val currentMonth = platform.getMonth()
             val events = mutableListOf<UpcomingEvent>()
             
+            // Collect all names of main records for deduplication
+            val mainRecordNames = friends.map { 
+                (it.friend.firstName.trim() + " " + it.friend.lastName.trim()).lowercase() 
+            }.toSet()
+            
             friends.forEach { fwc ->
                 checkEvent(fwc.friend.firstName + " " + fwc.friend.lastName, fwc.friend.birthDay, fwc.friend.birthMonth, "Birthday", fwc.friend.id, currentDay, currentMonth, fwc.friend.imageUri)?.let { events.add(it) }
                 checkEvent(fwc.friend.firstName + " " + fwc.friend.lastName, fwc.friend.anniversaryDay, fwc.friend.anniversaryMonth, "Marriage Anniversary", fwc.friend.id, currentDay, currentMonth, fwc.friend.imageUri)?.let { events.add(it) }
                 
-                // Add partner birthdays
+                // Add partner birthdays if not already a main record
                 if (fwc.friend.partnerFirstName.isNotBlank()) {
-                    checkEvent(fwc.friend.partnerFirstName + " " + fwc.friend.partnerLastName, fwc.friend.partnerBirthDay, fwc.friend.partnerBirthMonth, "Partner Birthday", fwc.friend.id, currentDay, currentMonth, fwc.friend.partnerImageUri)?.let { events.add(it) }
+                    val partnerFullName = (fwc.friend.partnerFirstName.trim() + " " + fwc.friend.partnerLastName.trim()).lowercase()
+                    if (!mainRecordNames.contains(partnerFullName)) {
+                        checkEvent(fwc.friend.partnerFirstName + " " + fwc.friend.partnerLastName, fwc.friend.partnerBirthDay, fwc.friend.partnerBirthMonth, "Partner Birthday", fwc.friend.id, currentDay, currentMonth, fwc.friend.partnerImageUri)?.let { events.add(it) }
+                    }
                 }
 
                 fwc.children.forEach { child ->
-                    checkEvent(child.firstName + " " + child.lastName, child.birthDay, child.birthMonth, "Birthday (Child)", fwc.friend.id, currentDay, currentMonth, child.imageUri)?.let { events.add(it) }
+                    val childFullName = (child.firstName.trim() + " " + child.lastName.trim()).lowercase()
+                    if (!mainRecordNames.contains(childFullName)) {
+                        checkEvent(child.firstName + " " + child.lastName, child.birthDay, child.birthMonth, "Birthday (Child)", fwc.friend.id, currentDay, currentMonth, child.imageUri)?.let { events.add(it) }
+                    }
+                    // Anniversary check for child's partner - usually child partners are not main records but let's be safe if we add that later
                     checkEvent(child.firstName + " " + child.lastName, child.anniversaryDay, child.anniversaryMonth, "Marriage Anniversary (Child)", fwc.friend.id, currentDay, currentMonth, child.partnerImageUri)?.let { events.add(it) }
                 }
             }
@@ -333,6 +345,14 @@ class FriendViewModel(
 
             if (existing != null) {
                 // Update existing friend with data from partner section
+                val swappedPartnerType = when (current.friend.partnerType) {
+                    "Wife" -> "Husband"
+                    "Husband" -> "Wife"
+                    "Girlfriend" -> "Boyfriend"
+                    "Boyfriend" -> "Girlfriend"
+                    else -> current.friend.partnerType
+                }
+
                 val updatedFriend = existing.friend.copy(
                     middleName = current.friend.partnerMiddleName,
                     nickname = current.friend.partnerNickname,
@@ -372,13 +392,21 @@ class FriendViewModel(
                     partnerBirthMonth = current.friend.birthMonth,
                     partnerImageUri = current.friend.imageUri,
                     partnerSiblings = current.friend.siblings,
-                    partnerType = current.friend.partnerType
+                    partnerType = swappedPartnerType
                 )
                 
                 friendRepository.updateFriendWithChildren(updatedFriend, updatedChildren.map { it.copy(friendId = existing.friend.id) })
                 onComplete(true) // True for update
             } else {
                 // Create new friend from partner info
+                val swappedPartnerType = when (current.friend.partnerType) {
+                    "Wife" -> "Husband"
+                    "Husband" -> "Wife"
+                    "Girlfriend" -> "Boyfriend"
+                    "Boyfriend" -> "Girlfriend"
+                    else -> current.friend.partnerType
+                }
+
                 val newFriend = Friend(
                     firstName = partnerFirstName,
                     middleName = current.friend.partnerMiddleName,
@@ -420,7 +448,7 @@ class FriendViewModel(
                     partnerBirthMonth = current.friend.birthMonth,
                     partnerImageUri = current.friend.imageUri,
                     partnerSiblings = current.friend.siblings,
-                    partnerType = current.friend.partnerType
+                    partnerType = swappedPartnerType
                 )
                 
                 friendRepository.insertFriendWithChildren(newFriend, updatedChildren)
@@ -723,6 +751,48 @@ class FriendViewModel(
                 }
             } catch (_: Exception) {}
         }
+    }
+
+    fun parseQrToFriend(raw: String): Friend? {
+        if (!raw.startsWith("CIRCLEKEEP:1.0")) return null
+        
+        val lines = raw.split("\n")
+        val data = lines.associate { line ->
+            val parts = line.split(":", limit = 2)
+            if (parts.size == 2) parts[0] to parts[1] else "" to ""
+        }
+
+        val platform = getPlatform()
+        val dob = data["DOB"] ?: ""
+        val ann = data["ANN"] ?: ""
+        
+        var d1 = ""; var m1 = ""
+        var d2 = ""; var m2 = ""
+        
+        if (dob.isNotBlank()) {
+            platform.parseDateComponents(dob)?.let { (d, m, _) -> d1 = d; m1 = m }
+        }
+        if (ann.isNotBlank()) {
+            platform.parseDateComponents(ann)?.let { (d, m, _) -> d2 = d; m2 = m }
+        }
+
+        return Friend(
+            firstName = data["FN"] ?: "",
+            middleName = data["MN"] ?: "",
+            lastName = data["LN"] ?: "",
+            nickname = data["NN"] ?: "",
+            cellPhone = data["TEL"] ?: "",
+            email = data["EML"] ?: "",
+            address = data["ADR"] ?: "",
+            groups = (data["GRP"] ?: "Friend").split(","),
+            dateOfBirth = dob,
+            birthDay = d1,
+            birthMonth = m1,
+            anniversaryDate = ann,
+            anniversaryDay = d2,
+            anniversaryMonth = m2,
+            notes = data["NTS"] ?: ""
+        )
     }
 }
 

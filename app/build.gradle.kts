@@ -74,6 +74,8 @@ kotlin {
             implementation(libs.ucrop)
             implementation(libs.billing.ktx)
             implementation(libs.androidx.work.runtime.ktx)
+            implementation(libs.mlkit.barcode.scanning)
+            implementation("com.google.guava:guava:33.0.0-android")
         }
         androidUnitTest.dependencies {
             implementation(libs.junit)
