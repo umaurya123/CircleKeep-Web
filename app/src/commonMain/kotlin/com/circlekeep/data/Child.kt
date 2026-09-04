@@ -28,6 +28,7 @@ data class Child(
     val email: String = "",
     val workEmail: String = "",
     val lastName: String,
+    val childType: String = "",
     val siblings: String = "",
     val collegeSchoolName: String = "",
     val dateOfBirth: String = "",

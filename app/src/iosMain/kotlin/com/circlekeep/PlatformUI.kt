@@ -87,6 +87,26 @@ class IOSPlatformUI : PlatformUI {
         openUrl("mailto:$email")
     }
 
+    override fun sendDataByEmail(jsonData: String) {
+        dispatch_async(dispatch_get_main_queue()) {
+            val nsString = NSString.create(string = jsonData)
+            val data = nsString.dataUsingEncoding(NSUTF8StringEncoding)
+            if (data != null) {
+                val tempDir = NSTemporaryDirectory()
+                val fileName = "CircleKeep_Backup_${NSDate().timeIntervalSince1970}.json"
+                val filePath = if (tempDir.endsWith("/")) tempDir + fileName else "$tempDir/$fileName"
+                data.writeToFile(filePath, true)
+                
+                val url = NSURL.fileURLWithPath(filePath)
+                val activityVC = UIActivityViewController(activityItems = listOf(url), applicationActivities = null)
+                val topVC = IOSPlatformUI.getTopViewController()
+                if (topVC != null) {
+                    topVC.presentViewController(activityVC, true, null)
+                }
+            }
+        }
+    }
+
     override fun showToast(message: String) {
         dispatch_async(dispatch_get_main_queue()) {
             val topVC = getTopViewController()

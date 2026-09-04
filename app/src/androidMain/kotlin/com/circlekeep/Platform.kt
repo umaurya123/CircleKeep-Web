@@ -69,13 +69,14 @@ class AndroidPlatform(private val context: Context) : Platform {
         return age
     }
 
-    override fun parseDateToDayMonth(dateString: String): Pair<String, String>? {
+    override fun parseDateComponents(dateString: String): Triple<String, String, String>? {
         val date = parseDate(dateString) ?: return null
         val cal = java.util.Calendar.getInstance()
         cal.time = date
         val day = cal.get(java.util.Calendar.DAY_OF_MONTH).toString()
         val month = (cal.get(java.util.Calendar.MONTH) + 1).toString()
-        return day to month
+        val year = cal.get(java.util.Calendar.YEAR).toString()
+        return Triple(day, month, year)
     }
 
     override fun isDayValidForMonth(day: String, month: String): Boolean {
@@ -184,7 +185,7 @@ actual fun getPlatform(): Platform = androidPlatform ?: object : Platform {
     override fun getDayOfMonth(): Int = 1
     override fun getMonth(): Int = 1
     override fun calculateAge(dobString: String?): Int? = null
-    override fun parseDateToDayMonth(dateString: String): Pair<String, String>? = null
+    override fun parseDateComponents(dateString: String): Triple<String, String, String>? = null
     override fun isDayValidForMonth(day: String, month: String): Boolean = true
     override fun currentTimeMillis(): Long = System.currentTimeMillis()
     override val buildVariant: String = "Unknown"

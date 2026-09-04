@@ -20,11 +20,14 @@ class FriendRepository(private val friendDao: FriendDao) {
 
     suspend fun deleteChild(child: Child) = friendDao.deleteChild(child)
 
-    suspend fun insertFriendWithChildren(friend: Friend, children: List<Child>) {
-        val friendId = friendDao.insertFriend(friend)
+    suspend fun insertFriendWithChildren(friend: Friend, children: List<Child>): Long {
+        val now = currentTimeMillis()
+        val friendToSave = friend.copy(createdAt = now, lastModifiedAt = now)
+        val friendId = friendDao.insertFriend(friendToSave)
         children.forEach {
-            friendDao.insertChild(it.copy(friendId = friendId))
+            friendDao.insertChild(it.copy(friendId = friendId, createdAt = now, lastModifiedAt = now))
         }
+        return friendId
     }
 
     suspend fun updateFriendWithChildren(friend: Friend, children: List<Child>) {

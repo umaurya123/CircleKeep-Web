@@ -63,7 +63,7 @@ class CircleKeepApplication : Application() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val name = "Event Reminders"
             val descriptionText = "Notifications for birthdays and anniversaries"
-            val importance = NotificationManager.IMPORTANCE_DEFAULT
+            val importance = NotificationManager.IMPORTANCE_HIGH
             val channel = NotificationChannel("EVENT_REMINDERS", name, importance).apply {
                 description = descriptionText
             }

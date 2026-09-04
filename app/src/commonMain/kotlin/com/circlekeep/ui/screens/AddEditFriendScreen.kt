@@ -477,7 +477,7 @@ fun AddEditFriendScreen(
                                 birthMonth = ""
                             } else {
                                 try {
-                                    platform.parseDateToDayMonth(it)?.let { (d, m) ->
+                                    platform.parseDateComponents(it)?.let { (d, m, _) ->
                                         birthDay = d
                                         birthMonth = m
                                     }
@@ -523,7 +523,7 @@ fun AddEditFriendScreen(
                                 anniversaryMonth = ""
                             } else {
                                 try {
-                                    platform.parseDateToDayMonth(it)?.let { (d, m) ->
+                                    platform.parseDateComponents(it)?.let { (d, m, _) ->
                                         anniversaryDay = d
                                         anniversaryMonth = m
                                     }
@@ -725,7 +725,7 @@ fun AddEditFriendScreen(
                         onPartnerDateOfBirthChange = {
                             partnerDateOfBirth = it
                             try {
-                                platform.parseDateToDayMonth(it)?.let { (d, m) ->
+                                platform.parseDateComponents(it)?.let { (d, m, _) ->
                                     partnerBirthDay = d
                                     partnerBirthMonth = m
                                 }
@@ -881,8 +881,8 @@ fun AddEditFriendScreen(
                                 address = p.address; companyName = p.companyName; notes = p.notes
                                 dateOfBirth = p.dateOfBirth; anniversaryDate = p.anniversaryDate
                                 try {
-                                    platform.parseDateToDayMonth(p.dateOfBirth)?.let { (d, m) -> birthDay = d; birthMonth = m }
-                                    platform.parseDateToDayMonth(p.anniversaryDate)?.let { (d, m) -> anniversaryDay = d; anniversaryMonth = m }
+                                    platform.parseDateComponents(p.dateOfBirth)?.let { (d, m, _) -> birthDay = d; birthMonth = m }
+                                    platform.parseDateComponents(p.anniversaryDate)?.let { (d, m, _) -> anniversaryDay = d; anniversaryMonth = m }
                                 } catch (_: Exception) {}
                             }
                             showImportTargetDialog = false; pendingContact = null
@@ -900,7 +900,7 @@ fun AddEditFriendScreen(
                                 partnerPhone = p.cellPhone; partnerEmail = p.email; partnerWorkEmail = p.workEmail
                                 partnerCompanyName = p.companyName; partnerDateOfBirth = p.dateOfBirth
                                 try {
-                                    platform.parseDateToDayMonth(p.dateOfBirth)?.let { (d, m) -> partnerBirthDay = d; partnerBirthMonth = m }
+                                    platform.parseDateComponents(p.dateOfBirth)?.let { (d, m, _) -> partnerBirthDay = d; partnerBirthMonth = m }
                                 } catch (_: Exception) {}
                             }
                             showImportTargetDialog = false; pendingContact = null

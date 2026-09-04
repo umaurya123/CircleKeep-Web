@@ -192,6 +192,17 @@ fun SettingsScreen(
             }
             
             Spacer(Modifier.height(12.dp))
+
+            OutlinedButton(
+                onClick = { platformUI.sendDataByEmail(viewModel.getExportData()) },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(Icons.Default.Email, contentDescription = null)
+                Spacer(Modifier.width(8.dp))
+                Text(strings.exportAndEmailData)
+            }
+
+            Spacer(Modifier.height(12.dp))
             
             OutlinedButton(onClick = { importTrigger = true }, modifier = Modifier.fillMaxWidth()) {
                 Icon(Icons.Default.ArrowDownward, contentDescription = null)

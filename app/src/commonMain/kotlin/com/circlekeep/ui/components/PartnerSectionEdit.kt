@@ -193,7 +193,7 @@ fun PartnerSectionEdit(
                         onPartnerBirthMonthChange("")
                     } else {
                         try {
-                            platform.parseDateToDayMonth(it)?.let { (d, m) ->
+                            platform.parseDateComponents(it)?.let { (d, m, _) ->
                                 onPartnerBirthDayChange(d)
                                 onPartnerBirthMonthChange(m)
                             }

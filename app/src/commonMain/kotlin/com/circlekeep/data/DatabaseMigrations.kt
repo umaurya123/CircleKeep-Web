@@ -58,6 +58,9 @@ val MIGRATION_18_19 = object : Migration(18, 19) {
 
         // Add sortOrder to groups table
         safeAddColumn(connection, "groups", "sortOrder", "INTEGER NOT NULL DEFAULT 0")
+
+        // Add childType to children table
+        safeAddColumn(connection, "children", "childType", "TEXT NOT NULL DEFAULT ''")
     }
 }
 

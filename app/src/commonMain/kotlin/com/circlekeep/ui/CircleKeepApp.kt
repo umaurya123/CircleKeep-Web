@@ -28,6 +28,26 @@ fun CircleKeepApp() {
     val platform = getPlatform()
     val navController = rememberNavController()
 
+    val totalFriends by viewModel.totalFriendCount.collectAsState()
+    var startupAdCheckDone by remember { mutableStateOf(false) }
+
+    val remindersEnabled by viewModel.remindersEnabledState.collectAsState()
+
+    LaunchedEffect(totalFriends, isPaid) {
+        if (!startupAdCheckDone && totalFriends > 0) {
+            if (!isPaid && totalFriends > 40) {
+                platformUI.showInterstitialAd { }
+            }
+            startupAdCheckDone = true
+        }
+    }
+
+    LaunchedEffect(remindersEnabled) {
+        if (remindersEnabled) {
+            platformUI.requestNotificationPermission()
+        }
+    }
+
     // Handle back button on top-level screens to prevent accidental exit
     var lastBackPressTime by remember { mutableStateOf(0L) }
     
@@ -170,7 +190,11 @@ fun CircleKeepApp() {
                                     platformUI.showToast(message)
                                 }
                             },
-                            onBackClick = { navController.popBackStack() }
+                            onFriendClick = { id -> 
+                                navController.navigate(Destination.FriendDetail(id))
+                            },
+                            onBackClick = { navController.popBackStack() },
+                            viewModel = viewModel
                         )
                     }
                     composable<Destination.AddFriend> {

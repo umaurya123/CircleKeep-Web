@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 19,
-    "identityHash": "0f97a0edd30287537275595e6930175e",
+    "identityHash": "ae5fd58be147732d9504b59629225f8a",
     "entities": [
       {
         "tableName": "friends",
@@ -278,7 +278,7 @@
       },
       {
         "tableName": "children",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `friendId` INTEGER NOT NULL, `firstName` TEXT NOT NULL, `middleName` TEXT NOT NULL, `nickname` TEXT NOT NULL, `phoneNumber` TEXT NOT NULL, `email` TEXT NOT NULL, `workEmail` TEXT NOT NULL, `lastName` TEXT NOT NULL, `siblings` TEXT NOT NULL, `collegeSchoolName` TEXT NOT NULL, `dateOfBirth` TEXT NOT NULL, `birthDay` TEXT NOT NULL, `birthMonth` TEXT NOT NULL, `age` INTEGER, `ageUnit` TEXT NOT NULL, `partnerFirstName` TEXT NOT NULL, `partnerMiddleName` TEXT NOT NULL, `partnerLastName` TEXT NOT NULL, `partnerNickname` TEXT NOT NULL, `partnerPhone` TEXT NOT NULL, `partnerEmail` TEXT NOT NULL, `partnerWorkEmail` TEXT NOT NULL, `partnerType` TEXT NOT NULL, `partnerCompanyName` TEXT NOT NULL, `partnerCollegeSchoolName` TEXT NOT NULL, `partnerImageUri` TEXT, `partnerSiblings` TEXT NOT NULL, `partnerDateOfBirth` TEXT NOT NULL, `partnerBirthDay` TEXT NOT NULL, `partnerBirthMonth` TEXT NOT NULL, `anniversaryDate` TEXT NOT NULL, `anniversaryDay` TEXT NOT NULL, `anniversaryMonth` TEXT NOT NULL, `imageUri` TEXT, `petName` TEXT NOT NULL, `petImageUri` TEXT, `notes` TEXT NOT NULL, `createdAt` INTEGER NOT NULL, `lastModifiedAt` INTEGER NOT NULL, FOREIGN KEY(`friendId`) REFERENCES `friends`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `friendId` INTEGER NOT NULL, `firstName` TEXT NOT NULL, `middleName` TEXT NOT NULL, `nickname` TEXT NOT NULL, `phoneNumber` TEXT NOT NULL, `email` TEXT NOT NULL, `workEmail` TEXT NOT NULL, `lastName` TEXT NOT NULL, `childType` TEXT NOT NULL, `siblings` TEXT NOT NULL, `collegeSchoolName` TEXT NOT NULL, `dateOfBirth` TEXT NOT NULL, `birthDay` TEXT NOT NULL, `birthMonth` TEXT NOT NULL, `age` INTEGER, `ageUnit` TEXT NOT NULL, `partnerFirstName` TEXT NOT NULL, `partnerMiddleName` TEXT NOT NULL, `partnerLastName` TEXT NOT NULL, `partnerNickname` TEXT NOT NULL, `partnerPhone` TEXT NOT NULL, `partnerEmail` TEXT NOT NULL, `partnerWorkEmail` TEXT NOT NULL, `partnerType` TEXT NOT NULL, `partnerCompanyName` TEXT NOT NULL, `partnerCollegeSchoolName` TEXT NOT NULL, `partnerImageUri` TEXT, `partnerSiblings` TEXT NOT NULL, `partnerDateOfBirth` TEXT NOT NULL, `partnerBirthDay` TEXT NOT NULL, `partnerBirthMonth` TEXT NOT NULL, `anniversaryDate` TEXT NOT NULL, `anniversaryDay` TEXT NOT NULL, `anniversaryMonth` TEXT NOT NULL, `imageUri` TEXT, `petName` TEXT NOT NULL, `petImageUri` TEXT, `notes` TEXT NOT NULL, `createdAt` INTEGER NOT NULL, `lastModifiedAt` INTEGER NOT NULL, FOREIGN KEY(`friendId`) REFERENCES `friends`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "id",
@@ -331,6 +331,12 @@
           {
             "fieldPath": "lastName",
             "columnName": "lastName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "childType",
+            "columnName": "childType",
             "affinity": "TEXT",
             "notNull": true
           },
@@ -575,7 +581,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '0f97a0edd30287537275595e6930175e')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'ae5fd58be147732d9504b59629225f8a')"
     ]
   }
 }

@@ -50,6 +50,37 @@ class AndroidPlatformUI(
         context.startActivity(Intent.createChooser(intent, "Send Email"))
     }
 
+    override fun sendDataByEmail(jsonData: String) {
+        try {
+            val cacheDir = File(context.cacheDir, "exports")
+            if (!cacheDir.exists()) cacheDir.mkdirs()
+            
+            val fileName = "CircleKeep_Backup_${System.currentTimeMillis()}.json"
+            val file = File(cacheDir, fileName)
+            file.writeText(jsonData)
+
+            val contentUri = androidx.core.content.FileProvider.getUriForFile(
+                context,
+                "${context.packageName}.fileprovider",
+                file
+            )
+
+            val intent = Intent(Intent.ACTION_SEND).apply {
+                type = "application/json"
+                putExtra(Intent.EXTRA_SUBJECT, "CircleKeep Data Export")
+                putExtra(Intent.EXTRA_TEXT, "Attached is your CircleKeep data export.")
+                putExtra(Intent.EXTRA_STREAM, contentUri)
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            }
+            
+            val chooser = Intent.createChooser(intent, "Send Email")
+            chooser.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            context.startActivity(chooser)
+        } catch (e: Exception) {
+            showToast("Failed to share data: ${e.message}")
+        }
+    }
+
     override fun showToast(message: String) {
         Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
     }

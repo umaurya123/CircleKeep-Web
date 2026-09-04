@@ -71,10 +71,11 @@ class EventReminderWorker(
         val pendingIntent = PendingIntent.getActivity(applicationContext, 0, intent, PendingIntent.FLAG_IMMUTABLE)
 
         val builder = NotificationCompat.Builder(applicationContext, "EVENT_REMINDERS")
-            .setSmallIcon(android.R.drawable.ic_dialog_info) // Replace with your app icon
-            .setContentTitle("$type Today!")
-            .setContentText("Don't forget $name's $type")
-            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setSmallIcon(android.R.drawable.ic_menu_my_calendar)
+            .setContentTitle(name)
+            .setContentText("It's their $type today!")
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setDefaults(NotificationCompat.DEFAULT_ALL)
             .setContentIntent(pendingIntent)
             .setAutoCancel(true)
 

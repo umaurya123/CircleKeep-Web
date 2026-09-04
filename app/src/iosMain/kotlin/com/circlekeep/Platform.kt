@@ -71,11 +71,11 @@ class IOSPlatform: Platform {
         return components.year.toInt()
     }
 
-    override fun parseDateToDayMonth(dateString: String): Pair<String, String>? {
+    override fun parseDateComponents(dateString: String): Triple<String, String, String>? {
         val date = parseDate(dateString) ?: return null
         val calendar = NSCalendar.currentCalendar
-        val components = calendar.components(NSCalendarUnitDay or NSCalendarUnitMonth, fromDate = date)
-        return components.day.toString() to components.month.toString()
+        val components = calendar.components(NSCalendarUnitDay or NSCalendarUnitMonth or NSCalendarUnitYear, fromDate = date)
+        return Triple(components.day.toString(), components.month.toString(), components.year.toString())
     }
 
     override fun isDayValidForMonth(day: String, month: String): Boolean {

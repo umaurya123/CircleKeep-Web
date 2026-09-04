@@ -146,15 +146,19 @@ fun EventCard(event: UpcomingEvent, onClick: () -> Unit) {
                         .replace("Wedding Anniversary", strings.marriageAnniversary)
                         .replace("Marriage Anniversary", strings.marriageAnniversary)
                         .replace("Birthday", strings.birthday)
+                    
+                    val monthName = if (event.month in 1..12) strings.months[event.month - 1] else ""
+                    val dateText = "$monthName ${event.day}"
+                    
                     Text(event.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                     Text(displayType, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    Text(event.date, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium)
+                    Text(dateText, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium)
                 }
                 Column(horizontalAlignment = Alignment.End) {
                     val dayText = when (event.daysRemaining) {
                         0 -> strings.today + "!"
                         1 -> strings.tomorrow
-                        else -> "In ${event.daysRemaining} days" // Need to localize "In X days" if possible
+                        else -> strings.inXDays.replace("%d", event.daysRemaining.toString())
                     }
                     Text(
                         text = dayText,

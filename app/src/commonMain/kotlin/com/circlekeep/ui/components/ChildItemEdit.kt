@@ -102,6 +102,7 @@ fun ChildItemEdit(
                     Icon(Icons.Rounded.Delete, contentDescription = strings.delete)
                 }
             }
+            ChildTypeDropdown(value = child.childType, onValueChange = { onChildChange(child.copy(childType = it)) })
             OutlinedTextField(
                 value = child.firstName, 
                 onValueChange = { onChildChange(child.copy(firstName = it)) }, 
@@ -179,7 +180,7 @@ fun ChildItemEdit(
                             newChild = newChild.copy(birthDay = "", birthMonth = "")
                         } else {
                             try {
-                                platform.parseDateToDayMonth(it)?.let { (d, m) ->
+                                platform.parseDateComponents(it)?.let { (d, m, _) ->
                                     newChild = newChild.copy(birthDay = d, birthMonth = m)
                                 }
                             } catch (_: Exception) {}
@@ -443,7 +444,7 @@ fun ChildItemEdit(
                             newChild = newChild.copy(partnerBirthDay = "", partnerBirthMonth = "")
                         } else {
                             try {
-                                platform.parseDateToDayMonth(it)?.let { (d, m) ->
+                                platform.parseDateComponents(it)?.let { (d, m, _) ->
                                     newChild = newChild.copy(partnerBirthDay = d, partnerBirthMonth = m)
                                 }
                             } catch (_: Exception) {}
@@ -482,7 +483,7 @@ fun ChildItemEdit(
                             newChild = newChild.copy(anniversaryDay = "", anniversaryMonth = "")
                         } else {
                             try {
-                                platform.parseDateToDayMonth(it)?.let { (d, m) ->
+                                platform.parseDateComponents(it)?.let { (d, m, _) ->
                                     newChild = newChild.copy(anniversaryDay = d, anniversaryMonth = m)
                                 }
                             } catch (_: Exception) {}
@@ -525,6 +526,55 @@ fun ChildItemEdit(
                 )
                 Spacer(Modifier.width(8.dp))
                 Text(if (showMore) strings.showLess else strings.showMore)
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ChildTypeDropdown(
+    value: String,
+    onValueChange: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val strings = LocalAppStrings.current
+    var expanded by remember { mutableStateOf(false) }
+    val types = strings.childTypes
+
+    Box(modifier = modifier) {
+        val displayText = types[value] ?: value
+        OutlinedTextField(
+            value = displayText,
+            onValueChange = { },
+            label = { Text(strings.child) },
+            placeholder = { Text(types[""] ?: "Select Type") },
+            modifier = Modifier.fillMaxWidth().clickable { expanded = true },
+            enabled = false,
+            readOnly = true,
+            colors = OutlinedTextFieldDefaults.colors(
+                disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                disabledBorderColor = MaterialTheme.colorScheme.outline,
+                disabledTrailingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                disabledPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant
+            ),
+            trailingIcon = {
+                Icon(Icons.Rounded.ArrowDropDown, contentDescription = null)
+            }
+        )
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false }
+        ) {
+            types.forEach { (key, label) ->
+                DropdownMenuItem(
+                    text = { Text(label) },
+                    onClick = {
+                        onValueChange(key)
+                        expanded = false
+                    }
+                )
             }
         }
     }

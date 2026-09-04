@@ -33,7 +33,9 @@ fun FriendDetailScreen(
     onDeleteClick: (Friend) -> Unit,
     onTogglePin: (Friend) -> Unit,
     onConvertPartnerClick: (FriendWithChildren) -> Unit,
-    onBackClick: () -> Unit
+    onFriendClick: (Long) -> Unit,
+    onBackClick: () -> Unit,
+    viewModel: com.circlekeep.viewmodel.FriendViewModel
 ) {
     val strings = LocalAppStrings.current
     val platformUI = LocalPlatformUI.current
@@ -151,7 +153,10 @@ fun FriendDetailScreen(
                                     if (friendWithChildren.friend.middleName.isNotBlank()) append(" ${friendWithChildren.friend.middleName}")
                                     if (friendWithChildren.friend.lastName.isNotBlank()) append(" ${friendWithChildren.friend.lastName}")
                                 },
-                                style = MaterialTheme.typography.headlineMedium
+                                style = MaterialTheme.typography.headlineMedium,
+                                modifier = Modifier.clickable {
+                                    // Clicking own name does nothing or we could refresh
+                                }
                             )
                             if (friendWithChildren.friend.companyName.isNotBlank()) {
                                 Text(
@@ -233,25 +238,29 @@ fun FriendDetailScreen(
                             platformUI.sendEmail(friendWithChildren.friend.workEmail)
                         })
                     }
-                    DetailRow(Icons.Rounded.Cake, platform.formatDisplayDate(friendWithChildren.friend.dateOfBirth), label = buildString {
+                    DetailRow(Icons.Rounded.Cake, formatFullDateLocalized(friendWithChildren.friend.dateOfBirth), label = buildString {
                         append(strings.dob)
                         platform.calculateAge(friendWithChildren.friend.dateOfBirth)?.let { append(" ($it yrs)") }
                     })
                     if (friendWithChildren.friend.dateOfBirth.isBlank() && friendWithChildren.friend.birthDay.isNotBlank() && friendWithChildren.friend.birthMonth.isNotBlank()) {
+                        val mIdx = friendWithChildren.friend.birthMonth.toIntOrNull()
+                        val mName = if (mIdx != null && mIdx in 1..12) strings.months[mIdx - 1] else friendWithChildren.friend.birthMonth
                         DetailRow(
                             icon = Icons.Rounded.Cake,
-                            text = platform.formatPartialDate(friendWithChildren.friend.birthDay, friendWithChildren.friend.birthMonth),
+                            text = "$mName ${friendWithChildren.friend.birthDay}",
                             label = strings.birthday
                         )
                     }
-                    DetailRow(Icons.Rounded.Favorite, platform.formatDisplayDate(friendWithChildren.friend.anniversaryDate), label = buildString {
+                    DetailRow(Icons.Rounded.Favorite, formatFullDateLocalized(friendWithChildren.friend.anniversaryDate), label = buildString {
                         append(strings.marriageAnniversary)
                         platform.calculateAge(friendWithChildren.friend.anniversaryDate)?.let { append(" ($it yrs)") }
                     })
                     if (friendWithChildren.friend.anniversaryDate.isBlank() && friendWithChildren.friend.anniversaryDay.isNotBlank() && friendWithChildren.friend.anniversaryMonth.isNotBlank()) {
+                        val mIdx = friendWithChildren.friend.anniversaryMonth.toIntOrNull()
+                        val mName = if (mIdx != null && mIdx in 1..12) strings.months[mIdx - 1] else friendWithChildren.friend.anniversaryMonth
                         DetailRow(
                             icon = Icons.Rounded.Favorite,
-                            text = platform.formatPartialDate(friendWithChildren.friend.anniversaryDay, friendWithChildren.friend.anniversaryMonth),
+                            text = "$mName ${friendWithChildren.friend.anniversaryDay}",
                             label = strings.marriageAnniversary
                         )
                     }
@@ -334,7 +343,12 @@ fun FriendDetailScreen(
                                         }
                                         Text(
                                             text = partnerDisplayName,
-                                            style = MaterialTheme.typography.titleLarge
+                                            style = MaterialTheme.typography.titleLarge,
+                                            modifier = Modifier.clickable {
+                                                viewModel.findFriendIdByName(friendWithChildren.friend.partnerFirstName, friendWithChildren.friend.partnerLastName)?.let {
+                                                    onFriendClick(it)
+                                                }
+                                            }
                                         )
                                         if (friendWithChildren.friend.partnerPhone.isNotBlank()) {
                                             DetailRow(Icons.Rounded.Phone, friendWithChildren.friend.partnerPhone, onClick = {
@@ -362,16 +376,18 @@ fun FriendDetailScreen(
                                 if (friendWithChildren.friend.partnerDateOfBirth.isNotBlank()) {
                                     DetailRow(
                                         icon = Icons.Rounded.Cake,
-                                        text = platform.formatDisplayDate(friendWithChildren.friend.partnerDateOfBirth),
+                                        text = formatFullDateLocalized(friendWithChildren.friend.partnerDateOfBirth),
                                         label = buildString {
                                             append(strings.dob)
                                             platform.calculateAge(friendWithChildren.friend.partnerDateOfBirth)?.let { append(" ($it yrs)") }
                                         }
                                     )
                                 } else if (friendWithChildren.friend.partnerBirthDay.isNotBlank() && friendWithChildren.friend.partnerBirthMonth.isNotBlank()) {
+                                    val mIdx = friendWithChildren.friend.partnerBirthMonth.toIntOrNull()
+                                    val mName = if (mIdx != null && mIdx in 1..12) strings.months[mIdx - 1] else friendWithChildren.friend.partnerBirthMonth
                                     DetailRow(
                                         icon = Icons.Rounded.Cake,
-                                        text = platform.formatPartialDate(friendWithChildren.friend.partnerBirthDay, friendWithChildren.friend.partnerBirthMonth),
+                                        text = "$mName ${friendWithChildren.friend.partnerBirthDay}",
                                         label = strings.birthday
                                     )
                                 }
@@ -412,6 +428,9 @@ fun FriendDetailScreen(
                                     }
                                     Spacer(Modifier.width(12.dp))
                                     Column(modifier = Modifier.weight(1f)) {
+                                        val childTypeKey = child.childType
+                                        val childTypeLabel = if (childTypeKey.isBlank()) strings.child else (strings.childTypes[childTypeKey] ?: childTypeKey)
+                                        Text(childTypeLabel, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
                                         val childDisplayName = buildString {
                                             append(child.firstName)
                                             if (child.nickname.isNotBlank()) append(" '${child.nickname}'")
@@ -420,7 +439,12 @@ fun FriendDetailScreen(
                                         }
                                         Text(
                                             text = childDisplayName,
-                                            style = MaterialTheme.typography.titleMedium
+                                            style = MaterialTheme.typography.titleMedium,
+                                            modifier = Modifier.clickable {
+                                                viewModel.findFriendIdByName(child.firstName, child.lastName)?.let {
+                                                    onFriendClick(it)
+                                                }
+                                            }
                                         )
                                         if (child.phoneNumber.isNotBlank()) {
                                             DetailRow(Icons.Rounded.Phone, child.phoneNumber, onClick = {
@@ -430,6 +454,50 @@ fun FriendDetailScreen(
                                     }
                                     IconButton(onClick = { onEditClick(friendWithChildren.friend.id, child.id) }) {
                                         Icon(Icons.Rounded.Edit, contentDescription = strings.editContact)
+                                    }
+                                    IconButton(onClick = { 
+                                        viewModel.saveFriend(Friend(
+                                            firstName = child.firstName,
+                                            middleName = child.middleName,
+                                            lastName = child.lastName,
+                                            nickname = child.nickname,
+                                            cellPhone = child.phoneNumber,
+                                            email = child.email,
+                                            workEmail = child.workEmail,
+                                            address = friendWithChildren.friend.address,
+                                            groups = friendWithChildren.friend.groups,
+                                            petName = friendWithChildren.friend.petName,
+                                            petImageUri = friendWithChildren.friend.petImageUri,
+                                            secondaryImageUri = friendWithChildren.friend.secondaryImageUri,
+                                            dateOfBirth = child.dateOfBirth,
+                                            birthDay = child.birthDay,
+                                            birthMonth = child.birthMonth,
+                                            imageUri = child.imageUri,
+                                            siblings = child.siblings,
+                                            collegeSchoolName = child.collegeSchoolName,
+                                            notes = child.notes,
+                                            partnerFirstName = child.partnerFirstName,
+                                            partnerMiddleName = child.partnerMiddleName,
+                                            partnerLastName = child.partnerLastName,
+                                            partnerNickname = child.partnerNickname,
+                                            partnerPhone = child.partnerPhone,
+                                            partnerEmail = child.partnerEmail,
+                                            partnerWorkEmail = child.partnerWorkEmail,
+                                            partnerType = child.partnerType,
+                                            partnerCompanyName = child.partnerCompanyName,
+                                            partnerCollegeSchoolName = child.partnerCollegeSchoolName,
+                                            partnerImageUri = child.partnerImageUri,
+                                            partnerSiblings = child.partnerSiblings,
+                                            partnerDateOfBirth = child.partnerDateOfBirth,
+                                            partnerBirthDay = child.partnerBirthDay,
+                                            partnerBirthMonth = child.partnerBirthMonth,
+                                            anniversaryDate = child.anniversaryDate,
+                                            anniversaryDay = child.anniversaryDay,
+                                            anniversaryMonth = child.anniversaryMonth
+                                        ), emptyList()) 
+                                        platformUI.showToast("Child added as contact")
+                                    }) {
+                                        Icon(Icons.Rounded.PersonAdd, contentDescription = strings.addContact, tint = MaterialTheme.colorScheme.primary)
                                     }
                                 }
                                 if (child.collegeSchoolName.isNotBlank()) {
@@ -446,15 +514,17 @@ fun FriendDetailScreen(
                                     })
                                 }
                                 if (child.dateOfBirth.isNotBlank()) {
-                                    DetailRow(Icons.Rounded.Cake, platform.formatDisplayDate(child.dateOfBirth), label = buildString {
+                                    DetailRow(Icons.Rounded.Cake, formatFullDateLocalized(child.dateOfBirth), label = buildString {
                                         append(strings.dob)
                                         platform.calculateAge(child.dateOfBirth)?.let { append(" ($it yrs)") }
                                     })
                                 } else {
                                     if (child.birthDay.isNotBlank() && child.birthMonth.isNotBlank()) {
+                                        val mIdx = child.birthMonth.toIntOrNull()
+                                        val mName = if (mIdx != null && mIdx in 1..12) strings.months[mIdx - 1] else child.birthMonth
                                         DetailRow(
                                             icon = Icons.Rounded.Cake,
-                                            text = platform.formatPartialDate(child.birthDay, child.birthMonth),
+                                            text = "$mName ${child.birthDay}",
                                             label = strings.birthday
                                         )
                                     }
@@ -487,11 +557,13 @@ fun FriendDetailScreen(
                                 if (child.partnerFirstName.isNotBlank()) {
                                     Spacer(Modifier.height(8.dp))
                                     if (child.anniversaryDate.isNotBlank()) {
-                                        DetailRow(Icons.Rounded.Favorite, platform.formatDisplayDate(child.anniversaryDate), label = strings.marriageAnniversary)
+                                        DetailRow(Icons.Rounded.Favorite, formatFullDateLocalized(child.anniversaryDate), label = strings.marriageAnniversary)
                                     } else if (child.anniversaryDay.isNotBlank() && child.anniversaryMonth.isNotBlank()) {
+                                        val mIdx = child.anniversaryMonth.toIntOrNull()
+                                        val mName = if (mIdx != null && mIdx in 1..12) strings.months[mIdx - 1] else child.anniversaryMonth
                                         DetailRow(
                                             icon = Icons.Rounded.Favorite,
-                                            text = platform.formatPartialDate(child.anniversaryDay, child.anniversaryMonth),
+                                            text = "$mName ${child.anniversaryDay}",
                                             label = strings.marriageAnniversary
                                         )
                                     }
@@ -512,7 +584,12 @@ fun FriendDetailScreen(
                                     )
                                     Text(
                                         text = childPartnerDisplayName,
-                                        style = MaterialTheme.typography.bodyLarge
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        modifier = Modifier.clickable {
+                                            viewModel.findFriendIdByName(child.partnerFirstName, child.partnerLastName)?.let {
+                                                onFriendClick(it)
+                                            }
+                                        }
                                     )
                                     if (child.partnerPhone.isNotBlank()) {
                                         DetailRow(Icons.Rounded.Phone, child.partnerPhone, onClick = {
@@ -538,16 +615,18 @@ fun FriendDetailScreen(
                                     if (child.partnerDateOfBirth.isNotBlank()) {
                                         DetailRow(
                                             icon = Icons.Rounded.Cake,
-                                            text = platform.formatDisplayDate(child.partnerDateOfBirth),
+                                            text = formatFullDateLocalized(child.partnerDateOfBirth),
                                             label = buildString {
                                                 append(strings.dob)
                                                 platform.calculateAge(child.partnerDateOfBirth)?.let { append(" ($it yrs)") }
                                             }
                                         )
                                     } else if (child.partnerBirthDay.isNotBlank() && child.partnerBirthMonth.isNotBlank()) {
+                                        val mIdx = child.partnerBirthMonth.toIntOrNull()
+                                        val mName = if (mIdx != null && mIdx in 1..12) strings.months[mIdx - 1] else child.partnerBirthMonth
                                         DetailRow(
                                             icon = Icons.Rounded.Cake,
-                                            text = platform.formatPartialDate(child.partnerBirthDay, child.partnerBirthMonth),
+                                            text = "$mName ${child.partnerBirthDay}",
                                             label = strings.birthday
                                         )
                                     }
@@ -585,4 +664,16 @@ fun FriendDetailScreen(
             }
         )
     }
+}
+
+@Composable
+fun formatFullDateLocalized(dateString: String): String {
+    val platform = getPlatform()
+    val strings = LocalAppStrings.current
+    if (dateString.isBlank()) return ""
+    return platform.parseDateComponents(dateString)?.let { (d, m, y) ->
+        val mIdx = m.toIntOrNull()
+        val mName = if (mIdx != null && mIdx in 1..12) strings.months[mIdx - 1] else m
+        "$mName $d, $y"
+    } ?: platform.formatDisplayDate(dateString)
 }

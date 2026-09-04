@@ -10,7 +10,7 @@ interface Platform {
     fun getDayOfMonth(): Int
     fun getMonth(): Int
     fun calculateAge(dobString: String?): Int?
-    fun parseDateToDayMonth(dateString: String): Pair<String, String>?
+    fun parseDateComponents(dateString: String): Triple<String, String, String>?
     fun isDayValidForMonth(day: String, month: String): Boolean
     fun currentTimeMillis(): Long
     val buildVariant: String

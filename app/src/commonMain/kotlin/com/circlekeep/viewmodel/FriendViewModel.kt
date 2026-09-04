@@ -21,7 +21,8 @@ enum class SortOrder {
 
 data class UpcomingEvent(
     val name: String,
-    val date: String,
+    val day: Int,
+    val month: Int,
     val type: String,
     val friendId: Long,
     val daysRemaining: Int,
@@ -227,8 +228,7 @@ class FriendViewModel(
         }
         
         if (daysRemaining in 0..30) {
-            val months = listOf("", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
-            return UpcomingEvent(name, "${months[month]} $day", type, friendId, daysRemaining, imageUri)
+            return UpcomingEvent(name, day, month, type, friendId, daysRemaining, imageUri)
         }
         return null
     }
@@ -309,6 +309,13 @@ class FriendViewModel(
     }
 
     fun getFriend(id: Long) = friendRepository.getFriendStream(id)
+
+    fun findFriendIdByName(firstName: String, lastName: String): Long? {
+        return friendsState.value.find { 
+            it.friend.firstName.trim().equals(firstName.trim(), ignoreCase = true) && 
+            it.friend.lastName.trim().equals(lastName.trim(), ignoreCase = true)
+        }?.friend?.id
+    }
 
     fun convertPartnerToFriend(current: FriendWithChildren, onComplete: (Boolean) -> Unit) {
         viewModelScope.launch {
@@ -422,12 +429,14 @@ class FriendViewModel(
         }
     }
 
-    fun saveFriend(friend: Friend, children: List<Child>) {
+    fun saveFriend(friend: Friend, children: List<Child>, onComplete: ((Long) -> Unit)? = null) {
         viewModelScope.launch {
             if (friend.id == 0L) {
-                friendRepository.insertFriendWithChildren(friend, children)
+                val newId = friendRepository.insertFriendWithChildren(friend, children)
+                onComplete?.invoke(newId)
             } else {
                 friendRepository.updateFriendWithChildren(friend, children)
+                onComplete?.invoke(friend.id)
             }
         }
     }
@@ -552,6 +561,7 @@ class FriendViewModel(
                         email = c.email,
                         workEmail = c.workEmail,
                         lastName = c.lastName,
+                        childType = c.childType,
                         siblings = c.siblings,
                         collegeSchoolName = c.collegeSchoolName,
                         dateOfBirth = c.dateOfBirth,
@@ -572,8 +582,6 @@ class FriendViewModel(
                         partnerDateOfBirth = c.partnerDateOfBirth,
                         partnerBirthDay = c.partnerBirthDay,
                         partnerBirthMonth = c.partnerBirthMonth,
-                        partnerCompanyName = c.partnerCompanyName,
-                        partnerCollegeSchoolName = c.partnerCollegeSchoolName,
                         anniversaryDate = c.anniversaryDate,
                         anniversaryDay = c.anniversaryDay,
                         anniversaryMonth = c.anniversaryMonth,
@@ -676,6 +684,7 @@ class FriendViewModel(
                                 email = c.email,
                                 workEmail = c.workEmail,
                                 lastName = c.lastName,
+                                childType = c.childType,
                                 siblings = c.siblings,
                                 collegeSchoolName = c.collegeSchoolName,
                                 dateOfBirth = c.dateOfBirth,

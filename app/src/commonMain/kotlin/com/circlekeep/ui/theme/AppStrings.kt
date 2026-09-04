@@ -17,6 +17,7 @@ interface AppStrings {
     val purchaseApp: String
     val restorePurchases: String
     val exportData: String
+    val exportAndEmailData: String
     val importData: String
     val sendFeedback: String
     val deleteAllRecords: String
@@ -89,6 +90,7 @@ interface AppStrings {
     val lastModified: String
     val months: List<String>
     val partnerTypes: Map<String, String>
+    val childTypes: Map<String, String>
     val none: String
     val child: String
     val childsPartner: String
@@ -100,6 +102,7 @@ interface AppStrings {
     val monthUnit: String
     val today: String
     val tomorrow: String
+    val inXDays: String
     val thisWeek: String
     val laterThisMonth: String
     val noEvents: String
@@ -125,6 +128,7 @@ object EnStrings : AppStrings {
     override val purchaseApp = "Purchase App (Remove Ads)"
     override val restorePurchases = "Restore Purchases"
     override val exportData = "Export Data"
+    override val exportAndEmailData = "Export and Email Data"
     override val importData = "Import Data"
     override val sendFeedback = "Send Feedback"
     override val deleteAllRecords = "Delete All Records"
@@ -197,6 +201,7 @@ object EnStrings : AppStrings {
     override val lastModified = "Last Modified"
     override val months = listOf("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December")
     override val partnerTypes = mapOf("" to "Select Type", "Spouse" to "Spouse", "Fiance" to "Fiance", "Boyfriend" to "Boyfriend", "Girlfriend" to "Girlfriend", "Husband" to "Husband", "Wife" to "Wife", "Other" to "Other")
+    override val childTypes = mapOf("" to "Select Type", "Daughter" to "Daughter", "Son" to "Son")
     override val none = "None"
     override val child = "Child"
     override val childsPartner = "Child's Partner"
@@ -208,6 +213,7 @@ object EnStrings : AppStrings {
     override val monthUnit = "Month(s)"
     override val today = "Today"
     override val tomorrow = "Tomorrow"
+    override val inXDays = "In %d days"
     override val thisWeek = "This Week"
     override val laterThisMonth = "Later this Month"
     override val noEvents = "No events in the next 30 days"
@@ -233,6 +239,7 @@ object HiStrings : AppStrings {
     override val purchaseApp = "ऐप खरीदें (विज्ञापन हटाएं)"
     override val restorePurchases = "खरीद पुनर्स्थापित करें"
     override val exportData = "डेटा निर्यात करें"
+    override val exportAndEmailData = "निर्यात करें और ईमेल भेजें"
     override val importData = "डेटा आयात करें"
     override val sendFeedback = "प्रतिक्रिया भेजें"
     override val deleteAllRecords = "सभी रिकॉर्ड हटाएं"
@@ -305,6 +312,7 @@ object HiStrings : AppStrings {
     override val lastModified = "अंतिम संशोधन"
     override val months = listOf("जनवरी", "फरवरी", "मार्च", "अप्रैल", "मई", "जून", "जुलाई", "अगस्त", "सितंबर", "अक्टूबर", "नवंबर", "दिसंबर")
     override val partnerTypes = mapOf("" to "प्रकार चुनें", "Spouse" to "जीवनसाथी", "Fiance" to "मंगेतर", "Boyfriend" to "बॉयफ्रेंड", "Girlfriend" to "गर्लफ्रेंड", "Husband" to "पति", "Wife" to "पत्नी", "Other" to "अन्य")
+    override val childTypes = mapOf("" to "प्रकार चुनें", "Daughter" to "बेटी", "Son" to "बेटा")
     override val none = "कोई नहीं"
     override val child = "बच्चा"
     override val childsPartner = "बच्चे का साथी"
@@ -316,6 +324,7 @@ object HiStrings : AppStrings {
     override val monthUnit = "महीना"
     override val today = "आज"
     override val tomorrow = "कल"
+    override val inXDays = "%d दिनों में"
     override val thisWeek = "इस सप्ताह"
     override val laterThisMonth = "इस महीने बाद में"
     override val noEvents = "अगले 30 दिनों में कोई ईवेंट नहीं है"
@@ -341,6 +350,7 @@ object EsStrings : AppStrings {
     override val purchaseApp = "Comprar aplicación (Quitar anuncios)"
     override val restorePurchases = "Restaurar compras"
     override val exportData = "Exportar datos"
+    override val exportAndEmailData = "Exportar y enviar por correo"
     override val importData = "Importar datos"
     override val sendFeedback = "Enviar comentarios"
     override val deleteAllRecords = "Eliminar todos los registros"
@@ -413,6 +423,7 @@ object EsStrings : AppStrings {
     override val lastModified = "Última modificación"
     override val months = listOf("Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre")
     override val partnerTypes = mapOf("" to "Seleccionar tipo", "Spouse" to "Cónyuge", "Fiance" to "Prometido/a", "Boyfriend" to "Novio", "Girlfriend" to "Novia", "Husband" to "Esposo", "Wife" to "Esposa", "Other" to "Otro")
+    override val childTypes = mapOf("" to "Seleccionar tipo", "Daughter" to "Hija", "Son" to "Hijo")
     override val none = "Ninguno"
     override val child = "Hijo"
     override val childsPartner = "Pareja del hijo"
@@ -424,6 +435,7 @@ object EsStrings : AppStrings {
     override val monthUnit = "Mes(es)"
     override val today = "Hoy"
     override val tomorrow = "Mañana"
+    override val inXDays = "En %d días"
     override val thisWeek = "Esta semana"
     override val laterThisMonth = "Más tarde este mes"
     override val noEvents = "No hay eventos en los próximos 30 días"
