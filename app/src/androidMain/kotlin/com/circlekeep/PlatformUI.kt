@@ -226,18 +226,34 @@ actual fun ContactPicker(
                                     null,
                                     "${ContactsContract.CommonDataKinds.Phone.CONTACT_ID} = ?",
                                     arrayOf(cid),
-                                    null
+                                    "${ContactsContract.CommonDataKinds.Phone.IS_SUPER_PRIMARY} DESC"
                                 )?.use { pc ->
                                     val numIdx = pc.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)
                                     val typeIdx = pc.getColumnIndex(ContactsContract.CommonDataKinds.Phone.TYPE)
+                                    val primaryIdx = pc.getColumnIndex(ContactsContract.CommonDataKinds.Phone.IS_SUPER_PRIMARY)
+                                    
                                     while (pc.moveToNext()) {
                                         val number = if (numIdx >= 0) pc.getString(numIdx) ?: "" else ""
                                         val type = if (typeIdx >= 0) pc.getInt(typeIdx) else -1
+                                        val isPrimary = if (primaryIdx >= 0) pc.getInt(primaryIdx) > 0 else false
+                                        
                                         if (number.isNotBlank()) {
+                                            if (isPrimary) {
+                                                importedCellPhone = number
+                                                // If we found the absolute default, we can stop looking for others
+                                                // but let's see if there's an office phone too
+                                            }
+
                                             when (type) {
-                                                ContactsContract.CommonDataKinds.Phone.TYPE_MOBILE -> importedCellPhone = number
-                                                ContactsContract.CommonDataKinds.Phone.TYPE_WORK -> importedOfficePhone = number
-                                                else -> if (importedCellPhone.isBlank()) importedCellPhone = number
+                                                ContactsContract.CommonDataKinds.Phone.TYPE_MOBILE -> {
+                                                    if (importedCellPhone.isBlank()) importedCellPhone = number
+                                                }
+                                                ContactsContract.CommonDataKinds.Phone.TYPE_WORK -> {
+                                                    if (importedOfficePhone.isBlank()) importedOfficePhone = number
+                                                }
+                                                else -> {
+                                                    if (importedCellPhone.isBlank()) importedCellPhone = number
+                                                }
                                             }
                                         }
                                     }
@@ -428,6 +444,7 @@ actual fun QRScanner(
 ) {
     val context = LocalContext.current
     var showScanner by remember { mutableStateOf(false) }
+    var isProcessing by remember { mutableStateOf(false) }
 
     val cameraPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
@@ -443,6 +460,7 @@ actual fun QRScanner(
 
     LaunchedEffect(trigger) {
         if (trigger) {
+            isProcessing = false
             if (androidx.core.content.ContextCompat.checkSelfPermission(context, android.Manifest.permission.CAMERA) == android.content.pm.PackageManager.PERMISSION_GRANTED) {
                 showScanner = true
             } else {
@@ -481,15 +499,18 @@ actual fun QRScanner(
 
                             imageAnalysis.setAnalyzer(executor) { imageProxy ->
                                 val mediaImage = imageProxy.image
-                                if (mediaImage != null) {
+                                if (mediaImage != null && !isProcessing) {
                                     val image = com.google.mlkit.vision.common.InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
                                     scanner.process(image)
                                         .addOnSuccessListener { barcodes ->
+                                            if (isProcessing) return@addOnSuccessListener
                                             for (barcode in barcodes) {
                                                 barcode.rawValue?.let { code ->
+                                                    isProcessing = true
                                                     onCodeScanned(code)
                                                     showScanner = false
                                                     onTriggerReset()
+                                                    return@addOnSuccessListener
                                                 }
                                             }
                                         }

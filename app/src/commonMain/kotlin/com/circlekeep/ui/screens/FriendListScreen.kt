@@ -51,7 +51,8 @@ fun FriendListScreen(
     onTogglePin: (Friend) -> Unit,
     onQRScanned: (String) -> Unit,
     onDeleteFriends: (Set<Long>) -> Unit,
-    onNavigateToSettings: () -> Unit
+    onNavigateToSettings: () -> Unit,
+    hideQr: Boolean = false
 ) {
     val strings = LocalAppStrings.current
     var showSortMenu by remember { mutableStateOf(false) }
@@ -309,14 +310,16 @@ fun FriendListScreen(
         floatingActionButton = {
             if (!selectionMode) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    FloatingActionButton(
-                        onClick = { qrScannerTrigger = true },
-                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                        contentColor = MaterialTheme.colorScheme.onSecondaryContainer
-                    ) {
-                        Icon(Icons.Rounded.QrCodeScanner, contentDescription = "Scan QR")
+                    if (!hideQr) {
+                        FloatingActionButton(
+                            onClick = { qrScannerTrigger = true },
+                            containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                            contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                        ) {
+                            Icon(Icons.Rounded.QrCodeScanner, contentDescription = "Scan QR")
+                        }
+                        Spacer(Modifier.width(16.dp))
                     }
-                    Spacer(Modifier.width(16.dp))
                     FloatingActionButton(onClick = onAddFriendClick) {
                         Icon(Icons.Rounded.Add, contentDescription = "Add Friend")
                     }
@@ -336,8 +339,8 @@ fun FriendListScreen(
                 modifier = Modifier
                     .padding(padding)
                     .fillMaxSize(),
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 items(friends, key = { it.friend.id }) { friendWithChildren ->
                     val friendId = friendWithChildren.friend.id

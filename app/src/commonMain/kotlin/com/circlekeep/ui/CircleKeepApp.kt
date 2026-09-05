@@ -135,6 +135,7 @@ fun CircleKeepApp() {
                         val selectedGroups by viewModel.selectedGroups.collectAsState()
                         val sortOrder by viewModel.sortOrder.collectAsState()
                         val showInlineData by viewModel.showInlineData.collectAsState()
+                        val hideQr by viewModel.hideQrState.collectAsState()
 
                         FriendListScreen(
                             friends = friends,
@@ -166,14 +167,16 @@ fun CircleKeepApp() {
                             onTogglePin = viewModel::togglePin,
                             onQRScanned = { raw ->
                                 viewModel.parseQrToFriend(raw)?.let { friend ->
-                                    viewModel.saveFriend(friend, emptyList())
-                                    platformUI.showToast("Contact imported from QR")
+                                    viewModel.saveFriendUnique(friend, emptyList()) { id ->
+                                        if (id != -1L) platformUI.showToast("Contact imported from QR")
+                                    }
                                 } ?: platformUI.showToast("Invalid QR Code")
                             },
                             onDeleteFriends = viewModel::deleteFriends,
                             onNavigateToSettings = {
                                 navController.navigate(Destination.Settings)
-                            }
+                            },
+                            hideQr = hideQr
                         )
                     }
                     composable<Destination.FriendDetail> { backStackEntry ->
@@ -252,6 +255,7 @@ fun CircleKeepApp() {
                         val selectedGroups by viewModel.selectedGroups.collectAsState()
                         val sortOrder by viewModel.sortOrder.collectAsState()
                         val showInlineData by viewModel.showInlineData.collectAsState()
+                        val hideQr by viewModel.hideQrState.collectAsState()
                         
                         FriendListScreen(
                             friends = favorites,
@@ -277,14 +281,16 @@ fun CircleKeepApp() {
                             onTogglePin = viewModel::togglePin,
                             onQRScanned = { raw ->
                                 viewModel.parseQrToFriend(raw)?.let { friend ->
-                                    viewModel.saveFriend(friend, emptyList())
-                                    platformUI.showToast("Contact imported from QR")
+                                    viewModel.saveFriendUnique(friend, emptyList()) { id ->
+                                        if (id != -1L) platformUI.showToast("Contact imported from QR")
+                                    }
                                 } ?: platformUI.showToast("Invalid QR Code")
                             },
                             onDeleteFriends = viewModel::deleteFriends,
                             onNavigateToSettings = {
                                 navController.navigate(Destination.Settings)
-                            }
+                            },
+                            hideQr = hideQr
                         )
                     }
                     composable<Destination.Groups> {

@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.launch
 import coil3.compose.AsyncImage
 import coil3.compose.SubcomposeAsyncImage
 import com.circlekeep.LocalPlatformUI
@@ -40,6 +41,7 @@ fun FriendDetailScreen(
     val strings = LocalAppStrings.current
     val platformUI = LocalPlatformUI.current
     val platform = getPlatform()
+    val scope = rememberCoroutineScope()
     var showDeleteDialog by remember { mutableStateOf(false) }
 
     Scaffold(
@@ -345,8 +347,10 @@ fun FriendDetailScreen(
                                             text = partnerDisplayName,
                                             style = MaterialTheme.typography.titleLarge,
                                             modifier = Modifier.clickable {
-                                                viewModel.findFriendIdByName(friendWithChildren.friend.partnerFirstName, friendWithChildren.friend.partnerLastName)?.let {
-                                                    onFriendClick(it)
+                                                scope.launch {
+                                                    viewModel.findFriendIdByName(friendWithChildren.friend.partnerFirstName, friendWithChildren.friend.partnerLastName)?.let {
+                                                        onFriendClick(it)
+                                                    }
                                                 }
                                             }
                                         )
@@ -441,8 +445,10 @@ fun FriendDetailScreen(
                                             text = childDisplayName,
                                             style = MaterialTheme.typography.titleMedium,
                                             modifier = Modifier.clickable {
-                                                viewModel.findFriendIdByName(child.firstName, child.lastName)?.let {
-                                                    onFriendClick(it)
+                                                scope.launch {
+                                                    viewModel.findFriendIdByName(child.firstName, child.lastName)?.let {
+                                                        onFriendClick(it)
+                                                    }
                                                 }
                                             }
                                         )
@@ -452,52 +458,18 @@ fun FriendDetailScreen(
                                             })
                                         }
                                     }
-                                    IconButton(onClick = { onEditClick(friendWithChildren.friend.id, child.id) }) {
-                                        Icon(Icons.Rounded.Edit, contentDescription = strings.editContact)
-                                    }
-                                    IconButton(onClick = { 
-                                        viewModel.saveFriend(Friend(
-                                            firstName = child.firstName,
-                                            middleName = child.middleName,
-                                            lastName = child.lastName,
-                                            nickname = child.nickname,
-                                            cellPhone = child.phoneNumber,
-                                            email = child.email,
-                                            workEmail = child.workEmail,
-                                            address = friendWithChildren.friend.address,
-                                            groups = friendWithChildren.friend.groups,
-                                            petName = friendWithChildren.friend.petName,
-                                            petImageUri = friendWithChildren.friend.petImageUri,
-                                            secondaryImageUri = friendWithChildren.friend.secondaryImageUri,
-                                            dateOfBirth = child.dateOfBirth,
-                                            birthDay = child.birthDay,
-                                            birthMonth = child.birthMonth,
-                                            imageUri = child.imageUri,
-                                            siblings = child.siblings,
-                                            collegeSchoolName = child.collegeSchoolName,
-                                            notes = child.notes,
-                                            partnerFirstName = child.partnerFirstName,
-                                            partnerMiddleName = child.partnerMiddleName,
-                                            partnerLastName = child.partnerLastName,
-                                            partnerNickname = child.partnerNickname,
-                                            partnerPhone = child.partnerPhone,
-                                            partnerEmail = child.partnerEmail,
-                                            partnerWorkEmail = child.partnerWorkEmail,
-                                            partnerType = child.partnerType,
-                                            partnerCompanyName = child.partnerCompanyName,
-                                            partnerCollegeSchoolName = child.partnerCollegeSchoolName,
-                                            partnerImageUri = child.partnerImageUri,
-                                            partnerSiblings = child.partnerSiblings,
-                                            partnerDateOfBirth = child.partnerDateOfBirth,
-                                            partnerBirthDay = child.partnerBirthDay,
-                                            partnerBirthMonth = child.partnerBirthMonth,
-                                            anniversaryDate = child.anniversaryDate,
-                                            anniversaryDay = child.anniversaryDay,
-                                            anniversaryMonth = child.anniversaryMonth
-                                        ), emptyList()) 
-                                        platformUI.showToast("Child added as contact")
-                                    }) {
-                                        Icon(Icons.Rounded.PersonAdd, contentDescription = strings.addContact, tint = MaterialTheme.colorScheme.primary)
+                                    Row {
+                                        IconButton(onClick = { 
+                                            viewModel.convertChildToFriend(friendWithChildren.friend, child) { isUpdate ->
+                                                val message = if (isUpdate) "Child record has been updated" else "Child added as contact"
+                                                platformUI.showToast(message)
+                                            }
+                                        }) {
+                                            Icon(Icons.Rounded.PersonAdd, contentDescription = strings.addContact, tint = MaterialTheme.colorScheme.primary)
+                                        }
+                                        IconButton(onClick = { onEditClick(friendWithChildren.friend.id, child.id) }) {
+                                            Icon(Icons.Rounded.Edit, contentDescription = strings.editContact)
+                                        }
                                     }
                                 }
                                 if (child.collegeSchoolName.isNotBlank()) {
@@ -586,8 +558,10 @@ fun FriendDetailScreen(
                                         text = childPartnerDisplayName,
                                         style = MaterialTheme.typography.bodyLarge,
                                         modifier = Modifier.clickable {
-                                            viewModel.findFriendIdByName(child.partnerFirstName, child.partnerLastName)?.let {
-                                                onFriendClick(it)
+                                            scope.launch {
+                                                viewModel.findFriendIdByName(child.partnerFirstName, child.partnerLastName)?.let {
+                                                    onFriendClick(it)
+                                                }
                                             }
                                         }
                                     )

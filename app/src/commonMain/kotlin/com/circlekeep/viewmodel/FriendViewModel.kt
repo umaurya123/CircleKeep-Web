@@ -94,6 +94,13 @@ class FriendViewModel(
             initialValue = "English"
         )
 
+    val hideQrState: StateFlow<Boolean> = userPreferencesRepository.hideQrStream
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = false
+        )
+
     val groupsState: StateFlow<List<Group>> =
         friendRepository.getAllGroupsStream()
             .stateIn(
@@ -322,8 +329,9 @@ class FriendViewModel(
 
     fun getFriend(id: Long) = friendRepository.getFriendStream(id)
 
-    fun findFriendIdByName(firstName: String, lastName: String): Long? {
-        return friendsState.value.find { 
+    suspend fun findFriendIdByName(firstName: String, lastName: String): Long? {
+        val allFriends = friendRepository.getAllFriendsStream().first()
+        return allFriends.find {
             it.friend.firstName.trim().equals(firstName.trim(), ignoreCase = true) && 
             it.friend.lastName.trim().equals(lastName.trim(), ignoreCase = true)
         }?.friend?.id
@@ -457,6 +465,106 @@ class FriendViewModel(
         }
     }
 
+    fun convertChildToFriend(parent: Friend, child: Child, onComplete: (Boolean) -> Unit) {
+        viewModelScope.launch {
+            val allFriends = friendRepository.getAllFriendsStream().first()
+            val existing = allFriends.find {
+                it.friend.firstName.trim().equals(child.firstName.trim(), ignoreCase = true) &&
+                it.friend.lastName.trim().equals(child.lastName.trim(), ignoreCase = true)
+            }
+
+            if (existing != null) {
+                // Update existing friend, but keep their address if they have one
+                val updatedFriend = existing.friend.copy(
+                    middleName = child.middleName,
+                    nickname = child.nickname,
+                    cellPhone = child.phoneNumber,
+                    email = child.email,
+                    workEmail = child.workEmail,
+                    // If existing has no address, use parent's address
+                    address = if (existing.friend.address.isBlank()) parent.address else existing.friend.address,
+                    // Sync other common family info if missing
+                    groups = if (existing.friend.groups.isEmpty()) parent.groups else existing.friend.groups,
+                    petName = if (existing.friend.petName.isBlank()) parent.petName else existing.friend.petName,
+                    petImageUri = if (existing.friend.petImageUri == null) parent.petImageUri else existing.friend.petImageUri,
+                    secondaryImageUri = if (existing.friend.secondaryImageUri == null) parent.secondaryImageUri else existing.friend.secondaryImageUri,
+                    
+                    dateOfBirth = child.dateOfBirth,
+                    birthDay = child.birthDay,
+                    birthMonth = child.birthMonth,
+                    imageUri = child.imageUri,
+                    siblings = child.siblings,
+                    collegeSchoolName = child.collegeSchoolName,
+                    notes = child.notes,
+                    
+                    partnerFirstName = child.partnerFirstName,
+                    partnerMiddleName = child.partnerMiddleName,
+                    partnerLastName = child.partnerLastName,
+                    partnerNickname = child.partnerNickname,
+                    partnerPhone = child.partnerPhone,
+                    partnerEmail = child.partnerEmail,
+                    partnerWorkEmail = child.partnerWorkEmail,
+                    partnerType = child.partnerType,
+                    partnerCompanyName = child.partnerCompanyName,
+                    partnerCollegeSchoolName = child.partnerCollegeSchoolName,
+                    partnerImageUri = child.partnerImageUri,
+                    partnerSiblings = child.partnerSiblings,
+                    partnerDateOfBirth = child.partnerDateOfBirth,
+                    partnerBirthDay = child.partnerBirthDay,
+                    partnerBirthMonth = child.partnerBirthMonth,
+                    anniversaryDate = child.anniversaryDate,
+                    anniversaryDay = child.anniversaryDay,
+                    anniversaryMonth = child.anniversaryMonth
+                )
+                friendRepository.updateFriend(updatedFriend)
+                onComplete(true)
+            } else {
+                // New friend from child
+                val newFriend = Friend(
+                    firstName = child.firstName,
+                    middleName = child.middleName,
+                    lastName = child.lastName,
+                    nickname = child.nickname,
+                    cellPhone = child.phoneNumber,
+                    email = child.email,
+                    workEmail = child.workEmail,
+                    address = parent.address, // For new records we use parent's address as default
+                    groups = parent.groups,
+                    petName = parent.petName,
+                    petImageUri = parent.petImageUri,
+                    secondaryImageUri = parent.secondaryImageUri,
+                    dateOfBirth = child.dateOfBirth,
+                    birthDay = child.birthDay,
+                    birthMonth = child.birthMonth,
+                    imageUri = child.imageUri,
+                    siblings = child.siblings,
+                    collegeSchoolName = child.collegeSchoolName,
+                    notes = child.notes,
+                    partnerFirstName = child.partnerFirstName,
+                    partnerMiddleName = child.partnerMiddleName,
+                    partnerLastName = child.partnerLastName,
+                    partnerNickname = child.partnerNickname,
+                    partnerPhone = child.partnerPhone,
+                    partnerEmail = child.partnerEmail,
+                    partnerWorkEmail = child.partnerWorkEmail,
+                    partnerType = child.partnerType,
+                    partnerCompanyName = child.partnerCompanyName,
+                    partnerCollegeSchoolName = child.partnerCollegeSchoolName,
+                    partnerImageUri = child.partnerImageUri,
+                    partnerSiblings = child.partnerSiblings,
+                    partnerDateOfBirth = child.partnerDateOfBirth,
+                    partnerBirthDay = child.partnerBirthDay,
+                    partnerBirthMonth = child.partnerBirthMonth,
+                    anniversaryDate = child.anniversaryDate,
+                    anniversaryDay = child.anniversaryDay,
+                    anniversaryMonth = child.anniversaryMonth
+                )
+                friendRepository.insertFriend(newFriend)
+                onComplete(false)
+            }
+        }
+    }
+
     fun saveFriend(friend: Friend, children: List<Child>, onComplete: ((Long) -> Unit)? = null) {
         viewModelScope.launch {
             if (friend.id == 0L) {
@@ -465,6 +573,21 @@ class FriendViewModel(
             } else {
                 friendRepository.updateFriendWithChildren(friend, children)
                 onComplete?.invoke(friend.id)
+            }
+        }
+    }
+
+    fun saveFriendUnique(friend: Friend, children: List<Child>, onComplete: ((Long) -> Unit)? = null) {
+        viewModelScope.launch {
+            val allFriends = friendRepository.getAllFriendsStream().first()
+            val existing = allFriends.find { 
+                it.friend.firstName.trim().equals(friend.firstName.trim(), ignoreCase = true) &&
+                it.friend.lastName.trim().equals(friend.lastName.trim(), ignoreCase = true)
+            }
+            if (existing == null) {
+                saveFriend(friend, children, onComplete)
+            } else {
+                onComplete?.invoke(existing.friend.id)
             }
         }
     }
@@ -520,6 +643,12 @@ class FriendViewModel(
     fun onLanguageChange(language: String) {
         viewModelScope.launch {
             userPreferencesRepository.updateLanguage(language)
+        }
+    }
+
+    fun onHideQrChange(hide: Boolean) {
+        viewModelScope.launch {
+            userPreferencesRepository.updateHideQr(hide)
         }
     }
 

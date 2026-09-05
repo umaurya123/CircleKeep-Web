@@ -12,6 +12,8 @@ interface AppStrings {
     val dark: String
     val system: String
     val language: String
+    val hideQr: String
+    val hideQrDesc: String
     val eventNotifications: String
     val eventNotificationsDesc: String
     val purchaseApp: String
@@ -123,6 +125,8 @@ object EnStrings : AppStrings {
     override val dark = "Dark"
     override val system = "System"
     override val language = "Language"
+    override val hideQr = "Hide QR Scanner"
+    override val hideQrDesc = "Hide the QR scan button from the main screen"
     override val eventNotifications = "Event Notifications"
     override val eventNotificationsDesc = "Notify for birthdays and marriage anniversaries"
     override val purchaseApp = "Purchase App (Remove Ads)"
@@ -234,6 +238,8 @@ object HiStrings : AppStrings {
     override val dark = "डार्क"
     override val system = "सिस्टम"
     override val language = "भाषा"
+    override val hideQr = "QR स्कैनर छिपाएं"
+    override val hideQrDesc = "मुख्य स्क्रीन से QR स्कैन बटन छिपाएं"
     override val eventNotifications = "ईवेंट सूचनाएं"
     override val eventNotificationsDesc = "जन्मदिन और शादी की सालगिरह के लिए सूचित करें"
     override val purchaseApp = "ऐप खरीदें (विज्ञापन हटाएं)"
@@ -345,6 +351,8 @@ object EsStrings : AppStrings {
     override val dark = "Oscuro"
     override val system = "Sistema"
     override val language = "Idioma"
+    override val hideQr = "Ocultar escáner QR"
+    override val hideQrDesc = "Ocultar el botón de escaneo QR de la pantalla principal"
     override val eventNotifications = "Notificaciones de eventos"
     override val eventNotificationsDesc = "Notificar cumpleaños y aniversarios de boda"
     override val purchaseApp = "Comprar aplicación (Quitar anuncios)"

@@ -20,6 +20,7 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
         val GROUP_FILTER_MODE = stringPreferencesKey("group_filter_mode")
         val REMINDERS_ENABLED = booleanPreferencesKey("reminders_enabled")
         val LANGUAGE = stringPreferencesKey("language")
+        val HIDE_QR = booleanPreferencesKey("hide_qr")
     }
 
     val themeStream: Flow<String> = dataStore.data
@@ -68,6 +69,12 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
             preferences[PreferencesKeys.LANGUAGE] ?: "English"
         }
 
+    val hideQrStream: Flow<Boolean> = dataStore.data
+        .catch { emit(emptyPreferences()) }
+        .map { preferences ->
+            preferences[PreferencesKeys.HIDE_QR] ?: false
+        }
+
     suspend fun updateTheme(theme: String) {
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.THEME] = theme
@@ -107,6 +114,12 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
     suspend fun updateLanguage(language: String) {
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.LANGUAGE] = language
+        }
+    }
+
+    suspend fun updateHideQr(hide: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.HIDE_QR] = hide
         }
     }
 }

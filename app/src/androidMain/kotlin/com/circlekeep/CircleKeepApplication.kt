@@ -44,9 +44,24 @@ class CircleKeepApplication : Application() {
     }
 
     private fun scheduleEventReminders() {
+        val calendar = java.util.Calendar.getInstance()
+        val now = calendar.timeInMillis
+        
+        // Target 8:00 AM
+        calendar.set(java.util.Calendar.HOUR_OF_DAY, 8)
+        calendar.set(java.util.Calendar.MINUTE, 0)
+        calendar.set(java.util.Calendar.SECOND, 0)
+        
+        if (calendar.timeInMillis <= now) {
+            calendar.add(java.util.Calendar.DAY_OF_YEAR, 1)
+        }
+        
+        val initialDelay = calendar.timeInMillis - now
+
         val workRequest = androidx.work.PeriodicWorkRequestBuilder<EventReminderWorker>(
             24, java.util.concurrent.TimeUnit.HOURS
-        ).setConstraints(
+        ).setInitialDelay(initialDelay, java.util.concurrent.TimeUnit.MILLISECONDS)
+        .setConstraints(
             androidx.work.Constraints.Builder()
                 .setRequiredNetworkType(androidx.work.NetworkType.NOT_REQUIRED)
                 .build()
@@ -54,7 +69,7 @@ class CircleKeepApplication : Application() {
 
         androidx.work.WorkManager.getInstance(this).enqueueUniquePeriodicWork(
             "EventReminders",
-            androidx.work.ExistingPeriodicWorkPolicy.KEEP,
+            androidx.work.ExistingPeriodicWorkPolicy.UPDATE,
             workRequest
         )
     }
