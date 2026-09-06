@@ -418,7 +418,7 @@ actual fun ImagePicker(
         contract = ActivityResultContracts.GetContent(),
         onResult = { uri -> 
             uri?.let { selectedUri ->
-                val destinationUri = File(context.cacheDir, "crop_${System.currentTimeMillis()}.jpg").toUri()
+                val destinationUri = File(context.filesDir, "crop_${System.currentTimeMillis()}.jpg").toUri()
                 val uCrop = UCrop.of(selectedUri, destinationUri)
                     .withAspectRatio(1f, 1f)
                     .withMaxResultSize(500, 500)
