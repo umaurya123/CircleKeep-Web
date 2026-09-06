@@ -43,6 +43,7 @@ fun FriendDetailScreen(
     val platform = getPlatform()
     val scope = rememberCoroutineScope()
     var showDeleteDialog by remember { mutableStateOf(false) }
+    val hideQr by viewModel.hideQrState.collectAsState()
 
     Scaffold(
         topBar = {
@@ -60,47 +61,49 @@ fun FriendDetailScreen(
                         }) {
                             Icon(Icons.Rounded.PushPin, contentDescription = "Pin", tint = if (friendWithChildren.friend.isPinned) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant)
                         }
-                        var showQrDialog by remember { mutableStateOf(false) }
-                        IconButton(onClick = { showQrDialog = true }) {
-                            Icon(Icons.Rounded.QrCode, contentDescription = strings.shareContact)
-                        }
-                        if (showQrDialog) {
-                            val qrContent = buildString {
-                                append("CIRCLEKEEP:1.0\n")
-                                append("FN:${friendWithChildren.friend.firstName}\n")
-                                append("MN:${friendWithChildren.friend.middleName}\n")
-                                append("LN:${friendWithChildren.friend.lastName}\n")
-                                append("NN:${friendWithChildren.friend.nickname}\n")
-                                append("TEL:${friendWithChildren.friend.cellPhone}\n")
-                                append("EML:${friendWithChildren.friend.email}\n")
-                                append("ADR:${friendWithChildren.friend.address}\n")
-                                append("GRP:${friendWithChildren.friend.groups.joinToString(",")}\n")
-                                append("DOB:${friendWithChildren.friend.dateOfBirth}\n")
-                                append("ANN:${friendWithChildren.friend.anniversaryDate}\n")
-                                append("NTS:${friendWithChildren.friend.notes}\n")
+                        if (!hideQr) {
+                            var showQrDialog by remember { mutableStateOf(false) }
+                            IconButton(onClick = { showQrDialog = true }) {
+                                Icon(Icons.Rounded.QrCode, contentDescription = strings.shareContact)
                             }
-                            val qrUrl = "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${platformUI.encodeUrl(qrContent)}"
-                            
-                            AlertDialog(
-                                onDismissRequest = { showQrDialog = false },
-                                title = { Text(strings.shareContact) },
-                                text = {
-                                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                        AsyncImage(
-                                            model = qrUrl,
-                                            contentDescription = "QR Code",
-                                            modifier = Modifier.size(200.dp)
-                                        )
-                                        Spacer(Modifier.height(8.dp))
-                                        Text(strings.scanToAdd, style = MaterialTheme.typography.labelMedium)
-                                    }
-                                },
-                                confirmButton = {
-                                    TextButton(onClick = { showQrDialog = false }) {
-                                        Text(strings.close)
-                                    }
+                            if (showQrDialog) {
+                                val qrContent = buildString {
+                                    append("CIRCLEKEEP:1.0\n")
+                                    append("FN:${friendWithChildren.friend.firstName}\n")
+                                    append("MN:${friendWithChildren.friend.middleName}\n")
+                                    append("LN:${friendWithChildren.friend.lastName}\n")
+                                    append("NN:${friendWithChildren.friend.nickname}\n")
+                                    append("TEL:${friendWithChildren.friend.cellPhone}\n")
+                                    append("EML:${friendWithChildren.friend.email}\n")
+                                    append("ADR:${friendWithChildren.friend.address}\n")
+                                    append("GRP:${friendWithChildren.friend.groups.joinToString(",")}\n")
+                                    append("DOB:${friendWithChildren.friend.dateOfBirth}\n")
+                                    append("ANN:${friendWithChildren.friend.anniversaryDate}\n")
+                                    append("NTS:${friendWithChildren.friend.notes}\n")
                                 }
-                            )
+                                val qrUrl = "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${platformUI.encodeUrl(qrContent)}"
+                                
+                                AlertDialog(
+                                    onDismissRequest = { showQrDialog = false },
+                                    title = { Text(strings.shareContact) },
+                                    text = {
+                                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                            AsyncImage(
+                                                model = qrUrl,
+                                                contentDescription = "QR Code",
+                                                modifier = Modifier.size(200.dp)
+                                            )
+                                            Spacer(Modifier.height(8.dp))
+                                            Text(strings.scanToAdd, style = MaterialTheme.typography.labelMedium)
+                                        }
+                                    },
+                                    confirmButton = {
+                                        TextButton(onClick = { showQrDialog = false }) {
+                                            Text(strings.close)
+                                        }
+                                    }
+                                )
+                            }
                         }
                         IconButton(onClick = { 
                             onEditClick(friendWithChildren.friend.id, null)
