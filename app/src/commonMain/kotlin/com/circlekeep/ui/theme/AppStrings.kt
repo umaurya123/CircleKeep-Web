@@ -12,6 +12,7 @@ interface AppStrings {
     val dark: String
     val system: String
     val language: String
+    val visitWebsite: String
     val hideQr: String
     val hideQrDesc: String
     val eventNotifications: String
@@ -125,6 +126,7 @@ object EnStrings : AppStrings {
     override val dark = "Dark"
     override val system = "System"
     override val language = "Language"
+    override val visitWebsite = "Visit circlekeepapp.com"
     override val hideQr = "Hide QR Features"
     override val hideQrDesc = "Hide QR scanning and sharing options"
     override val eventNotifications = "Event Notifications"
@@ -238,6 +240,7 @@ object HiStrings : AppStrings {
     override val dark = "डार्क"
     override val system = "सिस्टम"
     override val language = "भाषा"
+    override val visitWebsite = "circlekeepapp.com देखें"
     override val hideQr = "QR फीचर्स छिपाएं"
     override val hideQrDesc = "QR स्कैनिंग और शेयरिंग विकल्प छिपाएं"
     override val eventNotifications = "ईवेंट सूचनाएं"
@@ -351,6 +354,7 @@ object EsStrings : AppStrings {
     override val dark = "Oscuro"
     override val system = "Sistema"
     override val language = "Idioma"
+    override val visitWebsite = "Visitar circlekeepapp.com"
     override val hideQr = "Ocultar funciones QR"
     override val hideQrDesc = "Ocultar opciones de escaneo y uso compartido de QR"
     override val eventNotifications = "Notificaciones de eventos"

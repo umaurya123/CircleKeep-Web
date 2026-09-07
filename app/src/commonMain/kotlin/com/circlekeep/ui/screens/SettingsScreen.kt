@@ -10,6 +10,7 @@ import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.DeleteForever
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.rounded.Language
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -231,6 +232,15 @@ fun SettingsScreen(
                 Icon(Icons.Default.Email, contentDescription = null)
                 Spacer(Modifier.width(8.dp))
                 Text(strings.sendFeedback)
+            }
+
+            TextButton(
+                onClick = { platformUI.openUrl("https://circlekeepapp.com") },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(Icons.Rounded.Language, contentDescription = null)
+                Spacer(Modifier.width(8.dp))
+                Text(strings.visitWebsite)
             }
 
             val isDebugOrBeta = platform.buildVariant.lowercase().let { it == "debug" || it == "beta" } || 

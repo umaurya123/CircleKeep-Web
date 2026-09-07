@@ -225,6 +225,14 @@ fun FriendListScreen(
                                             onNavigateToSettings()
                                         }
                                     )
+                                    DropdownMenuItem(
+                                        text = { Text(strings.visitWebsite) },
+                                        leadingIcon = { Icon(Icons.Rounded.Language, contentDescription = null) },
+                                        onClick = {
+                                            showMoreMenu = false
+                                            platformUI.openUrl("https://circlekeepapp.com")
+                                        }
+                                    )
                                 }
                             }
                         }
