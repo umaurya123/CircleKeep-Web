@@ -3,6 +3,7 @@ package com.circlekeep.ui.screens
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -17,6 +18,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
 import com.circlekeep.data.Group
@@ -69,51 +71,56 @@ fun GroupsScreen(
             }
         } else {
             LazyColumn(modifier = Modifier.padding(padding)) {
-                itemsIndexed(groups) { index, group ->
+                itemsIndexed(groups, key = { _, g -> g.name }) { index, group ->
                     val count = friends.count { it.friend.groups.contains(group.name) }
+                    var verticalOffset by remember { mutableStateOf(0f) }
+
                     ListItem(
                         headlineContent = { Text("${group.name} ($count)") },
                         leadingContent = { 
-                            Surface(
-                                modifier = Modifier.size(40.dp).clip(CircleShape),
-                                color = MaterialTheme.colorScheme.surfaceVariant
-                            ) {
-                                PlaceholderAvatar(name = group.name)
+                            if (isReorderMode) {
+                                Icon(
+                                    imageVector = Icons.Rounded.DragHandle, 
+                                    contentDescription = "Drag to reorder",
+                                    modifier = Modifier
+                                        .padding(end = 8.dp)
+                                        .pointerInput(index, groups) {
+                                            detectVerticalDragGestures(
+                                                onDragStart = { verticalOffset = 0f },
+                                                onVerticalDrag = { change, dragAmount ->
+                                                    change.consume()
+                                                    verticalOffset += dragAmount
+                                                    val threshold = 50f 
+                                                    if (verticalOffset > threshold && index < groups.size - 1) {
+                                                        val newList = groups.toMutableList()
+                                                        val tmp = newList[index]
+                                                        newList[index] = newList[index + 1]
+                                                        newList[index + 1] = tmp
+                                                        viewModel.updateGroupOrder(newList)
+                                                        verticalOffset = 0f
+                                                    } else if (verticalOffset < -threshold && index > 0) {
+                                                        val newList = groups.toMutableList()
+                                                        val tmp = newList[index]
+                                                        newList[index] = newList[index - 1]
+                                                        newList[index - 1] = tmp
+                                                        viewModel.updateGroupOrder(newList)
+                                                        verticalOffset = 0f
+                                                    }
+                                                }
+                                            )
+                                        }
+                                )
+                            } else {
+                                Surface(
+                                    modifier = Modifier.size(40.dp).clip(CircleShape),
+                                    color = MaterialTheme.colorScheme.surfaceVariant
+                                ) {
+                                    PlaceholderAvatar(name = group.name)
+                                }
                             }
                         },
                         trailingContent = {
-                            if (isReorderMode) {
-                                Row {
-                                    IconButton(
-                                        onClick = {
-                                            if (index > 0) {
-                                                val newList = groups.toMutableList()
-                                                val tmp = newList[index]
-                                                newList[index] = newList[index - 1]
-                                                newList[index - 1] = tmp
-                                                viewModel.updateGroupOrder(newList)
-                                            }
-                                        },
-                                        enabled = index > 0
-                                    ) {
-                                        Icon(Icons.Default.ArrowUpward, contentDescription = "Move Up")
-                                    }
-                                    IconButton(
-                                        onClick = {
-                                            if (index < groups.size - 1) {
-                                                val newList = groups.toMutableList()
-                                                val tmp = newList[index]
-                                                newList[index] = newList[index + 1]
-                                                newList[index + 1] = tmp
-                                                viewModel.updateGroupOrder(newList)
-                                            }
-                                        },
-                                        enabled = index < groups.size - 1
-                                    ) {
-                                        Icon(Icons.Default.ArrowDownward, contentDescription = "Move Down")
-                                    }
-                                }
-                            } else {
+                            if (!isReorderMode) {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     IconButton(onClick = { 
                                         groupToEdit = group
@@ -128,10 +135,12 @@ fun GroupsScreen(
                                 }
                             }
                         },
-                        modifier = Modifier.combinedClickable(
-                            onClick = { if (!isReorderMode) onGroupClick(group.name) },
-                            onLongClick = { isReorderMode = true }
-                        )
+                        modifier = Modifier
+                            .animateItem()
+                            .combinedClickable(
+                                onClick = { if (!isReorderMode) onGroupClick(group.name) },
+                                onLongClick = { isReorderMode = true }
+                            )
                     )
                 }
             }
