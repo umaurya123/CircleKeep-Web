@@ -95,7 +95,7 @@ fun GroupsScreen(
                                                     verticalOffset += dragAmount
                                                     val list = currentGroups
                                                     val idx = currentIndex
-                                                    val threshold = 25f // More responsive
+                                                    val threshold = 120f // Increased threshold to prevent jumping multiple rows
                                                     
                                                     if (verticalOffset > threshold && idx < list.size - 1) {
                                                         val newList = list.toMutableList()
