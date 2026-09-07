@@ -70,46 +70,57 @@ fun GroupsScreen(
                 Text(strings.noContacts) // Or a more specific string
             }
         } else {
-            LazyColumn(modifier = Modifier.padding(padding)) {
+            LazyColumn(
+                modifier = Modifier.padding(padding).fillMaxSize(),
+                contentPadding = PaddingValues(bottom = 80.dp) 
+            ) {
                 itemsIndexed(groups, key = { _, g -> g.name }) { index, group ->
                     val count = friends.count { it.friend.groups.contains(group.name) }
                     var verticalOffset by remember { mutableStateOf(0f) }
+                    val currentGroups by rememberUpdatedState(groups)
+                    val currentIndex by rememberUpdatedState(index)
 
                     ListItem(
                         headlineContent = { Text("${group.name} ($count)") },
                         leadingContent = { 
                             if (isReorderMode) {
-                                Icon(
-                                    imageVector = Icons.Rounded.DragHandle, 
-                                    contentDescription = "Drag to reorder",
+                                Box(
                                     modifier = Modifier
-                                        .padding(end = 8.dp)
-                                        .pointerInput(index, groups) {
+                                        .size(48.dp)
+                                        .pointerInput(group.name) {
                                             detectVerticalDragGestures(
                                                 onDragStart = { verticalOffset = 0f },
                                                 onVerticalDrag = { change, dragAmount ->
                                                     change.consume()
                                                     verticalOffset += dragAmount
-                                                    val threshold = 50f 
-                                                    if (verticalOffset > threshold && index < groups.size - 1) {
-                                                        val newList = groups.toMutableList()
-                                                        val tmp = newList[index]
-                                                        newList[index] = newList[index + 1]
-                                                        newList[index + 1] = tmp
+                                                    val list = currentGroups
+                                                    val idx = currentIndex
+                                                    val threshold = 25f // More responsive
+                                                    
+                                                    if (verticalOffset > threshold && idx < list.size - 1) {
+                                                        val newList = list.toMutableList()
+                                                        val item = newList.removeAt(idx)
+                                                        newList.add(idx + 1, item)
                                                         viewModel.updateGroupOrder(newList)
                                                         verticalOffset = 0f
-                                                    } else if (verticalOffset < -threshold && index > 0) {
-                                                        val newList = groups.toMutableList()
-                                                        val tmp = newList[index]
-                                                        newList[index] = newList[index - 1]
-                                                        newList[index - 1] = tmp
+                                                    } else if (verticalOffset < -threshold && idx > 0) {
+                                                        val newList = list.toMutableList()
+                                                        val item = newList.removeAt(idx)
+                                                        newList.add(idx - 1, item)
                                                         viewModel.updateGroupOrder(newList)
                                                         verticalOffset = 0f
                                                     }
                                                 }
                                             )
-                                        }
-                                )
+                                        },
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Rounded.Reorder, 
+                                        contentDescription = "Drag handle",
+                                        tint = MaterialTheme.colorScheme.primary
+                                    )
+                                }
                             } else {
                                 Surface(
                                     modifier = Modifier.size(40.dp).clip(CircleShape),
