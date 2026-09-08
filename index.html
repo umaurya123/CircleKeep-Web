@@ -5,6 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CircleKeep - Your Personal Relationship Manager</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        .lang-selector {
+            margin-left: 20px;
+        }
+        .lang-selector select {
+            padding: 5px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            background: white;
+            font-family: inherit;
+            cursor: pointer;
+        }
+        [data-i18n] {
+            transition: opacity 0.2s;
+        }
+    </style>
 </head>
 <body>
     <header>
@@ -15,11 +31,18 @@
                     <span class="logo-text">CircleKeep</span>
                 </a>
                 <ul>
-                    <li><a href="#features">Features</a></li>
-                    <li><a href="#demo">Demo</a></li>
-                    <li><a href="#screenshots">Screenshots</a></li>
-                    <li><a href="support.html">Support</a></li>
-                    <li><a href="privacy.html">Privacy</a></li>
+                    <li><a href="#features" data-i18n="nav_features">Features</a></li>
+                    <li><a href="#demo" data-i18n="nav_demo">Demo</a></li>
+                    <li><a href="#screenshots" data-i18n="nav_screenshots">Screenshots</a></li>
+                    <li><a href="support.html" data-i18n="nav_support">Support</a></li>
+                    <li><a href="privacy.html" data-i18n="nav_privacy">Privacy</a></li>
+                    <li class="lang-selector">
+                        <select id="languageSelect" onchange="changeLanguage(this.value)">
+                            <option value="en">English</option>
+                            <option value="hi">हिन्दी</option>
+                            <option value="es">Español</option>
+                        </select>
+                    </li>
                 </ul>
             </nav>
         </div>
@@ -28,19 +51,19 @@
     <section class="hero">
         <div class="container">
             <img src="assets/icon.png" alt="CircleKeep Large Icon" class="hero-icon">
-            <h1>Never forget the details that matter most.</h1>
-            <p>CircleKeep is more than just a contact list—it’s a dedicated space to organize your personal connections, track family relationships, and remember the milestones that keep you connected to the people who matter.</p>
+            <h1 data-i18n="hero_title">Never forget the details that matter most.</h1>
+            <p data-i18n="hero_desc">CircleKeep is more than just a contact list—it’s a dedicated space to organize your personal connections, track family relationships, and remember the milestones that keep you connected to the people who matter.</p>
             <div class="cta-buttons">
-                <a href="https://apps.apple.com/us/app/circlekeep/id6797271467" class="btn btn-primary">Download on App Store</a>
-                <a href="https://play.google.com/store/apps/details?id=com.circlekeep&pli=1" class="btn btn-secondary">Get it on Google Play</a>
+                <a href="https://apps.apple.com/us/app/circlekeep/id6797271467" class="btn btn-primary" data-i18n="cta_appstore">Download on App Store</a>
+                <a href="https://play.google.com/store/apps/details?id=com.circlekeep&pli=1" class="btn btn-secondary" data-i18n="cta_playstore">Get it on Google Play</a>
             </div>
         </div>
     </section>
 
     <section id="about" class="features" style="background-color: #fafafa;">
         <div class="container">
-            <h2>About this App</h2>
-            <p style="text-align: center; max-width: 800px; margin: 0 auto; font-size: 1.1rem; color: #555;">
+            <h2 data-i18n="about_title">About this App</h2>
+            <p style="text-align: center; max-width: 800px; margin: 0 auto; font-size: 1.1rem; color: #555;" data-i18n="about_desc">
                 In a world where connections are easily lost in a cluttered phone book, CircleKeep helps you focus on your "inner circle." Whether it’s remembering a friend’s child’s name, a partner’s birthday, or a marriage anniversary, CircleKeep ensures you have the information you need at your fingertips.
             </p>
         </div>
@@ -49,14 +72,14 @@
     <section class="features" style="background-color: #fff; padding-top: 0;">
         <div class="container">
             <div style="background: #eef2ff; padding: 40px; border-radius: 20px; border: 1px solid #dee2e6;">
-                <h2 style="margin-top: 0;">What's New (v2.2)</h2>
+                <h2 style="margin-top: 0;" data-i18n="whats_new_title">What's New (v2.2)</h2>
                 <ul style="list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
-                    <li><strong>🌍 Global Localization:</strong> Full support for English, Hindi, and Spanish with localized date formats.</li>
-                    <li><strong>🔍 Advanced Filtering:</strong> New multi-select mode for groups with OR/AND logic and pinned views.</li>
-                    <li><strong>🎂 Smart Events:</strong> Chronological grouping (Today, Tomorrow, This Week) with early morning reminders.</li>
-                    <li><strong>📲 QR Integration:</strong> Built-in scanner and generator for instant, secure contact sharing.</li>
-                    <li><strong>🏠 Household Sync:</strong> Seamlessly convert partners and children into main contacts with deep-sync technology.</li>
-                    <li><strong>🛡️ Privacy First:</strong> Option to hide QR features and simplified, compressed UI for better data density.</li>
+                    <li><strong data-i18n="wn_loc_title">🌍 Global Localization:</strong> <span data-i18n="wn_loc_desc">Full support for English, Hindi, and Spanish with localized date formats.</span></li>
+                    <li><strong data-i18n="wn_filt_title">🔍 Advanced Filtering:</strong> <span data-i18n="wn_filt_desc">New multi-select mode for groups with OR/AND logic and pinned views.</span></li>
+                    <li><strong data-i18n="wn_evt_title">🎂 Smart Events:</strong> <span data-i18n="wn_evt_desc">Chronological grouping (Today, Tomorrow, This Week) with early morning reminders.</span></li>
+                    <li><strong data-i18n="wn_qr_title">📲 QR Integration:</strong> <span data-i18n="wn_qr_desc">Built-in scanner and generator for instant, secure contact sharing.</span></li>
+                    <li><strong data-i18n="wn_sync_title">🏠 Household Sync:</strong> <span data-i18n="wn_sync_desc">Seamlessly convert partners and children into main contacts with deep-sync technology.</span></li>
+                    <li><strong data-i18n="wn_priv_title">🛡️ Privacy First:</strong> <span data-i18n="wn_priv_desc">Option to hide QR features and simplified, compressed UI for better data density.</span></li>
                 </ul>
             </div>
         </div>
@@ -64,50 +87,50 @@
 
     <section id="features" class="features">
         <div class="container">
-            <h2>Key Features</h2>
+            <h2 data-i18n="features_title">Key Features</h2>
             <div class="feature-grid">
                 <div class="feature-card">
                     <span class="feature-icon">👤</span>
-                    <h3>1. Comprehensive Contact Profiles</h3>
-                    <p>Go beyond just a phone number. Store addresses, multiple emails, company details, school/college info, and even pet names for every contact in your circle.</p>
+                    <h3 data-i18n="f1_title">1. Comprehensive Contact Profiles</h3>
+                    <p data-i18n="f1_desc">Go beyond just a phone number. Store addresses, multiple emails, company details, school/college info, and even pet names for every contact in your circle.</p>
                 </div>
                 <div class="feature-card">
                     <span class="feature-icon">🏠</span>
-                    <h3>2. Family & Relationship Tracking</h3>
-                    <p>Uniquely designed to track entire households. Add partners and children to any contact record, and instantly convert them to main contacts with automated data syncing.</p>
+                    <h3 data-i18n="f2_title">2. Family & Relationship Tracking</h3>
+                    <p data-i18n="f2_desc">Uniquely designed to track entire households. Add partners and children to any contact record, and instantly convert them to main contacts with automated data syncing.</p>
                 </div>
                 <div class="feature-card">
                     <span class="feature-icon">🎂</span>
-                    <h3>3. Milestone Reminders</h3>
-                    <p>Never miss a birthday or anniversary again. CircleKeep highlights upcoming events chronologically (Today, Tomorrow, Week, Month) and sends early morning notifications.</p>
+                    <h3 data-i18n="f3_title">3. Milestone Reminders</h3>
+                    <p data-i18n="f3_desc">Never miss a birthday or anniversary again. CircleKeep highlights upcoming events chronologically (Today, Tomorrow, Week, Month) and sends early morning notifications.</p>
                 </div>
                 <div class="feature-card">
                     <span class="feature-icon">🔍</span>
-                    <h3>4. Advanced Filtering & Search</h3>
-                    <p>Organize your circle with multi-select groups and dynamic OR/AND logic. Pin your most important contacts or specific group views to keep them at the top.</p>
+                    <h3 data-i18n="f4_title">4. Advanced Filtering & Search</h3>
+                    <p data-i18n="f4_desc">Organize your circle with multi-select groups and dynamic OR/AND logic. Pin your most important contacts or specific group views to keep them at the top.</p>
                 </div>
                 <div class="feature-card">
                     <span class="feature-icon">🌍</span>
-                    <h3>5. Multi-Language Support</h3>
-                    <p>CircleKeep speaks your language. Full support for English, Hindi (हिन्दी), and Spanish (Español), including localized date formats and relationship types.</p>
+                    <h3 data-i18n="f5_title">5. Multi-Language Support</h3>
+                    <p data-i18n="f5_desc">CircleKeep speaks your language. Full support for English, Hindi (हिन्दी), and Spanish (Español), including localized date formats and relationship types.</p>
                 </div>
                 <div class="feature-card">
                     <span class="feature-icon">📲</span>
-                    <h3>6. QR Contact Sharing</h3>
-                    <p>Share your contact details instantly with a built-in QR generator and scanner. Seamlessly import friends and family into your inner circle in seconds.</p>
+                    <h3 data-i18n="f6_title">6. QR Contact Sharing</h3>
+                    <p data-i18n="f6_desc">Share your contact details instantly with a built-in QR generator and scanner. Seamlessly import friends and family into your inner circle in seconds.</p>
                 </div>
             </div>
             <div class="feature-card" style="margin-top: 30px; text-align: center;">
                 <span class="feature-icon">🔒</span>
-                <h3>7. Data Ownership & Privacy</h3>
-                <p>Your data belongs to you. Back up your entire database to a JSON file or export and share it via email. Enjoy full Light and Dark mode support and customizable privacy settings.</p>
+                <h3 data-i18n="f7_title">7. Data Ownership & Privacy</h3>
+                <p data-i18n="f7_desc">Your data belongs to you. Back up your entire database to a JSON file or export and share it via email. Enjoy full Light and Dark mode support and customizable privacy settings.</p>
             </div>
         </div>
     </section>
 
     <section id="demo" class="demo-section">
         <div class="container">
-            <h2>Watch it in Action</h2>
+            <h2 data-i18n="demo_title">Watch it in Action</h2>
             <div class="video-container">
                 <iframe
                     src="https://www.youtube.com/embed/RHynPQCXrD8"
@@ -122,20 +145,20 @@
 
     <section class="why-section">
         <div class="container">
-            <h2>Why CircleKeep?</h2>
+            <h2 data-i18n="why_title">Why CircleKeep?</h2>
             <div class="why-grid">
-                <div class="why-item">Relationship Focus</div>
-                <div class="why-item">Detailed Records</div>
-                <div class="why-item">Smart Logic</div>
-                <div class="why-item">User Friendly</div>
+                <div class="why-item" data-i18n="why_1">Relationship Focus</div>
+                <div class="why-item" data-i18n="why_2">Detailed Records</div>
+                <div class="why-item" data-i18n="why_3">Smart Logic</div>
+                <div class="why-item" data-i18n="why_4">User Friendly</div>
             </div>
-            <p style="text-align: center; margin-top: 50px; font-weight: bold; font-size: 1.2rem; color: var(--primary-dark);">Start building a better inner circle today with CircleKeep—keeping you connected to what matters.</p>
+            <p style="text-align: center; margin-top: 50px; font-weight: bold; font-size: 1.2rem; color: var(--primary-dark);" data-i18n="why_footer">Start building a better inner circle today with CircleKeep—keeping you connected to what matters.</p>
         </div>
     </section>
 
     <section id="screenshots" class="screenshots">
         <div class="container">
-            <h2>App Experience</h2>
+            <h2 data-i18n="screenshots_title">App Experience</h2>
             <div class="screenshot-grid">
                 <div class="screenshot-item">
                     <img src="assets/screenshot1.png" alt="CircleKeep Main Screen">
@@ -155,8 +178,186 @@
 
     <footer>
         <div class="container">
-            <p>&copy; 2026 CircleKeep Team. All rights reserved.</p>
+            <p data-i18n="footer_copy">&copy; 2026 CircleKeep Team. All rights reserved.</p>
         </div>
     </footer>
+
+    <script>
+        const translations = {
+            en: {
+                nav_features: "Features",
+                nav_demo: "Demo",
+                nav_screenshots: "Screenshots",
+                nav_support: "Support",
+                nav_privacy: "Privacy",
+                hero_title: "Never forget the details that matter most.",
+                hero_desc: "CircleKeep is more than just a contact list—it’s a dedicated space to organize your personal connections, track family relationships, and remember the milestones that keep you connected to the people who matter.",
+                cta_appstore: "Download on App Store",
+                cta_playstore: "Get it on Google Play",
+                about_title: "About this App",
+                about_desc: "In a world where connections are easily lost in a cluttered phone book, CircleKeep helps you focus on your \"inner circle.\" Whether it’s remembering a friend’s child’s name, a partner’s birthday, or a marriage anniversary, CircleKeep ensures you have the information you need at your fingertips.",
+                whats_new_title: "What's New (v2.2)",
+                wn_loc_title: "🌍 Global Localization:",
+                wn_loc_desc: "Full support for English, Hindi, and Spanish with localized date formats.",
+                wn_filt_title: "🔍 Advanced Filtering:",
+                wn_filt_desc: "New multi-select mode for groups with OR/AND logic and pinned views.",
+                wn_evt_title: "🎂 Smart Events:",
+                wn_evt_desc: "Chronological grouping (Today, Tomorrow, This Week) with early morning reminders.",
+                wn_qr_title: "📲 QR Integration:",
+                wn_qr_desc: "Built-in scanner and generator for instant, secure contact sharing.",
+                wn_sync_title: "🏠 Household Sync:",
+                wn_sync_desc: "Seamlessly convert partners and children into main contacts with deep-sync technology.",
+                wn_priv_title: "🛡️ Privacy First:",
+                wn_priv_desc: "Option to hide QR features and simplified, compressed UI for better data density.",
+                features_title: "Key Features",
+                f1_title: "1. Comprehensive Contact Profiles",
+                f1_desc: "Go beyond just a phone number. Store addresses, multiple emails, company details, school/college info, and even pet names for every contact in your circle.",
+                f2_title: "2. Family & Relationship Tracking",
+                f2_desc: "Uniquely designed to track entire households. Add partners and children to any contact record, and instantly convert them to main contacts with automated data syncing.",
+                f3_title: "3. Milestone Reminders",
+                f3_desc: "Never miss a birthday or anniversary again. CircleKeep highlights upcoming events chronologically (Today, Tomorrow, Week, Month) and sends early morning notifications.",
+                f4_title: "4. Advanced Filtering & Search",
+                f4_desc: "Organize your circle with multi-select groups and dynamic OR/AND logic. Pin your most important contacts or specific group views to keep them at the top.",
+                f5_title: "5. Multi-Language Support",
+                f5_desc: "CircleKeep speaks your language. Full support for English, Hindi (हिन्दी), and Spanish (Español), including localized date formats and relationship types.",
+                f6_title: "6. QR Contact Sharing",
+                f6_desc: "Share your contact details instantly with a built-in QR generator and scanner. Seamlessly import friends and family into your inner circle in seconds.",
+                f7_title: "7. Data Ownership & Privacy",
+                f7_desc: "Your data belongs to you. Back up your entire database to a JSON file or export and share it via email. Enjoy full Light and Dark mode support and customizable privacy settings.",
+                demo_title: "Watch it in Action",
+                why_title: "Why CircleKeep?",
+                why_1: "Relationship Focus",
+                why_2: "Detailed Records",
+                why_3: "Smart Logic",
+                why_4: "User Friendly",
+                why_footer: "Start building a better inner circle today with CircleKeep—keeping you connected to what matters.",
+                screenshots_title: "App Experience",
+                footer_copy: "© 2026 CircleKeep Team. All rights reserved."
+            },
+            hi: {
+                nav_features: "विशेषताएं",
+                nav_demo: "डेमो",
+                nav_screenshots: "स्क्रीनशॉट",
+                nav_support: "सहायता",
+                nav_privacy: "गोपनीयता",
+                hero_title: "उन विवरणों को कभी न भूलें जो सबसे अधिक मायने रखते हैं।",
+                hero_desc: "सर्कल कीप सिर्फ एक संपर्क सूची से कहीं अधिक है—यह आपके व्यक्तिगत संबंधों को व्यवस्थित करने, पारिवारिक रिश्तों को ट्रैक करने और उन मील के पत्थरों को याद रखने के लिए एक समर्पित स्थान है जो आपको उन लोगों से जोड़े रखते हैं जो मायने रखते हैं।",
+                cta_appstore: "ऐप स्टोर से डाउनलोड करें",
+                cta_playstore: "गूगल प्ले पर प्राप्त करें",
+                about_title: "इस ऐप के बारे में",
+                about_desc: "ऐसी दुनिया में जहां एक अव्यवस्थित फोन बुक में संबंध आसानी से खो जाते हैं, सर्कल कीप आपको अपने \"आंतरिक दायरे\" पर ध्यान केंद्रित करने में मदद करता है। चाहे वह किसी मित्र के बच्चे का नाम याद रखना हो, साथी का जन्मदिन हो, या शादी की सालगिरह, सर्कल कीप यह सुनिश्चित करता है कि आपके पास आपकी ज़रूरत की जानकारी आपकी उंगलियों पर हो।",
+                whats_new_title: "नया क्या है (v2.2)",
+                wn_loc_title: "🌍 वैश्विक स्थानीयकरण:",
+                wn_loc_desc: "स्थानीयकृत तिथि प्रारूपों के साथ अंग्रेजी, हिंदी और स्पेनिश के लिए पूर्ण समर्थन।",
+                wn_filt_title: "🔍 उन्नत फ़िल्टरिंग:",
+                wn_filt_desc: "OR/AND लॉजिक और पिन किए गए व्यू के साथ समूहों के लिए नया मल्टी-सिलेक्ट मोड।",
+                wn_evt_title: "🎂 स्मार्ट ईवेंट्स:",
+                wn_evt_desc: "सुबह जल्दी सूचनाओं के साथ कालानुक्रमिक समूहन (आज, कल, इस सप्ताह)।",
+                wn_qr_title: "📲 QR एकीकरण:",
+                wn_qr_desc: "त्वरित, सुरक्षित संपर्क साझाकरण के लिए अंतर्निहित स्कैनर और जनरेटर।",
+                wn_sync_title: "🏠 घरेलू सिंक:",
+                wn_sync_desc: "डीप-सिंक तकनीक के साथ भागीदारों और बच्चों को मुख्य संपर्कों में सहजता से बदलें।",
+                wn_priv_title: "🛡️ गोपनीयता पहले:",
+                wn_priv_desc: "QR सुविधाओं को छिपाने का विकल्प और बेहतर डेटा घनत्व के लिए सरलीकृत, संकुचित UI।",
+                features_title: "प्रमुख विशेषताएं",
+                f1_title: "1. व्यापक संपर्क प्रोफाइल",
+                f1_desc: "सिर्फ एक फोन नंबर से आगे बढ़ें। अपने दायरे के हर संपर्क के लिए पते, कई ईमेल, कंपनी विवरण, स्कूल/कॉलेज की जानकारी और यहां तक कि पालतू जानवरों के नाम भी संग्रहीत करें।",
+                f2_title: "2. परिवार और संबंध ट्रैकिंग",
+                f2_desc: "पूरे घरों को ट्रैक करने के लिए विशिष्ट रूप से डिज़ाइन किया गया। किसी भी संपर्क रिकॉर्ड में भागीदारों और बच्चों को जोड़ें, और स्वचालित डेटा सिंकिंग के साथ उन्हें तुरंत मुख्य संपर्कों में बदलें।",
+                f3_title: "3. मील का पत्थर अनुस्मारक",
+                f3_desc: "जन्मदिन या सालगिरह फिर कभी न भूलें। सर्कल कीप कालानुक्रमिक रूप से (आज, कल, सप्ताह, महीना) आने वाली घटनाओं को उजागर करता है और सुबह जल्दी सूचनाएं भेजता है।",
+                f4_title: "4. उन्नत फ़िल्टरिंग और खोज",
+                f4_desc: "मल्टी-सिलेक्ट समूहों और गतिशील OR/AND लॉजिक के साथ अपने दायरे को व्यवस्थित करें। अपने सबसे महत्वपूर्ण संपर्कों या विशिष्ट समूह दृश्यों को शीर्ष पर रखने के लिए पिन करें।",
+                f5_title: "5. बहु-भाषा समर्थन",
+                f5_desc: "सर्कल कीप आपकी भाषा बोलता है। स्थानीयकृत तिथि प्रारूपों और संबंध प्रकारों सहित अंग्रेजी, हिंदी (हिन्दी), और स्पेनिश (Español) के लिए पूर्ण समर्थन।",
+                f6_title: "6. QR संपर्क साझाकरण",
+                f6_desc: "अंतर्निहित QR जनरेटर और स्कैनर के साथ अपने संपर्क विवरण तुरंत साझा करें। सेकंडों में अपने आंतरिक दायरे में मित्रों और परिवार को सहजता से आयात करें।",
+                f7_title: "7. डेटा स्वामित्व और गोपनीयता",
+                f7_desc: "आपका डेटा आपका है। अपने पूरे डेटाबेस को JSON फ़ाइल में बैकअप लें या ईमेल के माध्यम से निर्यात और साझा करें। पूर्ण लाइट और डार्क मोड समर्थन और अनुकूलन योग्य गोपनीयता सेटिंग्स का आनंद लें।",
+                demo_title: "इसे क्रियान्वित होते देखें",
+                why_title: "सर्कल कीप ही क्यों?",
+                why_1: "संबंधों पर ध्यान",
+                why_2: "विस्तृत रिकॉर्ड",
+                why_3: "स्मार्ट लॉजिक",
+                why_4: "उपयोगकर्ता के अनुकूल",
+                why_footer: "सर्कल कीप के साथ आज ही एक बेहतर आंतरिक दायरा बनाना शुरू करें—जो आपको मायने रखने वाली चीज़ों से जोड़े रखता है।",
+                screenshots_title: "ऐप अनुभव",
+                footer_copy: "© 2026 सर्कल कीप टीम। सर्वाधिकार सुरक्षित।"
+            },
+            es: {
+                nav_features: "Características",
+                nav_demo: "Demostración",
+                nav_screenshots: "Capturas",
+                nav_support: "Soporte",
+                nav_privacy: "Privacidad",
+                hero_title: "Nunca olvides los detalles que más importan.",
+                hero_desc: "CircleKeep es más que una simple lista de contactos: es un espacio dedicado para organizar tus conexiones personales, rastrear las relaciones familiares y recordar los hitos que te mantienen conectado con las personas que importan.",
+                cta_appstore: "Descargar en App Store",
+                cta_playstore: "Consíguelo en Google Play",
+                about_title: "Acerca de esta App",
+                about_desc: "En un mundo donde las conexiones se pierden fácilmente en una agenda saturada, CircleKeep te ayuda a enfocarte en tu \"círculo interno\". Ya sea recordar el nombre del hijo de un amigo, el cumpleaños de una pareja o un aniversario de boda, CircleKeep asegura que tengas la información que necesitas al alcance de tu mano.",
+                whats_new_title: "Novedades (v2.2)",
+                wn_loc_title: "🌍 Localización Global:",
+                wn_loc_desc: "Soporte completo para inglés, hindi y español con formatos de fecha localizados.",
+                wn_filt_title: "🔍 Filtrado Avanzado:",
+                wn_filt_desc: "Nuevo modo multiselección para grupos con lógica OR/AND y vistas fijadas.",
+                wn_evt_title: "🎂 Eventos Inteligentes:",
+                wn_evt_desc: "Agrupación cronológica (Hoy, Mañana, Esta semana) con recordatorios temprano en la mañana.",
+                wn_qr_title: "📲 Integración QR:",
+                wn_qr_desc: "Escáner y generador integrados para compartir contactos de forma instantánea y segura.",
+                wn_sync_title: "🏠 Sincronización del Hogar:",
+                wn_sync_desc: "Convierte sin problemas a parejas e hijos en contactos principales con tecnología de sincronización profunda.",
+                wn_priv_title: "🛡️ Privacidad Primero:",
+                wn_priv_desc: "Opción para ocultar funciones QR y una interfaz simplificada y comprimida para una mejor densidad de datos.",
+                features_title: "Características Principales",
+                f1_title: "1. Perfiles de Contacto Completos",
+                f1_desc: "Ve más allá de un simple número de teléfono. Almacena direcciones, múltiples correos electrónicos, detalles de la empresa, información de escuela/universidad e incluso nombres de mascotas para cada contacto en tu círculo.",
+                f2_title: "2. Seguimiento de Familia y Relaciones",
+                f2_desc: "Diseñado exclusivamente para rastrear hogares enteros. Agrega parejas e hijos a cualquier registro de contacto y conviértelos instantáneamente en contactos principales con sincronización automática de datos.",
+                f3_title: "3. Recordatorios de Hitos",
+                f3_desc: "No vuelvas a perder un cumpleaños o aniversario. CircleKeep resalta los próximos eventos cronológicamente (Hoy, Mañana, Semana, Mes) y envía notificaciones temprano en la mañana.",
+                f4_title: "4. Filtrado y Búsqueda Avanzados",
+                f4_desc: "Organiza tu círculo con grupos de selección múltiple y lógica dinámica OR/AND. Fija tus contactos más importantes o vistas de grupos específicos para mantenerlos en la parte superior.",
+                f5_title: "5. Soporte Multi-idioma",
+                f5_desc: "CircleKeep habla tu idioma. Soporte completo para inglés, hindi (हिन्दी) y español (Español), incluyendo formatos de fecha localizados y tipos de relaciones.",
+                f6_title: "6. Intercambio de Contactos por QR",
+                f6_desc: "Comparte tus datos de contacto al instante con un generador y escáner QR integrados. Importa sin problemas a amigos y familiares a tu círculo interno en segundos.",
+                f7_title: "7. Propiedad de Datos y Privacidad",
+                f7_desc: "Tus datos te pertenecen. Realiza copias de seguridad de toda tu base de datos en un archivo JSON o expórtala y compártela por correo electrónico. Disfruta de soporte completo para modo claro y oscuro y configuraciones de privacidad personalizables.",
+                demo_title: "Míralo en Acción",
+                why_title: "¿Por qué CircleKeep?",
+                why_1: "Enfoque en Relaciones",
+                why_2: "Registros Detallados",
+                why_3: "Lógica Inteligente",
+                why_4: "Fácil de Usar",
+                why_footer: "Comienza a construir un mejor círculo interno hoy con CircleKeep, manteniéndote conectado con lo que importa.",
+                screenshots_title: "Experiencia de la App",
+                footer_copy: "© 2026 Equipo de CircleKeep. Todos los derechos reservados."
+            }
+        };
+
+        function changeLanguage(lang) {
+            document.documentElement.lang = lang;
+            localStorage.setItem('preferredLanguage', lang);
+
+            const elements = document.querySelectorAll('[data-i18n]');
+            elements.forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (translations[lang] && translations[lang][key]) {
+                    el.innerHTML = translations[lang][key];
+                }
+            });
+        }
+
+        // Initialize from storage or browser language
+        window.onload = () => {
+            const storedLang = localStorage.getItem('preferredLanguage');
+            const browserLang = navigator.language.split('-')[0];
+            const defaultLang = storedLang || (translations[browserLang] ? browserLang : 'en');
+
+            document.getElementById('languageSelect').value = defaultLang;
+            changeLanguage(defaultLang);
+        };
+    </script>
 </body>
 </html>
