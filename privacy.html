@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy - CircleKeep</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .lang-selector { margin-left: 20px; }
+        .lang-selector select { padding: 5px; border-radius: 5px; border: 1px solid #ccc; background: white; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container nav-container">
+            <nav>
+                <a href="index.html" class="logo-wrapper">
+                    <img src="assets/icon.png" alt="CircleKeep Icon" class="logo-img">
+                    <span class="logo-text">CircleKeep</span>
+                </a>
+                <ul>
+                    <li><a href="index.html#features" data-i18n="nav_features">Features</a></li>
+                    <li><a href="support.html" data-i18n="nav_support">Support</a></li>
+                    <li><a href="privacy.html" data-i18n="nav_privacy">Privacy</a></li>
+                    <li class="lang-selector">
+                        <select id="languageSelect" onchange="changeLanguage(this.value)">
+                            <option value="en">English</option>
+                            <option value="hi">हिन्दी</option>
+                            <option value="es">Español</option>
+                        </select>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <section class="features">
+        <div class="container">
+            <h2 data-i18n="privacy_title">Privacy Policy</h2>
+            <div style="max-width: 800px; margin: 0 auto; line-height: 1.6; color: #444;">
+                <p data-i18n="p1">CircleKeep is committed to protecting your privacy. This policy explains how we handle your data.</p>
+
+                <h3 data-i18n="h1">1. Data Ownership</h3>
+                <p data-i18n="p2">All contact information, photos, and personal details you enter into CircleKeep are stored locally on your device. We do not have access to your data, and we do not store it on our servers.</p>
+
+                <h3 data-i18n="h2">2. Data Security</h3>
+                <p data-i18n="p3">Since your data is stored locally, it is as secure as your device. We recommend using device encryption and regular backups using our built-in export features.</p>
+
+                <h3 data-i18n="h3">3. Third-Party Services</h3>
+                <p data-i18n="p4">CircleKeep uses Google AdMob for advertisements. AdMob may collect and use information about your usage to provide personalized ads. You can manage your ad preferences in your device settings.</p>
+
+                <h3 data-i18n="h4">4. Permissions</h3>
+                <p data-i18n="p5">The app requires permission to access your contacts (for import) and camera (for QR scanning). These permissions are only used to provide the app's core features on your command.</p>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <p data-i18n="footer_copy">&copy; 2026 CircleKeep Team. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        const translations = {
+            en: {
+                nav_features: "Features", nav_support: "Support", nav_privacy: "Privacy",
+                privacy_title: "Privacy Policy",
+                p1: "CircleKeep is committed to protecting your privacy. This policy explains how we handle your data.",
+                h1: "1. Data Ownership", p2: "All contact information, photos, and personal details you enter into CircleKeep are stored locally on your device. We do not have access to your data, and we do not store it on our servers.",
+                h2: "2. Data Security", p3: "Since your data is stored locally, it is as secure as your device. We recommend using device encryption and regular backups using our built-in export features.",
+                h3: "3. Third-Party Services", p4: "CircleKeep uses Google AdMob for advertisements. AdMob may collect and use information about your usage to provide personalized ads. You can manage your ad preferences in your device settings.",
+                h4: "4. Permissions", p5: "The app requires permission to access your contacts (for import) and camera (for QR scanning). These permissions are only used to provide the app's core features on your command.",
+                footer_copy: "© 2026 CircleKeep Team. All rights reserved."
+            },
+            hi: {
+                nav_features: "विशेषताएं", nav_support: "सहायता", nav_privacy: "गोपनीयता",
+                privacy_title: "गोपनीयता नीति",
+                p1: "सर्कल कीप आपकी गोपनीयता की रक्षा के लिए प्रतिबद्ध है। यह नीति बताती है कि हम आपके डेटा को कैसे संभालते हैं।",
+                h1: "1. डेटा स्वामित्व", p2: "आपके द्वारा सर्कल कीप में दर्ज की गई सभी संपर्क जानकारी, फोटो और व्यक्तिगत विवरण आपके डिवाइस पर स्थानीय रूप से संग्रहीत किए जाते हैं। हमारी आपके डेटा तक पहुंच नहीं है, और हम इसे अपने सर्वर पर संग्रहीत नहीं करते हैं।",
+                h2: "2. डेटा सुरक्षा", p3: "चूंकि आपका डेटा स्थानीय रूप से संग्रहीत है, इसलिए यह आपके डिवाइस जितना ही सुरक्षित है। हम डिवाइस एन्क्रिप्शन और हमारे अंतर्निहित निर्यात सुविधाओं का उपयोग करके नियमित बैकअप की अनुशंसा करते हैं।",
+                h3: "3. तृतीय-पक्ष सेवाएं", p4: "सर्कल कीप विज्ञापनों के लिए गूगल एडमोब का उपयोग करता है। एडमोब व्यक्तिगत विज्ञापन प्रदान करने के लिए आपके उपयोग के बारे में जानकारी एकत्र और उपयोग कर सकता है। आप अपने डिवाइस सेटिंग्स में अपनी विज्ञापन प्राथमिकताएं प्रबंधित कर सकते हैं।",
+                h4: "4. अनुमतियाँ", p5: "ऐप को आपके संपर्कों (आयात के लिए) और कैमरे (QR स्कैनिंग के लिए) तक पहुंचने की अनुमति की आवश्यकता होती है। इन अनुमतियों का उपयोग केवल आपके आदेश पर ऐप की मुख्य विशेषताएं प्रदान करने के लिए किया जाता है।",
+                footer_copy: "© 2026 सर्कल कीप टीम। सर्वाधिकार सुरक्षित।"
+            },
+            es: {
+                nav_features: "Características", nav_support: "Soporte", nav_privacy: "Privacidad",
+                privacy_title: "Política de Privacidad",
+                p1: "CircleKeep se compromete a proteger su privacidad. Esta política explica cómo manejamos sus datos.",
+                h1: "1. Propiedad de los Datos", p2: "Toda la información de contacto, fotos y detalles personales que ingrese en CircleKeep se almacenan localmente en su dispositivo. No tenemos acceso a sus datos y no los almacenamos en nuestros servidores.",
+                h2: "2. Seguridad de los Datos", p3: "Dado que sus datos se almacenan localmente, son tan seguros como su dispositivo. Recomendamos usar el cifrado del dispositivo y realizar copias de seguridad periódicas utilizando nuestras funciones de exportación integradas.",
+                h3: "3. Servicios de Terceros", p4: "CircleKeep utiliza Google AdMob para anuncios. AdMob puede recopilar y utilizar información sobre su uso para proporcionar anuncios personalizados. Puede administrar sus preferencias de anuncios en la configuración de su dispositivo.",
+                h4: "4. Permisos", p5: "La aplicación requiere permiso para acceder a sus contactos (para importar) y a la cámara (para el escaneo QR). Estos permisos solo se utilizan para proporcionar las funciones principales de la aplicación bajo su mando.",
+                footer_copy: "© 2026 Equipo de CircleKeep. Todos los derechos reservados."
+            }
+        };
+
+        function changeLanguage(lang) {
+            document.documentElement.lang = lang;
+            localStorage.setItem('preferredLanguage', lang);
+            const elements = document.querySelectorAll('[data-i18n]');
+            elements.forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (translations[lang] && translations[lang][key]) el.innerHTML = translations[lang][key];
+            });
+        }
+
+        window.onload = () => {
+            const storedLang = localStorage.getItem('preferredLanguage');
+            const browserLang = navigator.language.split('-')[0];
+            const defaultLang = storedLang || (translations[browserLang] ? browserLang : 'en');
+            document.getElementById('languageSelect').value = defaultLang;
+            changeLanguage(defaultLang);
+        };
+    </script>
+</body>
+</html>

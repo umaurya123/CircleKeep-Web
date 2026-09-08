@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Support - CircleKeep</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .lang-selector { margin-left: 20px; }
+        .lang-selector select { padding: 5px; border-radius: 5px; border: 1px solid #ccc; background: white; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container nav-container">
+            <nav>
+                <a href="index.html" class="logo-wrapper">
+                    <img src="assets/icon.png" alt="CircleKeep Icon" class="logo-img">
+                    <span class="logo-text">CircleKeep</span>
+                </a>
+                <ul>
+                    <li><a href="index.html#features" data-i18n="nav_features">Features</a></li>
+                    <li><a href="support.html" data-i18n="nav_support">Support</a></li>
+                    <li><a href="privacy.html" data-i18n="nav_privacy">Privacy</a></li>
+                    <li class="lang-selector">
+                        <select id="languageSelect" onchange="changeLanguage(this.value)">
+                            <option value="en">English</option>
+                            <option value="hi">हिन्दी</option>
+                            <option value="es">Español</option>
+                        </select>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <section class="features">
+        <div class="container">
+            <h2 data-i18n="support_title">Support</h2>
+            <div style="max-width: 800px; margin: 0 auto; text-align: center;">
+                <p data-i18n="p1">Need help with CircleKeep? We're here to assist you.</p>
+                <div style="margin-top: 40px; padding: 30px; background: #f9f9f9; border-radius: 10px;">
+                    <h3 data-i18n="h1">Email Support</h3>
+                    <p data-i18n="p2">For any questions, feedback, or bug reports, please email us at:</p>
+                    <p style="font-size: 1.2rem; font-weight: bold; color: var(--primary);"><a href="mailto:CircleKeepApp@gmail.com">CircleKeepApp@gmail.com</a></p>
+                </div>
+                <div style="margin-top: 40px;">
+                    <h3 data-i18n="h2">Frequently Asked Questions</h3>
+                    <div style="text-align: left; margin-top: 20px;">
+                        <p><strong>Q: <span data-i18n="q1">Is my data shared with anyone?</span></strong><br><span data-i18n="a1">A: No. All data is stored locally on your device.</span></p>
+                        <p><strong>Q: <span data-i18n="q2">How do I back up my contacts?</span></strong><br><span data-i18n="a2">A: Use the "Export Data" feature in Settings to save your database as a file.</span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <p data-i18n="footer_copy">&copy; 2026 CircleKeep Team. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        const translations = {
+            en: {
+                nav_features: "Features", nav_support: "Support", nav_privacy: "Privacy",
+                support_title: "Support", p1: "Need help with CircleKeep? We're here to assist you.",
+                h1: "Email Support", p2: "For any questions, feedback, or bug reports, please email us at:",
+                h2: "Frequently Asked Questions", q1: "Is my data shared with anyone?", a1: "No. All data is stored locally on your device.",
+                q2: "How do I back up my contacts?", a2: "Use the \"Export Data\" feature in Settings to save your database as a file.",
+                footer_copy: "© 2026 CircleKeep Team. All rights reserved."
+            },
+            hi: {
+                nav_features: "विशेषताएं", nav_support: "सहायता", nav_privacy: "गोपनीयता",
+                support_title: "सहायता", p1: "सर्कल कीप के साथ सहायता चाहिए? हम आपकी सहायता के लिए यहाँ हैं।",
+                h1: "ईमेल सहायता", p2: "किसी भी प्रश्न, प्रतिक्रिया या बग रिपोर्ट के लिए, कृपया हमें यहाँ ईमेल करें:",
+                h2: "अक्सर पूछे जाने वाले प्रश्न", q1: "क्या मेरा डेटा किसी के साथ साझा किया जाता है?", a1: "नहीं। सभी डेटा आपके डिवाइस पर स्थानीय रूप से संग्रहीत हैं।",
+                q2: "मैं अपने संपर्कों का बैकअप कैसे ले सकता हूँ?", a2: "अपने डेटाबेस को फ़ाइल के रूप में सहेजने के लिए सेटिंग्स में \"डेटा निर्यात करें\" सुविधा का उपयोग करें।",
+                footer_copy: "© 2026 सर्कल कीप टीम। सर्वाधिकार सुरक्षित।"
+            },
+            es: {
+                nav_features: "Características", nav_support: "Soporte", nav_privacy: "Privacidad",
+                support_title: "Soporte", p1: "¿Necesita ayuda con CircleKeep? Estamos aquí para ayudarle.",
+                h1: "Soporte por Correo Electrónico", p2: "Para cualquier pregunta, comentario o informe de errores, envíenos un correo electrónico a:",
+                h2: "Preguntas Frecuentes", q1: "¿Se comparten mis datos con alguien?", a1: "No. Todos los datos se almacenan localmente en su dispositivo.",
+                q2: "¿Cómo hago una copia de seguridad de mi contactos?", a2: "Utilice la función \"Exportar datos\" en Ajustes para guardar su base de datos como un archivo.",
+                footer_copy: "© 2026 Equipo de CircleKeep. Todos los derechos reservados."
+            }
+        };
+
+        function changeLanguage(lang) {
+            document.documentElement.lang = lang;
+            localStorage.setItem('preferredLanguage', lang);
+            const elements = document.querySelectorAll('[data-i18n]');
+            elements.forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (translations[lang] && translations[lang][key]) el.innerHTML = translations[lang][key];
+            });
+        }
+
+        window.onload = () => {
+            const storedLang = localStorage.getItem('preferredLanguage');
+            const browserLang = navigator.language.split('-')[0];
+            const defaultLang = storedLang || (translations[browserLang] ? browserLang : 'en');
+            document.getElementById('languageSelect').value = defaultLang;
+            changeLanguage(defaultLang);
+        };
+    </script>
+</body>
+</html>
