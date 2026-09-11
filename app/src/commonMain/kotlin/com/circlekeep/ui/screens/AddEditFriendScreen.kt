@@ -464,7 +464,7 @@ fun AddEditFriendScreen(
                         maxLines = 4,
                         keyboardOptions = KeyboardOptions(
                             capitalization = KeyboardCapitalization.Words,
-                            imeAction = ImeAction.Next
+                            imeAction = ImeAction.Default
                         )
                     )
                     
@@ -640,7 +640,7 @@ fun AddEditFriendScreen(
                             minLines = 3,
                             keyboardOptions = KeyboardOptions(
                                 capitalization = KeyboardCapitalization.Sentences,
-                                imeAction = ImeAction.Next
+                                imeAction = ImeAction.Default
                             )
                         )
                         OutlinedTextField(

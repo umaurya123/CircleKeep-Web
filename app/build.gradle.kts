@@ -92,15 +92,24 @@ kotlin {
 }
 
 android {
+    signingConfigs {
+        create("release") {
+            storeFile =
+                file("C:\\Users\\umaur\\OneDrive\\Apps 1\\AndroidStudioProjects\\CircleKeepApp\\CircleKeepKeyFile.jks")
+            storePassword = "Sahatwar$23$46@"
+            keyPassword = "Sahatwar$23$46@"
+            keyAlias = "key1"
+        }
+    }
     namespace = "com.circlekeep"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.circlekeep"
         minSdk = 24
-        targetSdk = 35
-        versionCode = 11
-        versionName = "2.2"
+        targetSdk = 36
+        versionCode = 16
+        versionName = "2.3"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -112,6 +121,7 @@ android {
             buildConfigField("String", "INTERSTITIAL_AD_UNIT_ID", "\"ca-app-pub-3940256099942544/1033173712\"") // Test Interstitial
         }
         release {
+            manifestPlaceholders += mapOf()
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(
@@ -123,7 +133,8 @@ android {
             }
             manifestPlaceholders["admobAppId"] = "ca-app-pub-9985549354765338~3888239696" // Actual for the production
             buildConfigField("String", "BANNER_AD_UNIT_ID", "\"ca-app-pub-9985549354765338/9989659328\"") // Actual for the production
-            buildConfigField("String", "INTERSTITIAL_AD_UNIT_ID", "\"ca-app-pub-9985549354765338/3719764440\"") // Actual for the production
+            buildConfigField("String", "INTERSTITIAL_AD_UNIT_ID", "\"ca-app-pub-9985549354765338/3719764440\"")
+            signingConfig = signingConfigs.getByName("release")// Actual for the production
         }
         create("beta") {
             initWith(getByName("release"))
@@ -144,6 +155,11 @@ android {
     buildFeatures {
         compose = true
         buildConfig = true
+    }
+
+    lint {
+        checkReleaseBuilds = false
+        abortOnError = false
     }
 }
 

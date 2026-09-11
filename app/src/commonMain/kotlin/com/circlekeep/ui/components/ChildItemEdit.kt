@@ -291,7 +291,7 @@ fun ChildItemEdit(
                     minLines = 3,
                     keyboardOptions = KeyboardOptions(
                         capitalization = KeyboardCapitalization.Sentences,
-                        imeAction = ImeAction.Next
+                        imeAction = ImeAction.Default
                     )
                 )
 
