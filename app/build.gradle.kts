@@ -102,14 +102,14 @@ android {
         }
     }
     namespace = "com.circlekeep"
-    compileSdk = 36
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.circlekeep"
         minSdk = 24
-        targetSdk = 36
-        versionCode = 18
-        versionName = "2.5"
+        targetSdk = 35
+        versionCode = 19
+        versionName = "2.6"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
