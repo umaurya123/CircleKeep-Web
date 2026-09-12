@@ -39,7 +39,13 @@
 -keep class com.google.mlkit.** { *; }
 -keep class com.google.android.gms.internal.mlkit_barcode_scanning.** { *; }
 
-# 7. General Data Integrity
+# 7. WorkManager (Reminders)
+-keep class * extends androidx.work.ListenableWorker {
+    public <init>(android.content.Context, androidx.work.WorkerParameters);
+}
+-keep class com.circlekeep.EventReminderWorker { *; }
+
+# 8. General Data Integrity
 # Keep all data models to prevent Room/Moshi/Serialization issues in Full Mode
 -keep class com.circlekeep.data.** { *; }
 -keep class com.circlekeep.navigation.** { *; }
