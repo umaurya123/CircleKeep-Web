@@ -4,6 +4,13 @@ import androidx.room.migration.Migration
 import androidx.sqlite.SQLiteConnection
 import androidx.sqlite.execSQL
 
+val MIGRATION_17_18 = object : Migration(17, 18) {
+    override fun migrate(connection: SQLiteConnection) {
+        // Empty migration to bridge the gap from version 2.0 (v17) to newer versions.
+        // All actual column additions are handled in MIGRATION_18_19 using safeAddColumn.
+    }
+}
+
 val MIGRATION_18_19 = object : Migration(18, 19) {
     override fun migrate(connection: SQLiteConnection) {
         // Add new columns to friends table

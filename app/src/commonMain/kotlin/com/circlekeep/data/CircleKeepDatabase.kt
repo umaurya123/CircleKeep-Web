@@ -23,6 +23,7 @@ fun getRoomDatabase(
 ): CircleKeepDatabase {
     return builder
         .setDriver(BundledSQLiteDriver())
-        .addMigrations(MIGRATION_18_19)
+        .addMigrations(MIGRATION_17_18, MIGRATION_18_19)
+        .fallbackToDestructiveMigration(true)
         .build()
 }
