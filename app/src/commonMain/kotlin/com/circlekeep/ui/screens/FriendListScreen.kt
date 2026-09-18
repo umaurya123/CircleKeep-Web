@@ -375,8 +375,8 @@ fun FriendListScreen(
                             modifier = Modifier.combinedClickable(
                                 onClick = { 
                                     if (selectedFriendIds.isNotEmpty()) {
-                                        selectedFriendIds = if (isSelected) {
-                                            selectedFriendIds.filter { it != friendId }.toSet()
+                                        selectedFriendIds = if (selectedFriendIds.contains(friendId)) {
+                                            selectedFriendIds - friendId
                                         } else {
                                             selectedFriendIds + friendId
                                         }
@@ -385,8 +385,10 @@ fun FriendListScreen(
                                     }
                                 },
                                 onLongClick = {
-                                    if (selectedFriendIds.isEmpty()) {
-                                        selectedFriendIds = setOf(friendId)
+                                    selectedFriendIds = if (selectedFriendIds.contains(friendId)) {
+                                        selectedFriendIds - friendId
+                                    } else {
+                                        selectedFriendIds + friendId
                                     }
                                 }
                             ),
@@ -429,8 +431,8 @@ fun FriendListScreen(
                             modifier = Modifier.combinedClickable(
                                 onClick = { 
                                     if (selectedFriendIds.isNotEmpty()) {
-                                        selectedFriendIds = if (isSelected) {
-                                            selectedFriendIds.filter { it != friendId }.toSet()
+                                        selectedFriendIds = if (selectedFriendIds.contains(friendId)) {
+                                            selectedFriendIds - friendId
                                         } else {
                                             selectedFriendIds + friendId
                                         }
@@ -439,8 +441,10 @@ fun FriendListScreen(
                                     }
                                 },
                                 onLongClick = {
-                                    if (selectedFriendIds.isEmpty()) {
-                                        selectedFriendIds = setOf(friendId)
+                                    selectedFriendIds = if (selectedFriendIds.contains(friendId)) {
+                                        selectedFriendIds - friendId
+                                    } else {
+                                        selectedFriendIds + friendId
                                     }
                                 }
                             ),
