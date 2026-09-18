@@ -21,6 +21,8 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
         val REMINDERS_ENABLED = booleanPreferencesKey("reminders_enabled")
         val LANGUAGE = stringPreferencesKey("language")
         val HIDE_QR = booleanPreferencesKey("hide_qr")
+        val IS_GRID_VIEW = booleanPreferencesKey("is_grid_view")
+        val GRID_COLUMNS = androidx.datastore.preferences.core.intPreferencesKey("grid_columns")
     }
 
     val themeStream: Flow<String> = dataStore.data
@@ -75,6 +77,18 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
             preferences[PreferencesKeys.HIDE_QR] ?: false
         }
 
+    val isGridViewStream: Flow<Boolean> = dataStore.data
+        .catch { emit(emptyPreferences()) }
+        .map { preferences ->
+            preferences[PreferencesKeys.IS_GRID_VIEW] ?: false
+        }
+
+    val gridColumnsStream: Flow<Int> = dataStore.data
+        .catch { emit(emptyPreferences()) }
+        .map { preferences ->
+            preferences[PreferencesKeys.GRID_COLUMNS] ?: 2
+        }
+
     suspend fun updateTheme(theme: String) {
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.THEME] = theme
@@ -120,6 +134,18 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
     suspend fun updateHideQr(hide: Boolean) {
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.HIDE_QR] = hide
+        }
+    }
+
+    suspend fun updateIsGridView(isGrid: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.IS_GRID_VIEW] = isGrid
+        }
+    }
+
+    suspend fun updateGridColumns(columns: Int) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.GRID_COLUMNS] = columns
         }
     }
 }

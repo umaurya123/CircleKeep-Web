@@ -101,6 +101,20 @@ class FriendViewModel(
             initialValue = false
         )
 
+    val isGridViewState: StateFlow<Boolean> = userPreferencesRepository.isGridViewStream
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = false
+        )
+
+    val gridColumnsState: StateFlow<Int> = userPreferencesRepository.gridColumnsStream
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = 2
+        )
+
     val groupsState: StateFlow<List<Group>> =
         friendRepository.getAllGroupsStream()
             .stateIn(
@@ -649,6 +663,18 @@ class FriendViewModel(
     fun onHideQrChange(hide: Boolean) {
         viewModelScope.launch {
             userPreferencesRepository.updateHideQr(hide)
+        }
+    }
+
+    fun onIsGridViewChange(isGrid: Boolean) {
+        viewModelScope.launch {
+            userPreferencesRepository.updateIsGridView(isGrid)
+        }
+    }
+
+    fun onGridColumnsChange(columns: Int) {
+        viewModelScope.launch {
+            userPreferencesRepository.updateGridColumns(columns)
         }
     }
 

@@ -6,6 +6,9 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.Sort
@@ -22,6 +25,7 @@ import com.circlekeep.data.FriendWithChildren
 import com.circlekeep.data.Group
 import com.circlekeep.viewmodel.SortOrder
 import com.circlekeep.ui.components.FriendItem
+import com.circlekeep.ui.components.FriendGridItem
 import com.circlekeep.LocalPlatformUI
 import com.circlekeep.ui.theme.LocalAppStrings
 
@@ -52,7 +56,11 @@ fun FriendListScreen(
     onQRScanned: (String) -> Unit,
     onDeleteFriends: (Set<Long>) -> Unit,
     onNavigateToSettings: () -> Unit,
-    hideQr: Boolean = false
+    hideQr: Boolean = false,
+    isGridView: Boolean = false,
+    gridColumns: Int = 2,
+    onToggleGridView: (Boolean) -> Unit = {},
+    onGridColumnsChange: (Int) -> Unit = {}
 ) {
     val strings = LocalAppStrings.current
     var showSortMenu by remember { mutableStateOf(false) }
@@ -137,6 +145,12 @@ fun FriendListScreen(
                                 Icon(Icons.Rounded.Delete, contentDescription = "Delete selected")
                             }
                         } else {
+                            IconButton(onClick = { onToggleGridView(!isGridView) }) {
+                                Icon(
+                                    imageVector = if (isGridView) Icons.AutoMirrored.Rounded.ViewList else Icons.Rounded.GridView,
+                                    contentDescription = "Toggle Grid View"
+                                )
+                            }
                             IconButton(onClick = onToggleInline) {
                                 Icon(
                                     imageVector = if (showInlineData) Icons.Rounded.ViewStream else Icons.AutoMirrored.Rounded.ViewList,
@@ -341,6 +355,62 @@ fun FriendListScreen(
                     text = if (searchQuery.isNotBlank() || selectedGroups.isNotEmpty()) strings.noResults else strings.noContacts,
                     color = MaterialTheme.colorScheme.outline
                 )
+            }
+        } else if (isGridView) {
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(gridColumns),
+                modifier = Modifier
+                    .padding(padding)
+                    .fillMaxSize(),
+                contentPadding = PaddingValues(12.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(friends, key = { it.friend.id }) { friendWithChildren ->
+                    val friendId = friendWithChildren.friend.id
+                    val isSelected = selectedFriendIds.contains(friendId)
+                    
+                    Box(modifier = Modifier.fillMaxWidth()) {
+                        FriendGridItem(
+                            modifier = Modifier.combinedClickable(
+                                onClick = { 
+                                    if (selectedFriendIds.isNotEmpty()) {
+                                        selectedFriendIds = if (isSelected) {
+                                            selectedFriendIds.filter { it != friendId }.toSet()
+                                        } else {
+                                            selectedFriendIds + friendId
+                                        }
+                                    } else {
+                                        onFriendClick(friendId) 
+                                    }
+                                },
+                                onLongClick = {
+                                    if (selectedFriendIds.isEmpty()) {
+                                        selectedFriendIds = setOf(friendId)
+                                    }
+                                }
+                            ),
+                            friendWithChildren = friendWithChildren,
+                            onToggleFavorite = { onToggleFavorite(friendWithChildren.friend) },
+                            onTogglePin = { onTogglePin(friendWithChildren.friend) }
+                        )
+                        
+                        if (isSelected) {
+                            Surface(
+                                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
+                                modifier = Modifier.matchParentSize(),
+                                border = androidx.compose.foundation.BorderStroke(2.dp, MaterialTheme.colorScheme.primary),
+                                shape = MaterialTheme.shapes.medium
+                            ) {}
+                            Icon(
+                                Icons.Rounded.CheckCircle,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.align(Alignment.TopEnd).padding(4.dp)
+                            )
+                        }
+                    }
+                }
             }
         } else {
             LazyColumn(

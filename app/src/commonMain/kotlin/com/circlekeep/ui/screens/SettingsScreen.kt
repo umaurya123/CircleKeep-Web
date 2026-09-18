@@ -164,6 +164,40 @@ fun SettingsScreen(
                     )
                 }
             )
+
+            val isGridView by viewModel.isGridViewState.collectAsState()
+            val gridColumns by viewModel.gridColumnsState.collectAsState()
+            
+            ListItem(
+                headlineContent = { Text(strings.gridView) },
+                supportingContent = { Text(strings.gridViewDesc) },
+                trailingContent = {
+                    Switch(
+                        checked = isGridView,
+                        onCheckedChange = viewModel::onIsGridViewChange
+                    )
+                }
+            )
+            
+            if (isGridView) {
+                ListItem(
+                    headlineContent = { Text(strings.gridColumns) },
+                    supportingContent = { 
+                        Column {
+                            Text(strings.gridColumnsDesc)
+                            Slider(
+                                value = gridColumns.toFloat(),
+                                onValueChange = { viewModel.onGridColumnsChange(it.toInt()) },
+                                valueRange = 2f..5f,
+                                steps = 2
+                            )
+                        }
+                    },
+                    trailingContent = {
+                        Text(gridColumns.toString(), style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.primary)
+                    }
+                )
+            }
             
             Spacer(Modifier.height(12.dp))
             HorizontalDivider()

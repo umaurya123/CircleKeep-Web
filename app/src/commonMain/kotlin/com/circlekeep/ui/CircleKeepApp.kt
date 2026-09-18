@@ -136,6 +136,8 @@ fun CircleKeepApp() {
                         val sortOrder by viewModel.sortOrder.collectAsState()
                         val showInlineData by viewModel.showInlineData.collectAsState()
                         val hideQr by viewModel.hideQrState.collectAsState()
+                        val isGridView by viewModel.isGridViewState.collectAsState()
+                        val gridColumns by viewModel.gridColumnsState.collectAsState()
 
                         FriendListScreen(
                             friends = friends,
@@ -176,7 +178,11 @@ fun CircleKeepApp() {
                             onNavigateToSettings = {
                                 navController.navigate(Destination.Settings)
                             },
-                            hideQr = hideQr
+                            hideQr = hideQr,
+                            isGridView = isGridView,
+                            gridColumns = gridColumns,
+                            onToggleGridView = viewModel::onIsGridViewChange,
+                            onGridColumnsChange = viewModel::onGridColumnsChange
                         )
                     }
                     composable<Destination.FriendDetail> { backStackEntry ->
@@ -256,6 +262,8 @@ fun CircleKeepApp() {
                         val sortOrder by viewModel.sortOrder.collectAsState()
                         val showInlineData by viewModel.showInlineData.collectAsState()
                         val hideQr by viewModel.hideQrState.collectAsState()
+                        val isGridView by viewModel.isGridViewState.collectAsState()
+                        val gridColumns by viewModel.gridColumnsState.collectAsState()
                         
                         FriendListScreen(
                             friends = favorites,
@@ -290,7 +298,11 @@ fun CircleKeepApp() {
                             onNavigateToSettings = {
                                 navController.navigate(Destination.Settings)
                             },
-                            hideQr = hideQr
+                            hideQr = hideQr,
+                            isGridView = isGridView,
+                            gridColumns = gridColumns,
+                            onToggleGridView = viewModel::onIsGridViewChange,
+                            onGridColumnsChange = viewModel::onGridColumnsChange
                         )
                     }
                     composable<Destination.Groups> {

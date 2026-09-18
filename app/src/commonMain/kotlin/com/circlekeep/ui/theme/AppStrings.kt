@@ -15,6 +15,10 @@ interface AppStrings {
     val visitWebsite: String
     val hideQr: String
     val hideQrDesc: String
+    val gridView: String
+    val gridViewDesc: String
+    val gridColumns: String
+    val gridColumnsDesc: String
     val eventNotifications: String
     val eventNotificationsDesc: String
     val purchaseApp: String
@@ -129,6 +133,10 @@ object EnStrings : AppStrings {
     override val visitWebsite = "Visit CircleKeep Website"
     override val hideQr = "Hide QR Features"
     override val hideQrDesc = "Hide QR scanning and sharing options"
+    override val gridView = "Grid View"
+    override val gridViewDesc = "Display contacts in a grid layout"
+    override val gridColumns = "Grid Columns"
+    override val gridColumnsDesc = "Number of items per row in grid view"
     override val eventNotifications = "Event Notifications"
     override val eventNotificationsDesc = "Notify for birthdays and marriage anniversaries"
     override val purchaseApp = "Purchase App (Remove Ads)"
@@ -243,6 +251,10 @@ object HiStrings : AppStrings {
     override val visitWebsite = "CircleKeep वेबसाइट देखें"
     override val hideQr = "QR फीचर्स छिपाएं"
     override val hideQrDesc = "QR स्कैनिंग और शेयरिंग विकल्प छिपाएं"
+    override val gridView = "ग्रिड व्यू"
+    override val gridViewDesc = "संपर्कों को ग्रिड लेआउट में प्रदर्शित करें"
+    override val gridColumns = "ग्रिड कॉलम"
+    override val gridColumnsDesc = "ग्रिड व्यू में प्रति पंक्ति वस्तुओं की संख्या"
     override val eventNotifications = "ईवेंट सूचनाएं"
     override val eventNotificationsDesc = "जन्मदिन और शादी की सालगिरह के लिए सूचित करें"
     override val purchaseApp = "ऐप खरीदें (विज्ञापन हटाएं)"
@@ -357,6 +369,10 @@ object EsStrings : AppStrings {
     override val visitWebsite = "Visitar el sitio web de CircleKeep"
     override val hideQr = "Ocultar funciones QR"
     override val hideQrDesc = "Ocultar opciones de escaneo y uso compartido de QR"
+    override val gridView = "Vista de cuadrícula"
+    override val gridViewDesc = "Mostrar contactos en un diseño de cuadrícula"
+    override val gridColumns = "Columnas de cuadrícula"
+    override val gridColumnsDesc = "Número de elementos por fila en la vista de cuadrícula"
     override val eventNotifications = "Notificaciones de eventos"
     override val eventNotificationsDesc = "Notificar cumpleaños y aniversarios de boda"
     override val purchaseApp = "Comprar aplicación (Quitar anuncios)"
