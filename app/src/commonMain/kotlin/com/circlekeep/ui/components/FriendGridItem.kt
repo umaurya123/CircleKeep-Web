@@ -41,7 +41,7 @@ fun FriendGridItem(
         ) {
             Box(contentAlignment = Alignment.TopEnd) {
                 Surface(
-                    modifier = Modifier.size(64.dp).clip(CircleShape),
+                    modifier = Modifier.size(80.dp).clip(CircleShape),
                     color = MaterialTheme.colorScheme.surfaceVariant
                 ) {
                     val name = "${friend.firstName} ${friend.middleName} ${friend.lastName}"

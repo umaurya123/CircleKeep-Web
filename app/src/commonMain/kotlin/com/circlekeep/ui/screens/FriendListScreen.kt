@@ -370,12 +370,13 @@ fun FriendListScreen(
                     val friendId = friendWithChildren.friend.id
                     val isSelected = selectedFriendIds.contains(friendId)
                     
-                    Box(modifier = Modifier.fillMaxWidth()) {
-                        FriendGridItem(
-                            modifier = Modifier.combinedClickable(
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .combinedClickable(
                                 onClick = { 
                                     if (selectedFriendIds.isNotEmpty()) {
-                                        selectedFriendIds = if (selectedFriendIds.contains(friendId)) {
+                                        selectedFriendIds = if (isSelected) {
                                             selectedFriendIds - friendId
                                         } else {
                                             selectedFriendIds + friendId
@@ -385,13 +386,15 @@ fun FriendListScreen(
                                     }
                                 },
                                 onLongClick = {
-                                    selectedFriendIds = if (selectedFriendIds.contains(friendId)) {
+                                    selectedFriendIds = if (isSelected) {
                                         selectedFriendIds - friendId
                                     } else {
                                         selectedFriendIds + friendId
                                     }
                                 }
-                            ),
+                            )
+                    ) {
+                        FriendGridItem(
                             friendWithChildren = friendWithChildren,
                             onToggleFavorite = { onToggleFavorite(friendWithChildren.friend) },
                             onTogglePin = { onTogglePin(friendWithChildren.friend) }
@@ -426,12 +429,13 @@ fun FriendListScreen(
                     val friendId = friendWithChildren.friend.id
                     val isSelected = selectedFriendIds.contains(friendId)
                     
-                    Box(modifier = Modifier.fillMaxWidth()) {
-                        FriendItem(
-                            modifier = Modifier.combinedClickable(
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .combinedClickable(
                                 onClick = { 
                                     if (selectedFriendIds.isNotEmpty()) {
-                                        selectedFriendIds = if (selectedFriendIds.contains(friendId)) {
+                                        selectedFriendIds = if (isSelected) {
                                             selectedFriendIds - friendId
                                         } else {
                                             selectedFriendIds + friendId
@@ -441,13 +445,15 @@ fun FriendListScreen(
                                     }
                                 },
                                 onLongClick = {
-                                    selectedFriendIds = if (selectedFriendIds.contains(friendId)) {
+                                    selectedFriendIds = if (isSelected) {
                                         selectedFriendIds - friendId
                                     } else {
                                         selectedFriendIds + friendId
                                     }
                                 }
-                            ),
+                            )
+                    ) {
+                        FriendItem(
                             friendWithChildren = friendWithChildren,
                             showInline = showInlineData,
                             currentSortOrder = currentSortOrder,
