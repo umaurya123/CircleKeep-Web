@@ -19,6 +19,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.circlekeep.data.Friend
 import com.circlekeep.data.FriendWithChildren
@@ -101,50 +102,40 @@ fun FriendListScreen(
     Scaffold(
         topBar = {
             Column(modifier = Modifier.background(MaterialTheme.colorScheme.surface)) {
-                TopAppBar(
-                    title = {
-                        if (selectionMode) {
-                            Text("${selectedFriendIds.size} ${strings.selected}")
-                        } else {
-                            TextField(
-                                value = searchQuery,
-                                onValueChange = onSearchQueryChange,
-                                placeholder = { Text("${strings.search} (${friends.size})") },
-                                modifier = Modifier.fillMaxWidth(),
-                                colors = TextFieldDefaults.colors(
-                                    focusedContainerColor = Color.Transparent,
-                                    unfocusedContainerColor = Color.Transparent,
-                                    focusedIndicatorColor = Color.Transparent,
-                                    unfocusedIndicatorColor = Color.Transparent
-                                ),
-                                singleLine = true,
-                                leadingIcon = { Icon(Icons.Rounded.Search, contentDescription = null) },
-                                trailingIcon = {
-                                    if (searchQuery.isNotBlank()) {
-                                        IconButton(onClick = { onSearchQueryChange("") }) {
-                                            Icon(Icons.Rounded.Clear, contentDescription = "Clear search")
-                                        }
-                                    }
-                                }
-                            )
-                        }
-                    },
-                    navigationIcon = {
-                        if (selectionMode) {
+                if (selectionMode) {
+                    TopAppBar(
+                        title = { Text("${selectedFriendIds.size} ${strings.selected}") },
+                        navigationIcon = {
                             IconButton(onClick = { selectedFriendIds = emptySet() }) {
                                 Icon(Icons.Rounded.Close, contentDescription = "Clear selection")
                             }
-                        }
-                    },
-                    actions = {
-                        if (selectionMode) {
+                        },
+                        actions = {
                             IconButton(onClick = { 
                                 onDeleteFriends(selectedFriendIds)
                                 selectedFriendIds = emptySet()
                             }) {
                                 Icon(Icons.Rounded.Delete, contentDescription = "Delete selected")
                             }
-                        } else {
+                        }
+                    )
+                } else {
+                    // Row 1: App Name and Icons
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = strings.appName,
+                            style = MaterialTheme.typography.headlineMedium.copy(
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
                             IconButton(onClick = { onToggleGridView(!isGridView) }) {
                                 Icon(
                                     imageVector = if (isGridView) Icons.AutoMirrored.Rounded.ViewList else Icons.Rounded.GridView,
@@ -251,7 +242,33 @@ fun FriendListScreen(
                             }
                         }
                     }
-                )
+
+                    // Row 2: Search Bar
+                    OutlinedTextField(
+                        value = searchQuery,
+                        onValueChange = onSearchQueryChange,
+                        placeholder = { Text("${strings.search} (${friends.size})") },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 4.dp),
+                        shape = MaterialTheme.shapes.extraLarge,
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+                            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+                            unfocusedBorderColor = Color.Transparent,
+                            focusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
+                        ),
+                        singleLine = true,
+                        leadingIcon = { Icon(Icons.Rounded.Search, contentDescription = null) },
+                        trailingIcon = {
+                            if (searchQuery.isNotBlank()) {
+                                IconButton(onClick = { onSearchQueryChange("") }) {
+                                    Icon(Icons.Rounded.Clear, contentDescription = "Clear search")
+                                }
+                            }
+                        }
+                    )
+                }
 
                 LazyRow(
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
