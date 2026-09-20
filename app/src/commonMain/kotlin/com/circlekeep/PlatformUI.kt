@@ -8,7 +8,7 @@ interface PlatformUI {
     fun openMap(address: String)
     fun dialPhone(phoneNumber: String)
     fun sendEmail(email: String)
-    fun sendDataByEmail(jsonData: String)
+    fun sendDataByEmail(jsonData: String) // Logic handles sharing generically
     fun showToast(message: String)
     fun showInterstitialAd(onAdDismissed: () -> Unit)
     fun exitApp()

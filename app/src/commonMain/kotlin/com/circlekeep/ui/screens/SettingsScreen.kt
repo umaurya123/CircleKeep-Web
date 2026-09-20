@@ -244,9 +244,9 @@ fun SettingsScreen(
                 onClick = { platformUI.sendDataByEmail(viewModel.getExportData()) },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Icon(Icons.Default.Email, contentDescription = null)
+                Icon(Icons.Default.Share, contentDescription = null)
                 Spacer(Modifier.width(8.dp))
-                Text(strings.exportAndEmailData)
+                Text(strings.exportAndShareData)
             }
 
             Spacer(Modifier.height(12.dp))

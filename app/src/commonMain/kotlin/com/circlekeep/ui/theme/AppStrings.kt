@@ -24,7 +24,7 @@ interface AppStrings {
     val purchaseApp: String
     val restorePurchases: String
     val exportData: String
-    val exportAndEmailData: String
+    val exportAndShareData: String
     val importData: String
     val sendFeedback: String
     val deleteAllRecords: String
@@ -142,7 +142,7 @@ object EnStrings : AppStrings {
     override val purchaseApp = "Purchase App (Remove Ads)"
     override val restorePurchases = "Restore Purchases"
     override val exportData = "Export Data"
-    override val exportAndEmailData = "Export and Email Data"
+    override val exportAndShareData = "Export and Share Data"
     override val importData = "Import Data"
     override val sendFeedback = "Send Feedback"
     override val deleteAllRecords = "Delete All Records"
@@ -260,7 +260,7 @@ object HiStrings : AppStrings {
     override val purchaseApp = "ऐप खरीदें (विज्ञापन हटाएं)"
     override val restorePurchases = "खरीद पुनर्स्थापित करें"
     override val exportData = "डेटा निर्यात करें"
-    override val exportAndEmailData = "निर्यात करें और ईमेल भेजें"
+    override val exportAndShareData = "डेटा निर्यात और साझा करें"
     override val importData = "डेटा आयात करें"
     override val sendFeedback = "प्रतिक्रिया भेजें"
     override val deleteAllRecords = "सभी रिकॉर्ड हटाएं"
@@ -378,7 +378,7 @@ object EsStrings : AppStrings {
     override val purchaseApp = "Comprar aplicación (Quitar anuncios)"
     override val restorePurchases = "Restaurar compras"
     override val exportData = "Exportar datos"
-    override val exportAndEmailData = "Exportar y enviar por correo"
+    override val exportAndShareData = "Exportar y compartir datos"
     override val importData = "Importar datos"
     override val sendFeedback = "Enviar comentarios"
     override val deleteAllRecords = "Eliminar todos los registros"
