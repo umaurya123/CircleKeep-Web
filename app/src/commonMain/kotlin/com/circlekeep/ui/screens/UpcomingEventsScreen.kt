@@ -36,17 +36,19 @@ fun UpcomingEventsScreen(
 
     // Map timeframes to localized strings
     val groupedEvents = remember(events, strings) {
+        val currentMonth = com.circlekeep.getPlatform().getMonth()
         events.groupBy {
             when {
                 it.daysRemaining == 0 -> strings.today
                 it.daysRemaining == 1 -> strings.tomorrow
                 it.daysRemaining <= 7 -> strings.thisWeek
-                else -> strings.laterThisMonth
+                it.month == currentMonth -> strings.laterThisMonth
+                else -> strings.nextMonth
             }
         }
     }
 
-    val categories = listOf(strings.today, strings.tomorrow, strings.thisWeek, strings.laterThisMonth)
+    val categories = listOf(strings.today, strings.tomorrow, strings.thisWeek, strings.laterThisMonth, strings.nextMonth)
 
     Scaffold(
         topBar = {

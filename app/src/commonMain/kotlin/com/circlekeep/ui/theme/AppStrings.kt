@@ -112,6 +112,7 @@ interface AppStrings {
     val inXDays: String
     val thisWeek: String
     val laterThisMonth: String
+    val nextMonth: String
     val noEvents: String
     val sortFirstLast: String
     val sortLastFirst: String
@@ -230,7 +231,8 @@ object EnStrings : AppStrings {
     override val inXDays = "In %d days"
     override val thisWeek = "This Week"
     override val laterThisMonth = "Later this Month"
-    override val noEvents = "No events in the next 30 days"
+    override val nextMonth = "Next Month"
+    override val noEvents = "No upcoming events"
     override val sortFirstLast = "First, Last Name"
     override val sortLastFirst = "Last, First Name"
     override val sortGroup = "Group"
@@ -348,7 +350,8 @@ object HiStrings : AppStrings {
     override val inXDays = "%d दिनों में"
     override val thisWeek = "इस सप्ताह"
     override val laterThisMonth = "इस महीने बाद में"
-    override val noEvents = "अगले 30 दिनों में कोई ईवेंट नहीं है"
+    override val nextMonth = "अगले महीने"
+    override val noEvents = "कोई आगामी ईवेंट नहीं है"
     override val sortFirstLast = "पहला, अंतिम नाम"
     override val sortLastFirst = "अंतिम, पहला नाम"
     override val sortGroup = "समूह"
@@ -466,7 +469,8 @@ object EsStrings : AppStrings {
     override val inXDays = "En %d días"
     override val thisWeek = "Esta semana"
     override val laterThisMonth = "Más tarde este mes"
-    override val noEvents = "No hay eventos en los próximos 30 días"
+    override val nextMonth = "Siguiente mes"
+    override val noEvents = "No hay eventos próximos"
     override val sortFirstLast = "Nombre, Apellido"
     override val sortLastFirst = "Apellido, Nombre"
     override val sortGroup = "Grupo"

@@ -246,22 +246,20 @@ class FriendViewModel(
         val day = dayStr.toIntOrNull() ?: return null
         val month = monthStr.toIntOrNull() ?: return null
         
-        // Days remaining logic
-        var daysRemaining: Int
-        if (month == currentMonth) {
-            if (day >= currentDay) {
-                daysRemaining = day - currentDay
-            } else {
-                daysRemaining = 330 // Approximate
-            }
-        } else if (month > currentMonth) {
-            daysRemaining = (month - currentMonth) * 30 + (day - currentDay)
-        } else {
-            daysRemaining = 330 // Already passed this year
-        }
+        val nextMonth = if (currentMonth == 12) 1 else currentMonth + 1
+
+        val isThisMonth = month == currentMonth && day >= currentDay
+        val isNextMonth = month == nextMonth
         
-        if (daysRemaining in 0..30) {
-            return UpcomingEvent(name, day, month, type, friendId, daysRemaining, imageUri)
+        if (isThisMonth || isNextMonth) {
+             // Calculate approximate days remaining for sorting
+             val daysRemaining = if (month == currentMonth) {
+                 day - currentDay
+             } else {
+                 // Rough calculation: days left in this month (max 31) + days in next month
+                 (31 - currentDay) + day
+             }
+             return UpcomingEvent(name, day, month, type, friendId, daysRemaining, imageUri)
         }
         return null
     }
