@@ -19,7 +19,10 @@ import com.circlekeep.viewmodel.FriendViewModel
 import com.circlekeep.viewmodel.getFriendViewModelFactory
 
 @Composable
-fun CircleKeepApp() {
+fun CircleKeepApp(
+    importData: String? = null,
+    onImportConsumed: () -> Unit = {}
+) {
     val viewModel: FriendViewModel = viewModel(factory = getFriendViewModelFactory())
     val themePreference by viewModel.themeState.collectAsState()
     val languagePreference by viewModel.languageState.collectAsState()
@@ -32,6 +35,17 @@ fun CircleKeepApp() {
     var startupAdCheckDone by remember { mutableStateOf(false) }
 
     val remindersEnabled by viewModel.remindersEnabledState.collectAsState()
+
+    var showExternalImportDialog by remember { mutableStateOf(false) }
+    var pendingExternalData by remember { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(importData) {
+        if (importData != null) {
+            pendingExternalData = importData
+            showExternalImportDialog = true
+            onImportConsumed()
+        }
+    }
 
     LaunchedEffect(totalFriends, isPaid) {
         if (!startupAdCheckDone && totalFriends > 0) {
@@ -340,5 +354,30 @@ fun CircleKeepApp() {
                 }
             }
         }
+    }
+
+    if (showExternalImportDialog && pendingExternalData != null) {
+        val strings = com.circlekeep.ui.theme.LocalAppStrings.current
+        AlertDialog(
+            onDismissRequest = { showExternalImportDialog = false },
+            title = { Text(strings.importData) },
+            text = { Text("You have opened a CircleKeep backup file. Would you like to import this data? Existing matches will be skipped.") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        pendingExternalData?.let { viewModel.importData(it) }
+                        showExternalImportDialog = false
+                        pendingExternalData = null
+                    }
+                ) {
+                    Text(strings.importData)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showExternalImportDialog = false }) {
+                    Text(strings.cancel)
+                }
+            }
+        )
     }
 }
