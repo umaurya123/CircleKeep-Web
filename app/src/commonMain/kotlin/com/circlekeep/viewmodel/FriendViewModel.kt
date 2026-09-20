@@ -785,6 +785,15 @@ class FriendViewModel(
         return json.encodeToString(backup)
     }
 
+    fun getBackupSummary(jsonData: String): Pair<Int, Int>? {
+        return try {
+            val data = json.decodeFromString<BackupData>(jsonData)
+            Pair(data.friendsWithChildren.size, data.groups.size)
+        } catch (_: Exception) {
+            null
+        }
+    }
+
     fun importData(jsonData: String) {
         viewModelScope.launch {
             try {

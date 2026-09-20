@@ -4,6 +4,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -358,10 +360,24 @@ fun CircleKeepApp(
 
     if (showExternalImportDialog && pendingExternalData != null) {
         val strings = com.circlekeep.ui.theme.LocalAppStrings.current
+        val summary = remember(pendingExternalData) { viewModel.getBackupSummary(pendingExternalData!!) }
+        
         AlertDialog(
             onDismissRequest = { showExternalImportDialog = false },
             title = { Text(strings.importData) },
-            text = { Text("You have opened a CircleKeep backup file. Would you like to import this data? Existing matches will be skipped.") },
+            text = { 
+                Column {
+                    Text("You have opened a CircleKeep backup file.")
+                    if (summary != null) {
+                        Spacer(Modifier.height(8.dp))
+                        Text("This file contains:", fontWeight = FontWeight.Bold)
+                        Text("• ${summary.first} Contacts")
+                        Text("• ${summary.second} Groups")
+                    }
+                    Spacer(Modifier.height(12.dp))
+                    Text("Would you like to import this data? Existing matches will be skipped.")
+                }
+            },
             confirmButton = {
                 TextButton(
                     onClick = {
