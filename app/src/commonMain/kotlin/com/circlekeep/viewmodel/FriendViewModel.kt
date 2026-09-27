@@ -6,7 +6,6 @@ import com.circlekeep.data.*
 import com.circlekeep.getPlatform
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
 enum class SortOrder { 
@@ -92,13 +91,6 @@ class FriendViewModel(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000),
             initialValue = "English"
-        )
-
-    val hideQrState: StateFlow<Boolean> = userPreferencesRepository.hideQrStream
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5_000),
-            initialValue = false
         )
 
     val isGridViewState: StateFlow<Boolean> = userPreferencesRepository.isGridViewStream
@@ -207,7 +199,7 @@ class FriendViewModel(
 
     val upcomingEventsState: StateFlow<List<UpcomingEvent>> =
         friendsState.map { friends ->
-            val platform = com.circlekeep.getPlatform()
+            val platform = getPlatform()
             val currentDay = platform.getDayOfMonth()
             val currentMonth = platform.getMonth()
             val events = mutableListOf<UpcomingEvent>()
@@ -304,9 +296,6 @@ class FriendViewModel(
             userPreferencesRepository.updateDefaultGroups(groups)
         }
     }
-
-    val defaultGroups = userPreferencesRepository.defaultGroupsStream
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptySet())
 
     fun updateGroupOrder(groups: List<Group>) {
         viewModelScope.launch {
@@ -658,12 +647,6 @@ class FriendViewModel(
         }
     }
 
-    fun onHideQrChange(hide: Boolean) {
-        viewModelScope.launch {
-            userPreferencesRepository.updateHideQr(hide)
-        }
-    }
-
     fun onIsGridViewChange(isGrid: Boolean) {
         viewModelScope.launch {
             userPreferencesRepository.updateIsGridView(isGrid)
@@ -673,12 +656,6 @@ class FriendViewModel(
     fun onGridColumnsChange(columns: Int) {
         viewModelScope.launch {
             userPreferencesRepository.updateGridColumns(columns)
-        }
-    }
-
-    fun purchaseApp() {
-        viewModelScope.launch {
-            userPreferencesRepository.updateIsPaid(true)
         }
     }
 
@@ -780,7 +757,7 @@ class FriendViewModel(
         }
         val groups = groupsState.value.map { it.name }
         val backup = BackupData(friends, groups)
-        return json.encodeToString(backup)
+        return Json.encodeToString(backup)
     }
 
     fun getBackupSummary(jsonData: String): Pair<Int, Int>? {
@@ -811,14 +788,15 @@ class FriendViewModel(
                         }
                     }
 
-                    val isDuplicate = existingFriends.any { 
-                        (it.friend.firstName.trim().equals(fwc.friend.firstName.trim(), ignoreCase = true)) &&
-                        (it.friend.middleName.trim().equals(fwc.friend.middleName.trim(), ignoreCase = true)) &&
-                        (it.friend.lastName.trim().equals(fwc.friend.lastName.trim(), ignoreCase = true)) &&
+                    // Hardened duplicate lookup (trimmed and case-insensitive)
+                    val existing = existingFriends.find { 
+                        it.friend.firstName.trim().lowercase() == fwc.friend.firstName.trim().lowercase() &&
+                        it.friend.lastName.trim().lowercase() == fwc.friend.lastName.trim().lowercase() &&
                         fwc.friend.firstName.isNotBlank()
                     }
                     
-                    if (!isDuplicate) {
+                    if (existing == null) {
+                        println("IMPORT: Processing new friend ${fwc.friend.firstName}")
                         val friend = Friend(
                             firstName = fwc.friend.firstName,
                             middleName = fwc.friend.middleName,
@@ -909,9 +887,165 @@ class FriendViewModel(
                             )
                         }
                         friendRepository.insertFriendWithChildren(friend, children)
+                    } else {
+                        // DEEP SMART MERGE Logic
+                        println("IMPORT: Deep merging into existing record for ${existing.friend.firstName}")
+                        
+                        var updatedFriend = existing.friend
+                        val imported = fwc.friend
+                        
+                        // Helper: Overwrite only if the source has content
+                        fun String.smartMerge(importedValue: String): String = if (importedValue.isNotBlank()) importedValue else this
+
+                        updatedFriend = updatedFriend.copy(
+                            firstName = updatedFriend.firstName.smartMerge(imported.firstName),
+                            middleName = updatedFriend.middleName.smartMerge(imported.middleName),
+                            lastName = updatedFriend.lastName.smartMerge(imported.lastName),
+                            nickname = updatedFriend.nickname.smartMerge(imported.nickname),
+                            address = updatedFriend.address.smartMerge(imported.address),
+                            cellPhone = updatedFriend.cellPhone.smartMerge(imported.cellPhone),
+                            officePhone = updatedFriend.officePhone.smartMerge(imported.officePhone),
+                            email = updatedFriend.email.smartMerge(imported.email),
+                            workEmail = updatedFriend.workEmail.smartMerge(imported.workEmail),
+                            notes = updatedFriend.notes.smartMerge(imported.notes),
+                            companyName = updatedFriend.companyName.smartMerge(imported.companyName),
+                            collegeSchoolName = updatedFriend.collegeSchoolName.smartMerge(imported.collegeSchoolName),
+                            siblings = updatedFriend.siblings.smartMerge(imported.siblings),
+                            petName = updatedFriend.petName.smartMerge(imported.petName)
+                        )
+                        
+                        // Dates merge
+                        if (imported.dateOfBirth.isNotBlank()) {
+                            updatedFriend = updatedFriend.copy(
+                                dateOfBirth = imported.dateOfBirth,
+                                birthDay = imported.birthDay,
+                                birthMonth = imported.birthMonth
+                            )
+                        }
+                        if (imported.anniversaryDate.isNotBlank()) {
+                            updatedFriend = updatedFriend.copy(
+                                anniversaryDate = imported.anniversaryDate,
+                                anniversaryDay = imported.anniversaryDay,
+                                anniversaryMonth = imported.anniversaryMonth
+                            )
+                        }
+                        
+                        // Partner merge
+                        if (imported.partnerFirstName.isNotBlank()) {
+                            updatedFriend = updatedFriend.copy(
+                                partnerFirstName = imported.partnerFirstName,
+                                partnerMiddleName = updatedFriend.partnerMiddleName.smartMerge(imported.partnerMiddleName),
+                                partnerLastName = updatedFriend.partnerLastName.smartMerge(imported.partnerLastName),
+                                partnerNickname = updatedFriend.partnerNickname.smartMerge(imported.partnerNickname),
+                                partnerPhone = updatedFriend.partnerPhone.smartMerge(imported.partnerPhone),
+                                partnerEmail = updatedFriend.partnerEmail.smartMerge(imported.partnerEmail),
+                                partnerWorkEmail = updatedFriend.partnerWorkEmail.smartMerge(imported.partnerWorkEmail),
+                                partnerType = updatedFriend.partnerType.smartMerge(imported.partnerType),
+                                partnerSiblings = updatedFriend.partnerSiblings.smartMerge(imported.siblings),
+                                partnerCompanyName = updatedFriend.partnerCompanyName.smartMerge(imported.partnerCompanyName),
+                                partnerCollegeSchoolName = updatedFriend.partnerCollegeSchoolName.smartMerge(imported.partnerCollegeSchoolName),
+                                partnerDateOfBirth = updatedFriend.partnerDateOfBirth.smartMerge(imported.partnerDateOfBirth),
+                                partnerBirthDay = updatedFriend.partnerBirthDay.smartMerge(imported.partnerBirthDay),
+                                partnerBirthMonth = updatedFriend.partnerBirthMonth.smartMerge(imported.partnerBirthMonth)
+                            )
+                        }
+                        
+                        // FORCED Image Update helper
+                        fun forceSaveImage(base64: String?, prefix: String): String? {
+                            if (base64.isNullOrBlank()) return null
+                            val newPath = platform.base64ToUri(base64, prefix)
+                            println("IMPORT: Force-updated image ($prefix) -> $newPath")
+                            return newPath
+                        }
+
+                        val newMainImage = forceSaveImage(imported.imageBase64, "friend")
+                        val newPicImage = forceSaveImage(imported.secondaryImageBase64, "friend_pic")
+                        val newPartnerImage = forceSaveImage(imported.partnerImageBase64, "partner")
+                        val newPetImage = forceSaveImage(imported.petImageBase64, "friend_pet")
+
+                        if (newMainImage != null) updatedFriend = updatedFriend.copy(imageUri = newMainImage)
+                        if (newPicImage != null) updatedFriend = updatedFriend.copy(secondaryImageUri = newPicImage)
+                        if (newPartnerImage != null) updatedFriend = updatedFriend.copy(partnerImageUri = newPartnerImage)
+                        if (newPetImage != null) updatedFriend = updatedFriend.copy(petImageUri = newPetImage)
+                        
+                        // Merge Children
+                        val mergedChildren = existing.children.toMutableList()
+                        fwc.children.forEach { importedChild ->
+                            val existingChildIdx = mergedChildren.indexOfFirst { 
+                                it.firstName.trim().lowercase() == importedChild.firstName.trim().lowercase() &&
+                                it.lastName.trim().lowercase() == importedChild.lastName.trim().lowercase()
+                            }
+                            
+                            if (existingChildIdx == -1) {
+                                // Add new child from import
+                                mergedChildren.add(Child(
+                                    friendId = existing.friend.id,
+                                    firstName = importedChild.firstName,
+                                    middleName = importedChild.middleName,
+                                    lastName = importedChild.lastName,
+                                    nickname = importedChild.nickname,
+                                    phoneNumber = importedChild.phoneNumber,
+                                    email = importedChild.email,
+                                    workEmail = importedChild.workEmail,
+                                    childType = importedChild.childType,
+                                    siblings = importedChild.siblings,
+                                    collegeSchoolName = importedChild.collegeSchoolName,
+                                    dateOfBirth = importedChild.dateOfBirth,
+                                    birthDay = importedChild.birthDay,
+                                    birthMonth = importedChild.birthMonth,
+                                    age = importedChild.age,
+                                    ageUnit = importedChild.ageUnit,
+                                    partnerFirstName = importedChild.partnerFirstName,
+                                    partnerMiddleName = importedChild.partnerMiddleName,
+                                    partnerLastName = importedChild.partnerLastName,
+                                    partnerNickname = importedChild.partnerNickname,
+                                    partnerPhone = importedChild.partnerPhone,
+                                    partnerEmail = importedChild.partnerEmail,
+                                    partnerWorkEmail = importedChild.partnerWorkEmail,
+                                    partnerType = importedChild.partnerType,
+                                    partnerCompanyName = importedChild.partnerCompanyName,
+                                    partnerCollegeSchoolName = importedChild.partnerCollegeSchoolName,
+                                    partnerSiblings = importedChild.partnerSiblings,
+                                    partnerDateOfBirth = importedChild.partnerDateOfBirth,
+                                    partnerBirthDay = importedChild.partnerBirthDay,
+                                    partnerBirthMonth = importedChild.partnerBirthMonth,
+                                    anniversaryDate = importedChild.anniversaryDate,
+                                    anniversaryDay = importedChild.anniversaryDay,
+                                    anniversaryMonth = importedChild.anniversaryMonth,
+                                    notes = importedChild.notes,
+                                    imageUri = forceSaveImage(importedChild.imageBase64, "child"),
+                                    partnerImageUri = forceSaveImage(importedChild.partnerImageBase64, "child_partner"),
+                                    petImageUri = forceSaveImage(importedChild.petImageBase64, "child_pet")
+                                ))
+                            } else {
+                                // Update existing child fields if empty
+                                var uChild = mergedChildren[existingChildIdx]
+                                uChild = uChild.copy(
+                                    firstName = uChild.firstName.smartMerge(importedChild.firstName),
+                                    middleName = uChild.middleName.smartMerge(importedChild.middleName),
+                                    lastName = uChild.lastName.smartMerge(importedChild.lastName),
+                                    nickname = uChild.nickname.smartMerge(importedChild.nickname),
+                                    phoneNumber = uChild.phoneNumber.smartMerge(importedChild.phoneNumber),
+                                    email = uChild.email.smartMerge(importedChild.email),
+                                    workEmail = uChild.workEmail.smartMerge(importedChild.workEmail),
+                                    notes = uChild.notes.smartMerge(importedChild.notes),
+                                    collegeSchoolName = uChild.collegeSchoolName.smartMerge(importedChild.collegeSchoolName)
+                                )
+                                
+                                val newCImg = forceSaveImage(importedChild.imageBase64, "child")
+                                if (newCImg != null) uChild = uChild.copy(imageUri = newCImg)
+                                
+                                mergedChildren[existingChildIdx] = uChild
+                            }
+                        }
+                        
+                        friendRepository.updateFriendWithChildren(updatedFriend, mergedChildren)
                     }
                 }
-            } catch (_: Exception) {}
+            } catch (e: Exception) {
+                println("IMPORT ERROR: ${e.message}")
+                e.printStackTrace()
+            }
         }
     }
 

@@ -13,6 +13,8 @@ interface Platform {
     fun parseDateComponents(dateString: String): Triple<String, String, String>?
     fun isDayValidForMonth(day: String, month: String): Boolean
     fun currentTimeMillis(): Long
+    fun resolveSharedPath(path: String?): String?
+    fun fileExists(path: String?): Boolean
     val buildVariant: String
     val appVersion: String
 }

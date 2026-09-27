@@ -74,7 +74,7 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
     val hideQrStream: Flow<Boolean> = dataStore.data
         .catch { emit(emptyPreferences()) }
         .map { preferences ->
-            preferences[PreferencesKeys.HIDE_QR] ?: false
+            preferences[PreferencesKeys.HIDE_QR] ?: true
         }
 
     val isGridViewStream: Flow<Boolean> = dataStore.data

@@ -36,6 +36,7 @@ interface NativePlatformProvider {
     fun showInterstitialAd(onAdDismissed: () -> Unit)
     fun launchPurchaseFlow(productId: String)
     fun queryPurchases()
+    fun showQRScanner(onCodeScanned: (String) -> Unit, onCancel: () -> Unit)
 }
 
 private val platformProviderState = mutableStateOf<NativePlatformProvider?>(null)
@@ -44,6 +45,7 @@ private val platformScope = MainScope()
 
 private var internalBuildVariant: String = "Release"
 
+// Bridge functions at top level for easy Swift access
 fun setBuildVariant(variant: String) {
     internalBuildVariant = variant
 }
@@ -57,6 +59,25 @@ fun setPlatformProvider(provider: NativePlatformProvider) {
 fun notifyPurchaseSuccess() {
     platformScope.launch {
         com.circlekeep.viewmodel.userPreferencesRepository.updateIsPaid(true)
+    }
+}
+
+fun showToastMessage(message: String) {
+    dispatch_async(dispatch_get_main_queue()) {
+        val topVC = IOSPlatformUI.getTopViewController()
+        if (topVC != null) {
+            val alert = UIAlertController.alertControllerWithTitle(
+                title = null,
+                message = message,
+                preferredStyle = UIAlertControllerStyleAlert
+            )
+            topVC.presentViewController(alert, true, null)
+            
+            val delay = 2L * NSEC_PER_SEC.toLong()
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, delay), dispatch_get_main_queue()) {
+                alert.dismissViewControllerAnimated(true, null)
+            }
+        }
     }
 }
 
@@ -108,22 +129,7 @@ class IOSPlatformUI : PlatformUI {
     }
 
     override fun showToast(message: String) {
-        dispatch_async(dispatch_get_main_queue()) {
-            val topVC = getTopViewController()
-            if (topVC != null) {
-                val alert = UIAlertController.alertControllerWithTitle(
-                    title = null,
-                    message = message,
-                    preferredStyle = UIAlertControllerStyleAlert
-                )
-                topVC.presentViewController(alert, true, null)
-                
-                val delay = 2L * NSEC_PER_SEC.toLong()
-                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, delay), dispatch_get_main_queue()) {
-                    alert.dismissViewControllerAnimated(true, null)
-                }
-            }
-        }
+        showToastMessage(message)
     }
 
     override fun showInterstitialAd(onAdDismissed: () -> Unit) {
@@ -334,7 +340,7 @@ actual fun ImagePicker(
                             val fileName = "img_${NSDate().timeIntervalSince1970}.jpg"
                             val filePath = "$documentDirectory/$fileName"
                             data.writeToFile(filePath, true)
-                            onImagePicked(filePath)
+                            onImagePicked(fileName) // Return only filename
                         } else {
                             onImagePicked(null)
                         }
@@ -381,14 +387,24 @@ actual fun QRScanner(
     trigger: Boolean,
     onTriggerReset: () -> Unit
 ) {
-    // For now, iOS implementation is a stub. 
-    // In a real app, I'd use AVFoundation to implement this.
-    // Since I cannot easily implement a full camera preview with analyzer in this context without more complex bindings,
-    // I'll leave it as a TODO or a simple dialog if triggered.
     if (trigger) {
+        val provider by platformProviderState
+        
         LaunchedEffect(Unit) {
-            onTriggerReset()
-            onCancel()
+            if (provider != null) {
+                provider!!.showQRScanner(
+                    onCodeScanned = { code ->
+                        onCodeScanned(code)
+                        onTriggerReset()
+                    },
+                    onCancel = {
+                        onCancel()
+                        onTriggerReset()
+                    }
+                )
+            } else {
+                onTriggerReset()
+            }
         }
     }
 }
@@ -400,7 +416,7 @@ actual fun BannerAdView() {
     if (provider != null) {
         UIKitView(
             factory = { provider!!.getBannerView() },
-            modifier = Modifier.fillMaxWidth().height(50.dp)
+            modifier = Modifier.fillMaxWidth()
         )
     } else {
         Box(
@@ -556,7 +572,7 @@ actual fun FilePicker(
                     val formatter = NSDateFormatter()
                     formatter.dateFormat = "yyyyMMdd_HHmm"
                     val timestamp = formatter.stringFromDate(NSDate())
-                    val fileName = "CircleKeep_Backup_$timestamp.json"
+                    val fileName = "CircleKeep_Backup_$timestamp.ckjson"
                     val filePath = if (tempDir.endsWith("/")) tempDir + fileName else "$tempDir/$fileName"
                     
                     val nsString = NSString.create(string = dataToSave)
@@ -565,7 +581,8 @@ actual fun FilePicker(
                     val url = NSURL.fileURLWithPath(filePath)
                     UIDocumentPickerViewController(forExportingURLs = listOf(url))
                 } else {
-                    UIDocumentPickerViewController(forOpeningContentTypes = listOf<UTType>(UTTypeJSON), asCopy = true)
+                    val ckType = UTType.typeWithIdentifier("com.circlekeep.ckjson") ?: UTTypeJSON
+                    UIDocumentPickerViewController(forOpeningContentTypes = listOf<UTType>(ckType), asCopy = true)
                 }
                 picker.delegate = delegate
                 val topVC = IOSPlatformUI.getTopViewController()

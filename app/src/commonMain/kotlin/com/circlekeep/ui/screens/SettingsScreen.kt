@@ -153,18 +153,6 @@ fun SettingsScreen(
                 }
             )
 
-            val hideQr by viewModel.hideQrState.collectAsState()
-            ListItem(
-                headlineContent = { Text(strings.hideQr) },
-                supportingContent = { Text(strings.hideQrDesc) },
-                trailingContent = {
-                    Switch(
-                        checked = hideQr,
-                        onCheckedChange = viewModel::onHideQrChange
-                    )
-                }
-            )
-
             val isGridView by viewModel.isGridViewState.collectAsState()
             val gridColumns by viewModel.gridColumnsState.collectAsState()
             

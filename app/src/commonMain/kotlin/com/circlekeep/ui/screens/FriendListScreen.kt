@@ -57,7 +57,6 @@ fun FriendListScreen(
     onQRScanned: (String) -> Unit,
     onDeleteFriends: (Set<Long>) -> Unit,
     onNavigateToSettings: () -> Unit,
-    hideQr: Boolean = false,
     isGridView: Boolean = false,
     gridColumns: Int = 2,
     onToggleGridView: (Boolean) -> Unit = {},
@@ -101,7 +100,7 @@ fun FriendListScreen(
 
     Scaffold(
         topBar = {
-            Column(modifier = Modifier.background(MaterialTheme.colorScheme.surface)) {
+            Column(modifier = Modifier.background(MaterialTheme.colorScheme.surface).windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Top))) {
                 if (selectionMode) {
                     TopAppBar(
                         title = { Text("${selectedFriendIds.size} ${strings.selected}") },
@@ -349,16 +348,6 @@ fun FriendListScreen(
         floatingActionButton = {
             if (!selectionMode) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    if (!hideQr) {
-                        FloatingActionButton(
-                            onClick = { qrScannerTrigger = true },
-                            containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                            contentColor = MaterialTheme.colorScheme.onSecondaryContainer
-                        ) {
-                            Icon(Icons.Rounded.QrCodeScanner, contentDescription = "Scan QR")
-                        }
-                        Spacer(Modifier.width(16.dp))
-                    }
                     FloatingActionButton(onClick = onAddFriendClick) {
                         Icon(Icons.Rounded.Add, contentDescription = "Add Friend")
                     }

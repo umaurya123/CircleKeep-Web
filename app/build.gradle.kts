@@ -94,8 +94,13 @@ kotlin {
 android {
     signingConfigs {
         create("release") {
-            storeFile =
-                file("C:\\Users\\umaur\\OneDrive\\Apps 1\\AndroidStudioProjects\\CircleKeepApp\\CircleKeepKeyFile.jks")
+            val keystorePath = "C:\\Users\\umaur\\OneDrive\\Apps 1\\AndroidStudioProjects\\CircleKeepApp\\CircleKeepKeyFile.jks"
+            if (File(keystorePath).exists()) {
+                storeFile = file(keystorePath)
+            } else {
+                // Use a dummy or relative path that exists or at least doesn't crash configuration on non-Windows
+                storeFile = file("CircleKeepKeyFile.jks")
+            }
             storePassword = "Sahatwar$23$46@"
             keyPassword = "Sahatwar$23$46@"
             keyAlias = "key1"

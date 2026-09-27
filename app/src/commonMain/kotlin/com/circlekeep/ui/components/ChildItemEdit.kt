@@ -71,9 +71,10 @@ fun ChildItemEdit(
                         color = MaterialTheme.colorScheme.surfaceVariant
                     ) {
                         val name = "${child.firstName} ${child.middleName} ${child.lastName}"
-                        if (!child.imageUri.isNullOrBlank() && child.imageUri != "null") {
+                        val resolvedUri = platform.resolveSharedPath(child.imageUri)
+                        if (!resolvedUri.isNullOrBlank()) {
                             SubcomposeAsyncImage(
-                                model = child.imageUri,
+                                model = resolvedUri,
                                 contentDescription = null,
                                 modifier = Modifier.fillMaxSize(),
                                 contentScale = ContentScale.Crop,
@@ -312,8 +313,9 @@ fun ChildItemEdit(
                         modifier = Modifier.size(48.dp).clip(CircleShape).clickable { onSelectPetImage() },
                         color = MaterialTheme.colorScheme.surfaceVariant
                     ) {
-                        if (child.petImageUri != null) {
-                            AsyncImage(model = child.petImageUri, contentDescription = null, modifier = Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
+                        val resolvedChildPetUri = platform.resolveSharedPath(child.petImageUri)
+                        if (resolvedChildPetUri != null) {
+                            AsyncImage(model = resolvedChildPetUri, contentDescription = null, modifier = Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
                         } else {
                             Icon(Icons.Rounded.Pets, contentDescription = null, modifier = Modifier.padding(8.dp))
                         }
@@ -339,9 +341,10 @@ fun ChildItemEdit(
                         color = MaterialTheme.colorScheme.surfaceVariant
                     ) {
                         val name = "${child.partnerFirstName} ${child.partnerMiddleName} ${child.partnerLastName}"
-                        if (!child.partnerImageUri.isNullOrBlank() && child.partnerImageUri != "null") {
+                        val resolvedChildPartnerUri = platform.resolveSharedPath(child.partnerImageUri)
+                        if (!resolvedChildPartnerUri.isNullOrBlank()) {
                             SubcomposeAsyncImage(
-                                model = child.partnerImageUri,
+                                model = resolvedChildPartnerUri,
                                 contentDescription = null,
                                 modifier = Modifier.fillMaxSize(),
                                 contentScale = ContentScale.Crop,

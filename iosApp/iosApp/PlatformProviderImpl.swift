@@ -2,6 +2,7 @@ import UIKit
 import GoogleMobileAds
 import ComposeApp
 import StoreKit
+import AVFoundation
 
 class PlatformProviderImpl: NSObject, NativePlatformProvider, FullScreenContentDelegate {
     
@@ -21,9 +22,15 @@ class PlatformProviderImpl: NSObject, NativePlatformProvider, FullScreenContentD
             return banner
         }
         
-        let banner = BannerView(adSize: AdSizeBanner)
+        let topVC = IOSPlatformUI.companion.getTopViewController()
+        let width = topVC?.view.frame.width ?? UIScreen.main.bounds.width
+        
+        // Use modern Adaptive Banners for 2026
+        let adSize = largeAnchoredAdaptiveBanner(width: width)
+        
+        let banner = BannerView(adSize: adSize)
         banner.adUnitID = AdConfig.shared.IOS_BANNER_AD_UNIT_ID
-        banner.rootViewController = IOSPlatformUI.companion.getTopViewController()
+        banner.rootViewController = topVC
         banner.load(Request())
         self.bannerView = banner
         return banner
@@ -110,6 +117,17 @@ class PlatformProviderImpl: NSObject, NativePlatformProvider, FullScreenContentD
             }
         }
     }
+
+    func showQRScanner(onCodeScanned: @escaping (String) -> Void, onCancel: @escaping () -> Void) {
+        DispatchQueue.main.async {
+            let scannerVC = QRScannerViewController()
+            scannerVC.onCodeScanned = onCodeScanned
+            scannerVC.onCancel = onCancel
+            
+            let topVC = IOSPlatformUI.companion.getTopViewController()
+            topVC?.present(scannerVC, animated: true, completion: nil)
+        }
+    }
     
     // MARK: - FullScreenContentDelegate
     
@@ -122,5 +140,100 @@ class PlatformProviderImpl: NSObject, NativePlatformProvider, FullScreenContentD
         print("Ad did fail to present full screen content with error: \(error.localizedDescription)")
         onInterstitialDismissed?()
         loadInterstitial()
+    }
+}
+
+class QRScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDelegate {
+    var captureSession: AVCaptureSession!
+    var previewLayer: AVCaptureVideoPreviewLayer!
+    var onCodeScanned: ((String) -> Void)?
+    var onCancel: (() -> Void)?
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+
+        view.backgroundColor = UIColor.black
+        captureSession = AVCaptureSession()
+
+        guard let videoCaptureDevice = AVCaptureDevice.default(for: .video) else { return }
+        let videoInput: AVCaptureDeviceInput
+
+        do {
+            videoInput = try AVCaptureDeviceInput(device: videoCaptureDevice)
+        } catch {
+            return
+        }
+
+        if (captureSession.canAddInput(videoInput)) {
+            captureSession.addInput(videoInput)
+        } else {
+            return
+        }
+
+        let metadataOutput = AVCaptureMetadataOutput()
+
+        if (captureSession.canAddOutput(metadataOutput)) {
+            captureSession.addOutput(metadataOutput)
+
+            metadataOutput.setMetadataObjectsDelegate(self, queue: DispatchQueue.main)
+            metadataObjectTypes(metadataOutput)
+        } else {
+            return
+        }
+
+        previewLayer = AVCaptureVideoPreviewLayer(session: captureSession)
+        previewLayer.frame = view.layer.bounds
+        previewLayer.videoGravity = .resizeAspectFill
+        view.layer.addSublayer(previewLayer)
+
+        DispatchQueue.global(qos: .userInitiated).async {
+            self.captureSession.startRunning()
+        }
+        
+        let closeButton = UIButton(type: .system)
+        closeButton.setTitle("Close", for: .normal)
+        closeButton.tintColor = .white
+        closeButton.addTarget(self, action: #selector(closeTapped), for: .touchUpInside)
+        closeButton.frame = CGRect(x: 20, y: 50, width: 60, height: 40)
+        view.addSubview(closeButton)
+    }
+
+    private func metadataObjectTypes(_ output: AVCaptureMetadataOutput) {
+        output.metadataObjectTypes = [.qr]
+    }
+
+    @objc func closeTapped() {
+        self.onCancel?()
+        dismiss(animated: true)
+    }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        if (captureSession?.isRunning == false) {
+            DispatchQueue.global(qos: .userInitiated).async {
+                self.captureSession.startRunning()
+            }
+        }
+    }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        if (captureSession?.isRunning == true) {
+            captureSession.stopRunning()
+        }
+    }
+
+    func metadataOutput(_ output: AVCaptureMetadataOutput, didOutput metadataObjects: [AVMetadataObject], from connection: AVCaptureConnection) {
+        captureSession.stopRunning()
+
+        if let metadataObject = metadataObjects.first {
+            guard let readableObject = metadataObject as? AVMetadataMachineReadableCodeObject else { return }
+            guard let stringValue = readableObject.stringValue else { return }
+            
+            // Success! 
+            onCodeScanned?(stringValue)
+        }
+
+        dismiss(animated: true)
     }
 }

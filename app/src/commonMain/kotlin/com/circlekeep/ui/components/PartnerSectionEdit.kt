@@ -78,9 +78,10 @@ fun PartnerSectionEdit(
                     color = MaterialTheme.colorScheme.surfaceVariant
                 ) {
                     val name = "$partnerFirstName $partnerMiddleName $partnerLastName"
-                    if (!partnerImageUri.isNullOrBlank() && partnerImageUri != "null") {
+                    val resolvedUri = platform.resolveSharedPath(partnerImageUri)
+                    if (!resolvedUri.isNullOrBlank()) {
                         SubcomposeAsyncImage(
-                            model = partnerImageUri,
+                            model = resolvedUri,
                             contentDescription = null,
                             modifier = Modifier.fillMaxSize(),
                             contentScale = ContentScale.Crop,

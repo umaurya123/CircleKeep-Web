@@ -45,9 +45,10 @@ fun FriendGridItem(
                     color = MaterialTheme.colorScheme.surfaceVariant
                 ) {
                     val name = "${friend.firstName} ${friend.middleName} ${friend.lastName}"
-                    if (!friend.imageUri.isNullOrBlank() && friend.imageUri != "null") {
+                    val resolvedUri = com.circlekeep.getPlatform().resolveSharedPath(friend.imageUri)
+                    if (!resolvedUri.isNullOrBlank()) {
                         SubcomposeAsyncImage(
-                            model = friend.imageUri,
+                            model = resolvedUri,
                             contentDescription = null,
                             modifier = Modifier.fillMaxSize(),
                             contentScale = ContentScale.Crop,

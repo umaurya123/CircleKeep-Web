@@ -405,7 +405,8 @@ actual fun ImagePicker(
             if (result.resultCode == Activity.RESULT_OK) {
                 val data = result.data
                 if (data != null) {
-                    onImagePicked(UCrop.getOutput(data)?.toString())
+                    val uri = UCrop.getOutput(data)
+                    onImagePicked(uri?.lastPathSegment) // Return only filename
                 } else {
                     onImagePicked(null)
                 }
@@ -705,6 +706,7 @@ actual fun FilePicker(
                 val timestamp = sdf.format(java.util.Date())
                 createLauncher.launch("CircleKeep_Backup_$timestamp.ckjson")
             } else {
+                // Try to filter for .ckjson but allow fallback
                 openLauncher.launch(arrayOf("*/*"))
             }
         }

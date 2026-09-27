@@ -12,15 +12,23 @@ class AndroidPlatform(private val context: Context) : Platform {
     override fun uriToBase64(uri: String): String? {
         if (uri.isBlank()) return null
         return try {
-            val inputStream = if (uri.startsWith("/")) {
-                File(uri).inputStream()
-            } else {
-                context.contentResolver.openInputStream(Uri.parse(uri))
+            val inputStream = when {
+                uri.startsWith("file://") -> {
+                    val path = uri.substringAfter("file://")
+                    File(path).inputStream()
+                }
+                uri.startsWith("/") -> {
+                    File(uri).inputStream()
+                }
+                else -> {
+                    context.contentResolver.openInputStream(Uri.parse(uri))
+                }
             }
             inputStream?.use { input ->
                 Base64.encodeToString(input.readBytes(), Base64.NO_WRAP)
             }
         } catch (e: Exception) {
+            android.util.Log.e("CircleKeep", "Error converting URI to Base64: $uri", e)
             null
         }
     }
@@ -32,7 +40,7 @@ class AndroidPlatform(private val context: Context) : Platform {
             val fileName = "${fileNamePrefix}_${System.nanoTime()}.jpg"
             val file = File(context.filesDir, fileName)
             FileOutputStream(file).use { it.write(bytes) }
-            file.absolutePath
+            fileName // Return only filename
         } catch (e: Exception) {
             null
         }
@@ -98,6 +106,28 @@ class AndroidPlatform(private val context: Context) : Platform {
     }
 
     override fun currentTimeMillis(): Long = System.currentTimeMillis()
+
+    override fun resolveSharedPath(path: String?): String? {
+        if (path.isNullOrBlank() || path == "null") return null
+        // On Android, we generally store full paths or relative to filesDir.
+        // For consistency with iOS fixes, we'll try to resolve filenames against filesDir.
+        return if (path.startsWith("/") || path.startsWith("file://") || path.startsWith("content://")) {
+            path
+        } else {
+            File(context.filesDir, path).absolutePath
+        }
+    }
+
+    override fun fileExists(path: String?): Boolean {
+        if (path.isNullOrBlank()) return false
+        val resolved = resolveSharedPath(path) ?: return false
+        val file = if (resolved.startsWith("file://")) {
+            File(resolved.substringAfter("file://"))
+        } else {
+            File(resolved)
+        }
+        return file.exists()
+    }
 
     override val buildVariant: String = BuildConfig.BUILD_TYPE
 
@@ -188,6 +218,8 @@ actual fun getPlatform(): Platform = androidPlatform ?: object : Platform {
     override fun parseDateComponents(dateString: String): Triple<String, String, String>? = null
     override fun isDayValidForMonth(day: String, month: String): Boolean = true
     override fun currentTimeMillis(): Long = System.currentTimeMillis()
+    override fun resolveSharedPath(path: String?): String? = path
+    override fun fileExists(path: String?): Boolean = false
     override val buildVariant: String = "Unknown"
     override val appVersion: String = "Unknown"
 }

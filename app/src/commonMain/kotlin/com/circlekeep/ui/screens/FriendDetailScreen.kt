@@ -43,7 +43,6 @@ fun FriendDetailScreen(
     val platform = getPlatform()
     val scope = rememberCoroutineScope()
     var showDeleteDialog by remember { mutableStateOf(false) }
-    val hideQr by viewModel.hideQrState.collectAsState()
 
     Scaffold(
         topBar = {
@@ -60,50 +59,6 @@ fun FriendDetailScreen(
                             onTogglePin(friendWithChildren.friend)
                         }) {
                             Icon(Icons.Rounded.PushPin, contentDescription = "Pin", tint = if (friendWithChildren.friend.isPinned) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant)
-                        }
-                        if (!hideQr) {
-                            var showQrDialog by remember { mutableStateOf(false) }
-                            IconButton(onClick = { showQrDialog = true }) {
-                                Icon(Icons.Rounded.QrCode, contentDescription = strings.shareContact)
-                            }
-                            if (showQrDialog) {
-                                val qrContent = buildString {
-                                    append("CIRCLEKEEP:1.0\n")
-                                    append("FN:${friendWithChildren.friend.firstName}\n")
-                                    append("MN:${friendWithChildren.friend.middleName}\n")
-                                    append("LN:${friendWithChildren.friend.lastName}\n")
-                                    append("NN:${friendWithChildren.friend.nickname}\n")
-                                    append("TEL:${friendWithChildren.friend.cellPhone}\n")
-                                    append("EML:${friendWithChildren.friend.email}\n")
-                                    append("ADR:${friendWithChildren.friend.address}\n")
-                                    append("GRP:${friendWithChildren.friend.groups.joinToString(",")}\n")
-                                    append("DOB:${friendWithChildren.friend.dateOfBirth}\n")
-                                    append("ANN:${friendWithChildren.friend.anniversaryDate}\n")
-                                    append("NTS:${friendWithChildren.friend.notes}\n")
-                                }
-                                val qrUrl = "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${platformUI.encodeUrl(qrContent)}"
-                                
-                                AlertDialog(
-                                    onDismissRequest = { showQrDialog = false },
-                                    title = { Text(strings.shareContact) },
-                                    text = {
-                                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                            AsyncImage(
-                                                model = qrUrl,
-                                                contentDescription = "QR Code",
-                                                modifier = Modifier.size(200.dp)
-                                            )
-                                            Spacer(Modifier.height(8.dp))
-                                            Text(strings.scanToAdd, style = MaterialTheme.typography.labelMedium)
-                                        }
-                                    },
-                                    confirmButton = {
-                                        TextButton(onClick = { showQrDialog = false }) {
-                                            Text(strings.close)
-                                        }
-                                    }
-                                )
-                            }
                         }
                         IconButton(onClick = { 
                             onEditClick(friendWithChildren.friend.id, null)
@@ -137,9 +92,10 @@ fun FriendDetailScreen(
                             color = MaterialTheme.colorScheme.surfaceVariant
                         ) {
                             val name = "${friendWithChildren.friend.firstName} ${friendWithChildren.friend.middleName} ${friendWithChildren.friend.lastName}"
-                            if (!friendWithChildren.friend.imageUri.isNullOrBlank() && friendWithChildren.friend.imageUri != "null") {
+                            val resolvedUri = platform.resolveSharedPath(friendWithChildren.friend.imageUri)
+                            if (!resolvedUri.isNullOrBlank()) {
                                 SubcomposeAsyncImage(
-                                    model = friendWithChildren.friend.imageUri,
+                                    model = resolvedUri,
                                     contentDescription = null,
                                     modifier = Modifier.fillMaxSize(),
                                     contentScale = ContentScale.Crop,
@@ -189,13 +145,14 @@ fun FriendDetailScreen(
                 item {
                     if (friendWithChildren.friend.secondaryImageUri != null) {
                         var showFullScreen by remember { mutableStateOf(false) }
+                        val resolvedSecondaryUri = platform.resolveSharedPath(friendWithChildren.friend.secondaryImageUri)
                         
                         Card(modifier = Modifier.padding(vertical = 8.dp).fillMaxWidth()) {
                             Column(modifier = Modifier.padding(8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                                 Text(strings.memoryPhoto, style = MaterialTheme.typography.labelMedium)
                                 Spacer(Modifier.height(4.dp))
                                 AsyncImage(
-                                    model = friendWithChildren.friend.secondaryImageUri,
+                                    model = resolvedSecondaryUri,
                                     contentDescription = null,
                                     modifier = Modifier
                                         .size(120.dp)
@@ -214,7 +171,7 @@ fun FriendDetailScreen(
                                 onDismissRequest = { showFullScreen = false },
                                 text = {
                                     AsyncImage(
-                                        model = friendWithChildren.friend.secondaryImageUri,
+                                        model = resolvedSecondaryUri,
                                         contentDescription = null,
                                         modifier = Modifier.fillMaxWidth().aspectRatio(1f),
                                         contentScale = ContentScale.Fit
@@ -274,10 +231,11 @@ fun FriendDetailScreen(
                     
                     if (friendWithChildren.friend.petName.isNotBlank()) {
                         DetailRow(Icons.Rounded.Pets, friendWithChildren.friend.petName, label = strings.petName)
-                        if (friendWithChildren.friend.petImageUri != null) {
+                        val resolvedPetUri = platform.resolveSharedPath(friendWithChildren.friend.petImageUri)
+                        if (resolvedPetUri != null) {
                             Card(modifier = Modifier.padding(start = 44.dp, top = 4.dp, bottom = 8.dp).size(100.dp)) {
                                 AsyncImage(
-                                    model = friendWithChildren.friend.petImageUri,
+                                    model = resolvedPetUri,
                                     contentDescription = null,
                                     modifier = Modifier.fillMaxSize(),
                                     contentScale = ContentScale.Crop
@@ -326,9 +284,10 @@ fun FriendDetailScreen(
                                         color = MaterialTheme.colorScheme.surfaceVariant
                                     ) {
                                         val name = "${friendWithChildren.friend.partnerFirstName} ${friendWithChildren.friend.partnerMiddleName} ${friendWithChildren.friend.partnerLastName}"
-                                        if (!friendWithChildren.friend.partnerImageUri.isNullOrBlank() && friendWithChildren.friend.partnerImageUri != "null") {
+                                        val resolvedPartnerUri = platform.resolveSharedPath(friendWithChildren.friend.partnerImageUri)
+                                        if (!resolvedPartnerUri.isNullOrBlank()) {
                                             SubcomposeAsyncImage(
-                                                model = friendWithChildren.friend.partnerImageUri,
+                                                model = resolvedPartnerUri,
                                                 contentDescription = null,
                                                 modifier = Modifier.fillMaxSize(),
                                                 contentScale = ContentScale.Crop,
@@ -421,9 +380,10 @@ fun FriendDetailScreen(
                                         color = MaterialTheme.colorScheme.surfaceVariant
                                     ) {
                                         val name = "${child.firstName} ${child.middleName} ${child.lastName}"
-                                        if (!child.imageUri.isNullOrBlank() && child.imageUri != "null") {
+                                        val resolvedChildUri = platform.resolveSharedPath(child.imageUri)
+                                        if (!resolvedChildUri.isNullOrBlank()) {
                                             SubcomposeAsyncImage(
-                                                model = child.imageUri,
+                                                model = resolvedChildUri,
                                                 contentDescription = null,
                                                 modifier = Modifier.fillMaxSize(),
                                                 contentScale = ContentScale.Crop,
@@ -518,9 +478,10 @@ fun FriendDetailScreen(
                                 
                                 if (child.petName.isNotBlank()) {
                                     DetailRow(Icons.Rounded.Pets, child.petName, label = strings.petName)
-                                    if (child.petImageUri != null) {
+                                    val resolvedChildPetUri = platform.resolveSharedPath(child.petImageUri)
+                                    if (resolvedChildPetUri != null) {
                                         Card(modifier = Modifier.padding(start = 44.dp, top = 4.dp, bottom = 8.dp).size(80.dp)) {
-                                            AsyncImage(model = child.petImageUri, contentDescription = null, modifier = Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
+                                            AsyncImage(model = resolvedChildPetUri, contentDescription = null, modifier = Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
                                         }
                                     }
                                 }
@@ -552,23 +513,32 @@ fun FriendDetailScreen(
                                         if (child.partnerMiddleName.isNotBlank()) append(" ${child.partnerMiddleName}")
                                         if (child.partnerLastName.isNotBlank()) append(" ${child.partnerLastName}")
                                     }
+                                    val resolvedChildPartnerUri = platform.resolveSharedPath(child.partnerImageUri)
                                     Text(
                                         text = partnerLabel,
                                         style = MaterialTheme.typography.titleMedium,
                                         color = MaterialTheme.colorScheme.secondary
                                     )
-                                    Text(
-                                        text = childPartnerDisplayName,
-                                        style = MaterialTheme.typography.bodyLarge,
-                                        modifier = Modifier.clickable {
-                                            scope.launch {
-                                                viewModel.findFriendIdByName(child.partnerFirstName, child.partnerLastName)?.let {
-                                                    onFriendClick(it)
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        if (!resolvedChildPartnerUri.isNullOrBlank()) {
+                                            Surface(modifier = Modifier.size(32.dp).clip(CircleShape)) {
+                                                AsyncImage(model = resolvedChildPartnerUri, contentDescription = null, contentScale = ContentScale.Crop)
+                                            }
+                                            Spacer(Modifier.width(8.dp))
+                                        }
+                                        Text(
+                                            text = childPartnerDisplayName,
+                                            style = MaterialTheme.typography.bodyLarge,
+                                            modifier = Modifier.clickable {
+                                                scope.launch {
+                                                    viewModel.findFriendIdByName(child.partnerFirstName, child.partnerLastName)?.let {
+                                                        onFriendClick(it)
+                                                    }
                                                 }
                                             }
-                                        }
-                                    )
-                                    if (child.partnerPhone.isNotBlank()) {
+                                        )
+                                    }
+  if (child.partnerPhone.isNotBlank()) {
                                         DetailRow(Icons.Rounded.Phone, child.partnerPhone, onClick = {
                                             platformUI.dialPhone(child.partnerPhone)
                                         })

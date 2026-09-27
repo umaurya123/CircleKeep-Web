@@ -15,6 +15,7 @@ import androidx.navigation.toRoute
 import com.circlekeep.*
 import com.circlekeep.navigation.Destination
 import com.circlekeep.ui.theme.CircleKeepTheme
+import com.circlekeep.ui.theme.AppStringsProvider
 import com.circlekeep.ui.components.CircleKeepBottomBar
 import com.circlekeep.ui.screens.*
 import com.circlekeep.viewmodel.FriendViewModel
@@ -32,6 +33,7 @@ fun CircleKeepApp(
     val platformUI = rememberPlatformUI()
     val platform = getPlatform()
     val navController = rememberNavController()
+    val strings = AppStringsProvider.current
 
     val totalFriends by viewModel.totalFriendCount.collectAsState()
     var startupAdCheckDone by remember { mutableStateOf(false) }
@@ -108,9 +110,6 @@ fun CircleKeepApp(
                         val events by viewModel.upcomingEventsState.collectAsState()
                         
                         Column(modifier = Modifier.fillMaxWidth()) {
-                            if (!isPaid) {
-                                BannerAdView()
-                            }
                             CircleKeepBottomBar(
                                 currentDestination = barDestination,
                                 friendCount = friends.size,
@@ -135,7 +134,7 @@ fun CircleKeepApp(
                         }
                     }
                 },
-                contentWindowInsets = WindowInsets(0, 0, 0, 0)
+                contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom)
             ) { innerPadding ->
                 NavHost(
                     navController = navController,
@@ -151,7 +150,6 @@ fun CircleKeepApp(
                         val selectedGroups by viewModel.selectedGroups.collectAsState()
                         val sortOrder by viewModel.sortOrder.collectAsState()
                         val showInlineData by viewModel.showInlineData.collectAsState()
-                        val hideQr by viewModel.hideQrState.collectAsState()
                         val isGridView by viewModel.isGridViewState.collectAsState()
                         val gridColumns by viewModel.gridColumnsState.collectAsState()
 
@@ -173,7 +171,14 @@ fun CircleKeepApp(
                             onSortChange = viewModel::onSortOrderChange,
                             onToggleInline = viewModel::toggleInlineData,
                             onFriendClick = { id ->
-                                navController.navigate(Destination.FriendDetail(id))
+                                if (!isPaid && totalFriends > 40) {
+                                    platformUI.showInterstitialAd {
+                                        platformUI.showToast(strings.upgradeToProToRemoveAds)
+                                        navController.navigate(Destination.FriendDetail(id))
+                                    }
+                                } else {
+                                    navController.navigate(Destination.FriendDetail(id))
+                                }
                             },
                             onEditFriendClick = { id, childId ->
                                 navController.navigate(Destination.EditFriend(id, childId))
@@ -194,7 +199,6 @@ fun CircleKeepApp(
                             onNavigateToSettings = {
                                 navController.navigate(Destination.Settings)
                             },
-                            hideQr = hideQr,
                             isGridView = isGridView,
                             gridColumns = gridColumns,
                             onToggleGridView = viewModel::onIsGridViewChange,
@@ -277,7 +281,6 @@ fun CircleKeepApp(
                         val selectedGroups by viewModel.selectedGroups.collectAsState()
                         val sortOrder by viewModel.sortOrder.collectAsState()
                         val showInlineData by viewModel.showInlineData.collectAsState()
-                        val hideQr by viewModel.hideQrState.collectAsState()
                         val isGridView by viewModel.isGridViewState.collectAsState()
                         val gridColumns by viewModel.gridColumnsState.collectAsState()
                         
@@ -298,7 +301,16 @@ fun CircleKeepApp(
                             onSearchQueryChange = viewModel::onSearchQueryChange,
                             onSortChange = viewModel::onSortOrderChange,
                             onToggleInline = viewModel::toggleInlineData,
-                            onFriendClick = { id -> navController.navigate(Destination.FriendDetail(id)) },
+                            onFriendClick = { id -> 
+                                if (!isPaid && totalFriends > 40) {
+                                    platformUI.showInterstitialAd {
+                                        platformUI.showToast(strings.upgradeToProToRemoveAds)
+                                        navController.navigate(Destination.FriendDetail(id))
+                                    }
+                                } else {
+                                    navController.navigate(Destination.FriendDetail(id))
+                                }
+                            },
                             onEditFriendClick = { id, childId -> navController.navigate(Destination.EditFriend(id, childId)) },
                             onAddFriendClick = { navController.navigate(Destination.AddFriend) },
                             onToggleFavorite = viewModel::toggleFavorite,
@@ -314,7 +326,6 @@ fun CircleKeepApp(
                             onNavigateToSettings = {
                                 navController.navigate(Destination.Settings)
                             },
-                            hideQr = hideQr,
                             isGridView = isGridView,
                             gridColumns = gridColumns,
                             onToggleGridView = viewModel::onIsGridViewChange,
@@ -343,7 +354,14 @@ fun CircleKeepApp(
                         UpcomingEventsScreen(
                             viewModel = viewModel,
                             onEventClick = { id ->
-                                navController.navigate(Destination.FriendDetail(id))
+                                if (!isPaid && totalFriends > 40) {
+                                    platformUI.showInterstitialAd {
+                                        platformUI.showToast(strings.upgradeToProToRemoveAds)
+                                        navController.navigate(Destination.FriendDetail(id))
+                                    }
+                                } else {
+                                    navController.navigate(Destination.FriendDetail(id))
+                                }
                             }
                         )
                     }

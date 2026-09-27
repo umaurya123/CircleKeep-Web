@@ -12,10 +12,91 @@
 	<string>This app requires access to your contacts to import friend details.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>This app requires access to your photo library to select profile pictures.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>This app requires camera access to scan contact QR codes.</string>
 	<key>NSUserTrackingUsageDescription</key>
 	<string>This identifier will be used to deliver personalized ads to you.</string>
 	<key>GADApplicationIdentifier</key>
-	<string>ca-app-pub-3940256099942544~1458002511</string>
+	<string>ca-app-pub-9985549354765338~4664821665</string>
+	<key>LSSupportsOpeningDocumentsInPlace</key>
+	<true/>
+	<key>CFBundleDocumentTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeName</key>
+			<string>CircleKeep Data</string>
+			<key>LSHandlerRank</key>
+			<string>Owner</string>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>com.circlekeep.ckjson</string>
+			</array>
+		</dict>
+	</array>
+	<key>LSSupportsOpeningDocumentsInPlace</key>
+	<true/>
+	<key>UTExportedTypeDeclarations</key>
+	<array>
+		<dict>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.data</string>
+				<string>public.item</string>
+				<string>public.content</string>
+				<string>public.json</string>
+				<string>public.text</string>
+			</array>
+			<key>UTTypeDescription</key>
+			<string>CircleKeep Backup File</string>
+			<key>UTTypeIdentifier</key>
+			<string>com.circlekeep.ckjson</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>ckjson</string>
+				</array>
+				<key>public.mime-type</key>
+				<array>
+					<string>application/json</string>
+					<string>application/x-circlekeep</string>
+					<string>text/plain</string>
+				</array>
+			</dict>
+		</dict>
+	</array>
+	<key>UTImportedTypeDeclarations</key>
+	<array>
+		<dict>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.data</string>
+				<string>public.item</string>
+				<string>public.content</string>
+				<string>public.json</string>
+				<string>public.text</string>
+			</array>
+			<key>UTTypeDescription</key>
+			<string>CircleKeep Backup File</string>
+			<key>UTTypeIdentifier</key>
+			<string>com.circlekeep.ckjson</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>ckjson</string>
+				</array>
+				<key>public.mime-type</key>
+				<array>
+					<string>application/json</string>
+					<string>application/x-circlekeep</string>
+					<string>text/plain</string>
+				</array>
+			</dict>
+		</dict>
+	</array>
 	<key>SKAdNetworkItems</key>
 	<array>
 		<dict>

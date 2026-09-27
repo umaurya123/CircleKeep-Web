@@ -81,6 +81,7 @@ interface AppStrings {
     val savingIn: String
     val seconds: String
     val purchaseProToSkip: String
+    val upgradeToProToRemoveAds: String
     val selectGroups: String
     val importContactTo: String
     val chooseWhereToImport: String
@@ -200,6 +201,7 @@ object EnStrings : AppStrings {
     override val savingIn = "Saving in"
     override val seconds = "seconds"
     override val purchaseProToSkip = "Purchase Pro version to skip ads and saving delay!"
+    override val upgradeToProToRemoveAds = "Upgrade to Pro to remove ads and unlock unlimited features!"
     override val selectGroups = "Select Groups"
     override val importContactTo = "Import Contact To..."
     override val chooseWhereToImport = "Choose where to import this contact's details."
@@ -319,6 +321,7 @@ object HiStrings : AppStrings {
     override val savingIn = "सहेजा जा रहा है"
     override val seconds = "सेकंड में"
     override val purchaseProToSkip = "विज्ञापन और देरी से बचने के लिए प्रो वर्शन खरीदें!"
+    override val upgradeToProToRemoveAds = "विज्ञापनों को हटाने और असीमित सुविधाओं को अनलॉक करने के लिए प्रो में अपग्रेड करें!"
     override val selectGroups = "समूह चुनें"
     override val importContactTo = "संपर्क आयात करें..."
     override val chooseWhereToImport = "चुनें कि इस संपर्क का विवरण कहाँ आयात करना है।"
@@ -438,6 +441,7 @@ object EsStrings : AppStrings {
     override val savingIn = "Guardando en"
     override val seconds = "segundos"
     override val purchaseProToSkip = "¡Compre la versión Pro para omitir anuncios y el retraso de guardado!"
+    override val upgradeToProToRemoveAds = "¡Actualiza a Pro para eliminar anuncios y desbloquear funciones ilimitadas!"
     override val selectGroups = "Seleccionar grupos"
     override val importContactTo = "Importar contacto a..."
     override val chooseWhereToImport = "Elija dónde importar los detalles de este contacto."

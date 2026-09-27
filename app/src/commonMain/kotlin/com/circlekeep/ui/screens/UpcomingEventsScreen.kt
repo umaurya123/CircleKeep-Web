@@ -130,9 +130,10 @@ fun EventCard(event: UpcomingEvent, onClick: () -> Unit) {
                     modifier = Modifier.size(48.dp).clip(androidx.compose.foundation.shape.CircleShape),
                     color = MaterialTheme.colorScheme.surfaceVariant
                 ) {
-                    if (!event.imageUri.isNullOrBlank() && event.imageUri != "null") {
+                    val resolvedUri = com.circlekeep.getPlatform().resolveSharedPath(event.imageUri)
+                    if (!resolvedUri.isNullOrBlank()) {
                         AsyncImage(
-                            model = event.imageUri,
+                            model = resolvedUri,
                             contentDescription = null,
                             modifier = Modifier.fillMaxSize(),
                             contentScale = androidx.compose.ui.layout.ContentScale.Crop

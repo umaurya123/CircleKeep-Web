@@ -328,9 +328,10 @@ fun AddEditFriendScreen(
                                     .clickable { mainImagePickerTrigger = true },
                                 color = MaterialTheme.colorScheme.surfaceVariant
                             ) {
-                                if (!imageUri.isNullOrBlank() && imageUri != "null") {
+                                val resolvedUri = platform.resolveSharedPath(imageUri)
+                                if (!resolvedUri.isNullOrBlank()) {
                                     SubcomposeAsyncImage(
-                                        model = imageUri,
+                                        model = resolvedUri,
                                         contentDescription = null,
                                         modifier = Modifier.fillMaxSize(),
                                         contentScale = ContentScale.Crop,
@@ -365,8 +366,9 @@ fun AddEditFriendScreen(
                             modifier = Modifier.size(60.dp).clip(MaterialTheme.shapes.small).clickable { secondaryImagePickerTrigger = true },
                             color = MaterialTheme.colorScheme.surfaceVariant
                         ) {
-                            if (secondaryImageUri != null) {
-                                AsyncImage(model = secondaryImageUri, contentDescription = null, modifier = Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
+                            val resSecUri = platform.resolveSharedPath(secondaryImageUri)
+                            if (resSecUri != null) {
+                                AsyncImage(model = resSecUri, contentDescription = null, modifier = Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
                             } else {
                                 Icon(Icons.Rounded.AddAPhoto, contentDescription = null, modifier = Modifier.padding(16.dp))
                             }
@@ -662,9 +664,10 @@ fun AddEditFriendScreen(
                                     .clickable { petImagePickerTrigger = true },
                                 color = MaterialTheme.colorScheme.surfaceVariant
                             ) {
-                                if (!petImageUri.isNullOrBlank() && petImageUri != "null") {
+                                val resolvedPetUri = platform.resolveSharedPath(petImageUri)
+                                if (!resolvedPetUri.isNullOrBlank()) {
                                     SubcomposeAsyncImage(
-                                        model = petImageUri,
+                                        model = resolvedPetUri,
                                         contentDescription = null,
                                         modifier = Modifier.fillMaxSize(),
                                         contentScale = ContentScale.Crop,

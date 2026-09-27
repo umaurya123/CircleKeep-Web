@@ -22,12 +22,17 @@ class IOSPlatform: Platform {
     override fun base64ToUri(base64: String, fileNamePrefix: String): String? {
         if (base64.isBlank()) return null
         val data = NSData.create(base64EncodedString = base64, options = NSDataBase64DecodingIgnoreUnknownCharacters) ?: return null
-        val fileName = "${fileNamePrefix}_${NSDate().timeIntervalSince1970}.jpg"
+        
+        // Use high-precision timestamp + random component to prevent name collisions
+        val timestamp = NSDate().timeIntervalSince1970
+        val random = (0..9999).random()
+        val fileName = "${fileNamePrefix}_${timestamp}_${random}.jpg"
+        
         val paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, true)
         val documentDirectory = paths.firstOrNull() as? String ?: return null
         val filePath = "$documentDirectory/$fileName"
         data.writeToFile(filePath, true)
-        return filePath
+        return fileName // Return only filename
     }
 
     override fun formatDisplayDate(dateString: String?): String {
@@ -97,6 +102,24 @@ class IOSPlatform: Platform {
     }
 
     override fun currentTimeMillis(): Long = (NSDate().timeIntervalSince1970 * 1000).toLong()
+
+    override fun resolveSharedPath(path: String?): String? {
+        if (path.isNullOrBlank() || path == "null") return null
+        
+        // If it's already a full path (legacy data), we might need to strip the old UUID part.
+        // But for new files, we only store the filename.
+        val fileName = if (path.contains("/")) path.substringAfterLast("/") else path
+        
+        val paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, true)
+        val documentDirectory = paths.firstOrNull() as? String ?: return path
+        return "$documentDirectory/$fileName"
+    }
+
+    override fun fileExists(path: String?): Boolean {
+        if (path.isNullOrBlank() || path == "null") return false
+        val resolved = resolveSharedPath(path) ?: return false
+        return NSFileManager.defaultManager.fileExistsAtPath(resolved)
+    }
 
     override val buildVariant: String by lazy {
         getBuildVariant()
