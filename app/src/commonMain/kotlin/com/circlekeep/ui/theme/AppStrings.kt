@@ -122,6 +122,12 @@ interface AppStrings {
     val sortAnniversary: String
     val sortCreationDate: String
     val sortLastModified: String
+    val hidden: String
+    val includeHidden: String
+    val customEvents: String
+    val customEvent1: String
+    val customEvent2: String
+    val description: String
 }
 
 object EnStrings : AppStrings {
@@ -242,6 +248,12 @@ object EnStrings : AppStrings {
     override val sortAnniversary = "Marriage Anniversary"
     override val sortCreationDate = "Creation Date"
     override val sortLastModified = "Last Modified"
+    override val hidden = "Hidden"
+    override val includeHidden = "Include hidden group"
+    override val customEvents = "Custom Events"
+    override val customEvent1 = "Event 1"
+    override val customEvent2 = "Event 2"
+    override val description = "Description"
 }
 
 object HiStrings : AppStrings {
@@ -362,6 +374,12 @@ object HiStrings : AppStrings {
     override val sortAnniversary = "शादी की सालगिरह"
     override val sortCreationDate = "निर्माण तिथि"
     override val sortLastModified = "अंतिम संशोधन"
+    override val hidden = "छिपा हुआ"
+    override val includeHidden = "छिपे हुए समूह शामिल करें"
+    override val customEvents = "कस्टम इवेंट्स"
+    override val customEvent1 = "इवेंट 1"
+    override val customEvent2 = "इवेंट 2"
+    override val description = "विवरण"
 }
 
 object EsStrings : AppStrings {
@@ -482,6 +500,12 @@ object EsStrings : AppStrings {
     override val sortAnniversary = "Aniversario de matrimonio"
     override val sortCreationDate = "Fecha de creación"
     override val sortLastModified = "Última modificación"
+    override val hidden = "Oculto"
+    override val includeHidden = "Incluir grupos ocultos"
+    override val customEvents = "Eventos personalizados"
+    override val customEvent1 = "Evento 1"
+    override val customEvent2 = "Evento 2"
+    override val description = "Descripción"
 }
 
 internal val LocalAppStrings = staticCompositionLocalOf<AppStrings> { EnStrings }

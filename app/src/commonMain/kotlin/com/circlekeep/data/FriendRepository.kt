@@ -60,10 +60,19 @@ class FriendRepository(private val friendDao: FriendDao) {
 
     fun getAllGroupsStream(): Flow<List<Group>> = friendDao.getAllGroupsStream()
 
-    suspend fun addGroup(name: String) {
+    suspend fun addGroup(name: String, isHidden: Boolean = false) {
         val groups = friendDao.getAllGroupsStream().first()
-        val nextOrder = (groups.maxOfOrNull { it.sortOrder } ?: -1) + 1
-        friendDao.insertGroup(Group(name, nextOrder))
+        val existing = groups.find { it.name.trim().equals(name.trim(), ignoreCase = true) }
+        if (existing != null) {
+            friendDao.insertGroup(existing.copy(isHidden = isHidden))
+        } else {
+            val nextOrder = (groups.maxOfOrNull { it.sortOrder } ?: -1) + 1
+            friendDao.insertGroup(Group(name, nextOrder, isHidden = isHidden))
+        }
+    }
+
+    suspend fun updateGroup(group: Group) {
+        friendDao.insertGroup(group)
     }
 
     suspend fun updateGroupOrder(orderedGroups: List<Group>) {
@@ -74,10 +83,11 @@ class FriendRepository(private val friendDao: FriendDao) {
 
     suspend fun deleteGroup(group: Group) = friendDao.deleteGroup(group)
 
-    suspend fun renameGroup(oldName: String, newName: String) {
-        // 1. Rename the group entry
+    suspend fun renameGroup(oldName: String, newName: String, isHidden: Boolean = false) {
+        val existing = friendDao.getAllGroupsStream().first().find { it.name == oldName }
+        val order = existing?.sortOrder ?: 0
         friendDao.deleteGroup(Group(oldName))
-        friendDao.insertGroup(Group(newName))
+        friendDao.insertGroup(Group(newName, sortOrder = order, isHidden = isHidden))
 
         // 2. Update all friends having this group
         val friends = friendDao.getAllFriendsWithChildren().first()

@@ -114,6 +114,16 @@ fun AddEditFriendScreen(
     var anniversaryDay by remember { mutableStateOf(initialFriend?.anniversaryDay ?: "") }
     var anniversaryMonth by remember { mutableStateOf(initialFriend?.anniversaryMonth ?: "") }
 
+    var customEvent1Date by remember { mutableStateOf(initialFriend?.customEvent1Date ?: "") }
+    var customEvent1Day by remember { mutableStateOf(initialFriend?.customEvent1Day ?: "") }
+    var customEvent1Month by remember { mutableStateOf(initialFriend?.customEvent1Month ?: "") }
+    var customEvent1Description by remember { mutableStateOf(initialFriend?.customEvent1Description ?: "") }
+
+    var customEvent2Date by remember { mutableStateOf(initialFriend?.customEvent2Date ?: "") }
+    var customEvent2Day by remember { mutableStateOf(initialFriend?.customEvent2Day ?: "") }
+    var customEvent2Month by remember { mutableStateOf(initialFriend?.customEvent2Month ?: "") }
+    var customEvent2Description by remember { mutableStateOf(initialFriend?.customEvent2Description ?: "") }
+
     var notes by remember { mutableStateOf(initialFriend?.notes ?: "") }
     var imageUri by remember { mutableStateOf(initialFriend?.imageUri) }
     var secondaryImageUri by remember { mutableStateOf(initialFriend?.secondaryImageUri) }
@@ -161,8 +171,10 @@ fun AddEditFriendScreen(
     val isDobValid = platform.isDayValidForMonth(birthDay, birthMonth)
     val isAnniversaryValid = platform.isDayValidForMonth(anniversaryDay, anniversaryMonth)
     val isPartnerDobValid = platform.isDayValidForMonth(partnerBirthDay, partnerBirthMonth)
+    val isCustomEvent1Valid = platform.isDayValidForMonth(customEvent1Day, customEvent1Month)
+    val isCustomEvent2Valid = platform.isDayValidForMonth(customEvent2Day, customEvent2Month)
     
-    val isFormValid = isEmailValid && isDobValid && isAnniversaryValid && isPartnerDobValid
+    val isFormValid = isEmailValid && isDobValid && isAnniversaryValid && isPartnerDobValid && isCustomEvent1Valid && isCustomEvent2Valid
 
     var mainImagePickerTrigger by remember { mutableStateOf(false) }
     ImagePicker(
@@ -272,6 +284,14 @@ fun AddEditFriendScreen(
                                     secondaryImageUri = secondaryImageUri,
                                     petName = petName.trim(),
                                     petImageUri = petImageUri,
+                                    customEvent1Date = customEvent1Date,
+                                    customEvent1Day = customEvent1Day,
+                                    customEvent1Month = customEvent1Month,
+                                    customEvent1Description = customEvent1Description.trim(),
+                                    customEvent2Date = customEvent2Date,
+                                    customEvent2Day = customEvent2Day,
+                                    customEvent2Month = customEvent2Month,
+                                    customEvent2Description = customEvent2Description.trim(),
                                     notes = notes.trim()
                                 )
                                 
@@ -556,6 +576,118 @@ fun AddEditFriendScreen(
                         )
                         com.circlekeep.ui.components.MonthDropdown(value = anniversaryMonth, onValueChange = { anniversaryMonth = it }, modifier = Modifier.weight(0.6f))
                     }
+
+                    Spacer(Modifier.height(8.dp))
+                    Text(strings.customEvents, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                    
+                    // Event 1
+                    Text(strings.customEvent1, style = MaterialTheme.typography.labelLarge)
+                    DatePickerField(
+                        value = customEvent1Date,
+                        onValueChange = { 
+                            customEvent1Date = it
+                            if (it.isBlank()) {
+                                customEvent1Day = ""
+                                customEvent1Month = ""
+                            } else {
+                                try {
+                                    platform.parseDateComponents(it)?.let { (d, m, _) ->
+                                        customEvent1Day = d
+                                        customEvent1Month = m
+                                    }
+                                } catch (_: Exception) {}
+                            }
+                        },
+                        label = strings.customEvent1,
+                        modifier = modifierWithTabHandler
+                    )
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        OutlinedTextField(
+                            value = customEvent1Day, 
+                            onValueChange = { customEvent1Day = it }, 
+                            label = { Text(strings.day) }, 
+                            modifier = Modifier.weight(0.4f).onPreviewKeyEvent { 
+                                if (it.key == Key.Tab && it.type == KeyEventType.KeyDown) {
+                                    focusManager.moveFocus(if (it.isShiftPressed) FocusDirection.Previous else FocusDirection.Next)
+                                    true
+                                } else false
+                            }, 
+                            singleLine = true,
+                            keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.Number,
+                                imeAction = ImeAction.Next
+                            ),
+                            isError = !isCustomEvent1Valid,
+                            supportingText = { if (!isCustomEvent1Valid) Text(strings.invalidDay) }
+                        )
+                        com.circlekeep.ui.components.MonthDropdown(value = customEvent1Month, onValueChange = { customEvent1Month = it }, modifier = Modifier.weight(0.6f))
+                    }
+                    OutlinedTextField(
+                        value = customEvent1Description, 
+                        onValueChange = { customEvent1Description = it }, 
+                        label = { Text(strings.description) }, 
+                        modifier = modifierWithTabHandler,
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(
+                            capitalization = KeyboardCapitalization.Sentences,
+                            imeAction = ImeAction.Next
+                        )
+                    )
+
+                    Spacer(Modifier.height(8.dp))
+                    // Event 2
+                    Text(strings.customEvent2, style = MaterialTheme.typography.labelLarge)
+                    DatePickerField(
+                        value = customEvent2Date,
+                        onValueChange = { 
+                            customEvent2Date = it
+                            if (it.isBlank()) {
+                                customEvent2Day = ""
+                                customEvent2Month = ""
+                            } else {
+                                try {
+                                    platform.parseDateComponents(it)?.let { (d, m, _) ->
+                                        customEvent2Day = d
+                                        customEvent2Month = m
+                                    }
+                                } catch (_: Exception) {}
+                            }
+                        },
+                        label = strings.customEvent2,
+                        modifier = modifierWithTabHandler
+                    )
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        OutlinedTextField(
+                            value = customEvent2Day, 
+                            onValueChange = { customEvent2Day = it }, 
+                            label = { Text(strings.day) }, 
+                            modifier = Modifier.weight(0.4f).onPreviewKeyEvent { 
+                                if (it.key == Key.Tab && it.type == KeyEventType.KeyDown) {
+                                    focusManager.moveFocus(if (it.isShiftPressed) FocusDirection.Previous else FocusDirection.Next)
+                                    true
+                                } else false
+                            }, 
+                            singleLine = true,
+                            keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.Number,
+                                imeAction = ImeAction.Next
+                            ),
+                            isError = !isCustomEvent2Valid,
+                            supportingText = { if (!isCustomEvent2Valid) Text(strings.invalidDay) }
+                        )
+                        com.circlekeep.ui.components.MonthDropdown(value = customEvent2Month, onValueChange = { customEvent2Month = it }, modifier = Modifier.weight(0.6f))
+                    }
+                    OutlinedTextField(
+                        value = customEvent2Description, 
+                        onValueChange = { customEvent2Description = it }, 
+                        label = { Text(strings.description) }, 
+                        modifier = modifierWithTabHandler,
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(
+                            capitalization = KeyboardCapitalization.Sentences,
+                            imeAction = ImeAction.Next
+                        )
+                    )
 
                     Box(modifier = Modifier.fillMaxWidth().clickable { showGroupDialog = true }) {
                         OutlinedTextField(

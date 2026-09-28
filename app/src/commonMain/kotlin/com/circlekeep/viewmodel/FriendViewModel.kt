@@ -107,6 +107,13 @@ class FriendViewModel(
             initialValue = 2
         )
 
+    private val _includeHiddenGroups = MutableStateFlow(false)
+    val includeHiddenGroups: StateFlow<Boolean> = _includeHiddenGroups
+
+    fun onIncludeHiddenGroupsChange(include: Boolean) {
+        _includeHiddenGroups.value = include
+    }
+
     val groupsState: StateFlow<List<Group>> =
         friendRepository.getAllGroupsStream()
             .stateIn(
@@ -130,18 +137,41 @@ class FriendViewModel(
             _searchQuery,
             _selectedGroups,
             _sortOrder,
-            userPreferencesRepository.groupFilterModeStream
-        ) { friends, query, selectedGroups, sort, filterMode ->
-            friends.filter {
-                val matchesQuery = it.friend.firstName.contains(query, ignoreCase = true) ||
-                        it.friend.lastName.contains(query, ignoreCase = true) ||
-                        it.friend.nickname.contains(query, ignoreCase = true) ||
-                        it.friend.groups.any { group -> group.contains(query, ignoreCase = true) } ||
-                        it.friend.partnerFirstName.contains(query, ignoreCase = true) ||
-                        it.friend.partnerLastName.contains(query, ignoreCase = true) ||
-                        it.friend.partnerNickname.contains(query, ignoreCase = true) ||
-                        it.friend.notes.contains(query, ignoreCase = true) ||
-                        it.children.any { child ->
+            userPreferencesRepository.groupFilterModeStream,
+            _includeHiddenGroups,
+            groupsState
+        ) { array ->
+            @Suppress("UNCHECKED_CAST")
+            val friends = array[0] as List<FriendWithChildren>
+            val query = array[1] as String
+            @Suppress("UNCHECKED_CAST")
+            val selectedGroups = array[2] as Set<String>
+            val sort = array[3] as SortOrder
+            val filterMode = array[4] as String
+            val includeHidden = array[5] as Boolean
+            @Suppress("UNCHECKED_CAST")
+            val groups = array[6] as List<Group>
+
+            val hiddenGroupNames = groups.filter { it.isHidden }.map { it.name.trim().lowercase() }.toSet()
+
+            friends.filter { fwc ->
+                val friendGroups = fwc.friend.groups.map { it.trim().lowercase() }
+                
+                // If not including hidden groups, exclude contacts whose assigned groups are ALL hidden
+                if (!includeHidden && friendGroups.isNotEmpty() && friendGroups.all { hiddenGroupNames.contains(it) }) {
+                    return@filter false
+                }
+
+                val matchesQuery = fwc.friend.firstName.contains(query, ignoreCase = true) ||
+                        fwc.friend.lastName.contains(query, ignoreCase = true) ||
+                        fwc.friend.nickname.contains(query, ignoreCase = true) ||
+                        (if (includeHidden) fwc.friend.groups else fwc.friend.groups.filter { !hiddenGroupNames.contains(it.trim().lowercase()) })
+                            .any { group -> group.contains(query, ignoreCase = true) } ||
+                        fwc.friend.partnerFirstName.contains(query, ignoreCase = true) ||
+                        fwc.friend.partnerLastName.contains(query, ignoreCase = true) ||
+                        fwc.friend.partnerNickname.contains(query, ignoreCase = true) ||
+                        fwc.friend.notes.contains(query, ignoreCase = true) ||
+                        fwc.children.any { child ->
                             child.firstName.contains(query, ignoreCase = true) ||
                             child.lastName.contains(query, ignoreCase = true) ||
                             child.nickname.contains(query, ignoreCase = true) ||
@@ -155,11 +185,11 @@ class FriendViewModel(
                     true
                 } else if (filterMode == "AND") {
                     selectedGroups.all { selected ->
-                        it.friend.groups.any { g -> g.trim().equals(selected.trim(), ignoreCase = true) }
+                        fwc.friend.groups.any { g -> g.trim().equals(selected.trim(), ignoreCase = true) }
                     }
                 } else {
                     selectedGroups.any { selected ->
-                        it.friend.groups.any { g -> g.trim().equals(selected.trim(), ignoreCase = true) }
+                        fwc.friend.groups.any { g -> g.trim().equals(selected.trim(), ignoreCase = true) }
                     }
                 }
                 
@@ -212,6 +242,8 @@ class FriendViewModel(
             friends.forEach { fwc ->
                 checkEvent(fwc.friend.firstName + " " + fwc.friend.lastName, fwc.friend.birthDay, fwc.friend.birthMonth, "Birthday", fwc.friend.id, currentDay, currentMonth, fwc.friend.imageUri)?.let { events.add(it) }
                 checkEvent(fwc.friend.firstName + " " + fwc.friend.lastName, fwc.friend.anniversaryDay, fwc.friend.anniversaryMonth, "Marriage Anniversary", fwc.friend.id, currentDay, currentMonth, fwc.friend.imageUri)?.let { events.add(it) }
+                checkEvent(fwc.friend.firstName + " " + fwc.friend.lastName, fwc.friend.customEvent1Day, fwc.friend.customEvent1Month, fwc.friend.customEvent1Description.ifBlank { "Custom Event 1" }, fwc.friend.id, currentDay, currentMonth, fwc.friend.imageUri)?.let { events.add(it) }
+                checkEvent(fwc.friend.firstName + " " + fwc.friend.lastName, fwc.friend.customEvent2Day, fwc.friend.customEvent2Month, fwc.friend.customEvent2Description.ifBlank { "Custom Event 2" }, fwc.friend.id, currentDay, currentMonth, fwc.friend.imageUri)?.let { events.add(it) }
                 
                 // Add partner birthdays if not already a main record
                 if (fwc.friend.partnerFirstName.isNotBlank()) {
@@ -599,9 +631,9 @@ class FriendViewModel(
         }
     }
 
-    fun addGroup(name: String) {
+    fun addGroup(name: String, isHidden: Boolean = false) {
         viewModelScope.launch {
-            friendRepository.addGroup(name)
+            friendRepository.addGroup(name, isHidden = isHidden)
         }
     }
 
@@ -611,9 +643,9 @@ class FriendViewModel(
         }
     }
 
-    fun renameGroup(oldName: String, newName: String) {
+    fun renameGroup(oldName: String, newName: String, isHidden: Boolean = false) {
         viewModelScope.launch {
-            friendRepository.renameGroup(oldName, newName)
+            friendRepository.renameGroup(oldName, newName, isHidden = isHidden)
         }
     }
 
@@ -706,6 +738,14 @@ class FriendViewModel(
                     partnerImageBase64 = fw.friend.partnerImageUri?.let { platform.uriToBase64(it) },
                     petName = fw.friend.petName,
                     petImageBase64 = fw.friend.petImageUri?.let { platform.uriToBase64(it) },
+                    customEvent1Date = fw.friend.customEvent1Date,
+                    customEvent1Day = fw.friend.customEvent1Day,
+                    customEvent1Month = fw.friend.customEvent1Month,
+                    customEvent1Description = fw.friend.customEvent1Description,
+                    customEvent2Date = fw.friend.customEvent2Date,
+                    customEvent2Day = fw.friend.customEvent2Day,
+                    customEvent2Month = fw.friend.customEvent2Month,
+                    customEvent2Description = fw.friend.customEvent2Description,
                     notes = fw.friend.notes,
                     createdAt = fw.friend.createdAt,
                     lastModifiedAt = fw.friend.lastModifiedAt
@@ -756,7 +796,8 @@ class FriendViewModel(
             )
         }
         val groups = groupsState.value.map { it.name }
-        val backup = BackupData(friends, groups)
+        val groupDetails = groupsState.value.mapIndexed { index, g -> GroupBackup(name = g.name, sortOrder = index, isHidden = g.isHidden) }
+        val backup = BackupData(friends, groups, groupDetails)
         return Json.encodeToString(backup)
     }
 
@@ -777,8 +818,14 @@ class FriendViewModel(
                 val backup = json.decodeFromString<BackupData>(jsonData)
                 val existingFriends = friendRepository.getAllFriendsStream().first()
 
-                backup.groups.forEach { groupName ->
-                    friendRepository.addGroup(groupName)
+                if (backup.groupDetails.isNotEmpty()) {
+                    backup.groupDetails.forEachIndexed { index, gb ->
+                        friendRepository.updateGroup(Group(name = gb.name, sortOrder = index, isHidden = gb.isHidden))
+                    }
+                } else {
+                    backup.groups.forEachIndexed { index, groupName ->
+                        friendRepository.updateGroup(Group(name = groupName, sortOrder = index, isHidden = false))
+                    }
                 }
                 
                 backup.friendsWithChildren.forEach { fwc ->
@@ -838,6 +885,14 @@ class FriendViewModel(
                             secondaryImageUri = fwc.friend.secondaryImageBase64?.let { platform.base64ToUri(it, "friend_pic") },
                             petName = fwc.friend.petName,
                             petImageUri = fwc.friend.petImageBase64?.let { platform.base64ToUri(it, "friend_pet") },
+                            customEvent1Date = fwc.friend.customEvent1Date,
+                            customEvent1Day = fwc.friend.customEvent1Day,
+                            customEvent1Month = fwc.friend.customEvent1Month,
+                            customEvent1Description = fwc.friend.customEvent1Description,
+                            customEvent2Date = fwc.friend.customEvent2Date,
+                            customEvent2Day = fwc.friend.customEvent2Day,
+                            customEvent2Month = fwc.friend.customEvent2Month,
+                            customEvent2Description = fwc.friend.customEvent2Description,
                             notes = fwc.friend.notes,
                             createdAt = fwc.friend.createdAt,
                             lastModifiedAt = fwc.friend.lastModifiedAt
@@ -927,6 +982,24 @@ class FriendViewModel(
                                 anniversaryDate = imported.anniversaryDate,
                                 anniversaryDay = imported.anniversaryDay,
                                 anniversaryMonth = imported.anniversaryMonth
+                            )
+                        }
+
+                        // Custom events merge
+                        if (imported.customEvent1Date.isNotBlank() || imported.customEvent1Description.isNotBlank()) {
+                            updatedFriend = updatedFriend.copy(
+                                customEvent1Date = imported.customEvent1Date,
+                                customEvent1Day = imported.customEvent1Day,
+                                customEvent1Month = imported.customEvent1Month,
+                                customEvent1Description = updatedFriend.customEvent1Description.smartMerge(imported.customEvent1Description)
+                            )
+                        }
+                        if (imported.customEvent2Date.isNotBlank() || imported.customEvent2Description.isNotBlank()) {
+                            updatedFriend = updatedFriend.copy(
+                                customEvent2Date = imported.customEvent2Date,
+                                customEvent2Day = imported.customEvent2Day,
+                                customEvent2Month = imported.customEvent2Month,
+                                customEvent2Description = updatedFriend.customEvent2Description.smartMerge(imported.customEvent2Description)
                             )
                         }
                         

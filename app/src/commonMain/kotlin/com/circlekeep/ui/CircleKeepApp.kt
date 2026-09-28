@@ -152,6 +152,7 @@ fun CircleKeepApp(
                         val showInlineData by viewModel.showInlineData.collectAsState()
                         val isGridView by viewModel.isGridViewState.collectAsState()
                         val gridColumns by viewModel.gridColumnsState.collectAsState()
+                        val includeHiddenGroups by viewModel.includeHiddenGroups.collectAsState()
 
                         FriendListScreen(
                             friends = friends,
@@ -170,6 +171,8 @@ fun CircleKeepApp(
                             onSearchQueryChange = viewModel::onSearchQueryChange,
                             onSortChange = viewModel::onSortOrderChange,
                             onToggleInline = viewModel::toggleInlineData,
+                            includeHiddenGroups = includeHiddenGroups,
+                            onIncludeHiddenGroupsChange = viewModel::onIncludeHiddenGroupsChange,
                             onFriendClick = { id ->
                                 if (!isPaid && totalFriends > 40) {
                                     platformUI.showInterstitialAd {
@@ -283,6 +286,7 @@ fun CircleKeepApp(
                         val showInlineData by viewModel.showInlineData.collectAsState()
                         val isGridView by viewModel.isGridViewState.collectAsState()
                         val gridColumns by viewModel.gridColumnsState.collectAsState()
+                        val includeHiddenGroups by viewModel.includeHiddenGroups.collectAsState()
                         
                         FriendListScreen(
                             friends = favorites,
@@ -301,6 +305,8 @@ fun CircleKeepApp(
                             onSearchQueryChange = viewModel::onSearchQueryChange,
                             onSortChange = viewModel::onSortOrderChange,
                             onToggleInline = viewModel::toggleInlineData,
+                            includeHiddenGroups = includeHiddenGroups,
+                            onIncludeHiddenGroupsChange = viewModel::onIncludeHiddenGroupsChange,
                             onFriendClick = { id -> 
                                 if (!isPaid && totalFriends > 40) {
                                     platformUI.showInterstitialAd {

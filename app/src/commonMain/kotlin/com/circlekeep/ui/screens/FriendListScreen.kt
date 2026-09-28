@@ -18,6 +18,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -60,7 +61,9 @@ fun FriendListScreen(
     isGridView: Boolean = false,
     gridColumns: Int = 2,
     onToggleGridView: (Boolean) -> Unit = {},
-    onGridColumnsChange: (Int) -> Unit = {}
+    onGridColumnsChange: (Int) -> Unit = {},
+    includeHiddenGroups: Boolean = false,
+    onIncludeHiddenGroupsChange: (Boolean) -> Unit = {}
 ) {
     val strings = LocalAppStrings.current
     var showSortMenu by remember { mutableStateOf(false) }
@@ -92,9 +95,9 @@ fun FriendListScreen(
     }
 
     // Ensure all active groups are shown, and preserve order from groups list
-    val filteredGroups = remember(groups, activeGroups) {
+    val filteredGroups = remember(groups, activeGroups, includeHiddenGroups) {
         groups.filter { group ->
-            activeGroups.contains(group.name.trim())
+            activeGroups.contains(group.name.trim()) && (includeHiddenGroups || !group.isHidden)
         }
     }
 
@@ -221,6 +224,18 @@ fun FriendListScreen(
                                     expanded = showMoreMenu,
                                     onDismissRequest = { showMoreMenu = false }
                                 ) {
+                                    DropdownMenuItem(
+                                        text = { Text(strings.includeHidden) },
+                                        leadingIcon = {
+                                            Icon(
+                                                imageVector = if (includeHiddenGroups) Icons.Rounded.CheckBox else Icons.Rounded.CheckBoxOutlineBlank,
+                                                contentDescription = null
+                                            )
+                                        },
+                                        onClick = {
+                                            onIncludeHiddenGroupsChange(!includeHiddenGroups)
+                                        }
+                                    )
                                     DropdownMenuItem(
                                         text = { Text(strings.settings) },
                                         leadingIcon = { Icon(Icons.Rounded.Settings, contentDescription = null) },

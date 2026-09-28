@@ -229,6 +229,37 @@ fun FriendDetailScreen(
                     DetailRow(Icons.Rounded.People, friendWithChildren.friend.siblings, label = strings.siblings)
                     DetailRow(Icons.Rounded.Group, friendWithChildren.friend.groups.joinToString(", "))
                     
+                    val f = friendWithChildren.friend
+                    val hasCustomEvent1 = f.customEvent1Date.isNotBlank() || f.customEvent1Day.isNotBlank() || f.customEvent1Description.isNotBlank()
+                    val hasCustomEvent2 = f.customEvent2Date.isNotBlank() || f.customEvent2Day.isNotBlank() || f.customEvent2Description.isNotBlank()
+                    
+                    if (hasCustomEvent1 || hasCustomEvent2) {
+                        Spacer(Modifier.height(8.dp))
+                        Text(strings.customEvents, style = MaterialTheme.typography.titleMedium)
+                        if (hasCustomEvent1) {
+                            val event1DateText = if (f.customEvent1Date.isNotBlank()) {
+                                formatFullDateLocalized(f.customEvent1Date)
+                            } else if (f.customEvent1Day.isNotBlank() && f.customEvent1Month.isNotBlank()) {
+                                val mIdx = f.customEvent1Month.toIntOrNull()
+                                val mName = if (mIdx != null && mIdx in 1..12) strings.months[mIdx - 1] else f.customEvent1Month
+                                "$mName ${f.customEvent1Day}"
+                            } else ""
+                            val event1Label = if (f.customEvent1Description.isNotBlank()) f.customEvent1Description else strings.customEvent1
+                            DetailRow(Icons.Rounded.Event, event1DateText, label = event1Label)
+                        }
+                        if (hasCustomEvent2) {
+                            val event2DateText = if (f.customEvent2Date.isNotBlank()) {
+                                formatFullDateLocalized(f.customEvent2Date)
+                            } else if (f.customEvent2Day.isNotBlank() && f.customEvent2Month.isNotBlank()) {
+                                val mIdx = f.customEvent2Month.toIntOrNull()
+                                val mName = if (mIdx != null && mIdx in 1..12) strings.months[mIdx - 1] else f.customEvent2Month
+                                "$mName ${f.customEvent2Day}"
+                            } else ""
+                            val event2Label = if (f.customEvent2Description.isNotBlank()) f.customEvent2Description else strings.customEvent2
+                            DetailRow(Icons.Rounded.Event, event2DateText, label = event2Label)
+                        }
+                    }
+                    
                     if (friendWithChildren.friend.petName.isNotBlank()) {
                         DetailRow(Icons.Rounded.Pets, friendWithChildren.friend.petName, label = strings.petName)
                         val resolvedPetUri = platform.resolveSharedPath(friendWithChildren.friend.petImageUri)

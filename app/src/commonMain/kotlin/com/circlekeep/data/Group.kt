@@ -6,5 +6,6 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "groups")
 data class Group(
     @PrimaryKey val name: String,
-    val sortOrder: Int = 0
+    val sortOrder: Int = 0,
+    val isHidden: Boolean = false
 )

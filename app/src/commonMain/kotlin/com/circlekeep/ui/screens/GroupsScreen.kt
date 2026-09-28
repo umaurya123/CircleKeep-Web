@@ -32,9 +32,9 @@ fun GroupsScreen(
     viewModel: FriendViewModel,
     groups: List<Group>,
     onGroupClick: (String) -> Unit,
-    onAddGroup: (String) -> Unit,
+    onAddGroup: (String, Boolean) -> Unit,
     onDeleteGroup: (Group) -> Unit,
-    onRenameGroup: (String, String) -> Unit
+    onRenameGroup: (String, String, Boolean) -> Unit
 ) {
     val strings = LocalAppStrings.current
     val friends by viewModel.friendsState.collectAsState()
@@ -43,7 +43,9 @@ fun GroupsScreen(
     var showEditDialog by remember { mutableStateOf(false) }
     var groupToEdit by remember { mutableStateOf<Group?>(null) }
     var newGroupName by remember { mutableStateOf("") }
+    var newGroupIsHidden by remember { mutableStateOf(false) }
     var editGroupName by remember { mutableStateOf("") }
+    var editGroupIsHidden by remember { mutableStateOf(false) }
     var groupToDelete by remember { mutableStateOf<Group?>(null) }
     var isReorderMode by remember { mutableStateOf(false) }
 
@@ -81,7 +83,19 @@ fun GroupsScreen(
                     val currentIndex by rememberUpdatedState(index)
 
                     ListItem(
-                        headlineContent = { Text("${group.name} ($count)") },
+                        headlineContent = {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text("${group.name} ($count)")
+                                if (group.isHidden) {
+                                    Spacer(Modifier.width(8.dp))
+                                    AssistChip(
+                                        onClick = { },
+                                        label = { Text(strings.hidden, style = MaterialTheme.typography.labelSmall) },
+                                        leadingIcon = { Icon(Icons.Rounded.VisibilityOff, contentDescription = null, modifier = Modifier.size(14.dp)) }
+                                    )
+                                }
+                            }
+                        },
                         leadingContent = { 
                             if (isReorderMode) {
                                 Box(
@@ -136,6 +150,7 @@ fun GroupsScreen(
                                     IconButton(onClick = { 
                                         groupToEdit = group
                                         editGroupName = group.name
+                                        editGroupIsHidden = group.isHidden
                                         showEditDialog = true
                                     }) {
                                         Icon(Icons.Rounded.Edit, contentDescription = "Rename Group")
@@ -163,20 +178,34 @@ fun GroupsScreen(
             onDismissRequest = { showAddDialog = false },
             title = { Text(strings.groups) }, // "Add New Group"
             text = {
-                OutlinedTextField(
-                    value = newGroupName,
-                    onValueChange = { newGroupName = it },
-                    label = { Text(strings.groups) }, // "Group Name"
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words)
-                )
+                Column {
+                    OutlinedTextField(
+                        value = newGroupName,
+                        onValueChange = { newGroupName = it },
+                        label = { Text(strings.groups) }, // "Group Name"
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words)
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.clickable { newGroupIsHidden = !newGroupIsHidden }
+                    ) {
+                        Checkbox(
+                            checked = newGroupIsHidden,
+                            onCheckedChange = { newGroupIsHidden = it }
+                        )
+                        Text(strings.hidden)
+                    }
+                }
             },
             confirmButton = {
                 TextButton(
                     onClick = {
                         if (newGroupName.isNotBlank()) {
-                            onAddGroup(newGroupName)
+                            onAddGroup(newGroupName, newGroupIsHidden)
                             newGroupName = ""
+                            newGroupIsHidden = false
                             showAddDialog = false
                         }
                     }
@@ -197,20 +226,33 @@ fun GroupsScreen(
             onDismissRequest = { showEditDialog = false },
             title = { Text(strings.editContact) }, // "Rename Group"
             text = {
-                OutlinedTextField(
-                    value = editGroupName,
-                    onValueChange = { editGroupName = it },
-                    label = { Text(strings.groups) }, // "Group Name"
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words)
-                )
+                Column {
+                    OutlinedTextField(
+                        value = editGroupName,
+                        onValueChange = { editGroupName = it },
+                        label = { Text(strings.groups) }, // "Group Name"
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words)
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.clickable { editGroupIsHidden = !editGroupIsHidden }
+                    ) {
+                        Checkbox(
+                            checked = editGroupIsHidden,
+                            onCheckedChange = { editGroupIsHidden = it }
+                        )
+                        Text(strings.hidden)
+                    }
+                }
             },
             confirmButton = {
                 TextButton(
                     onClick = {
                         if (editGroupName.isNotBlank()) {
                             groupToEdit?.let { group ->
-                                onRenameGroup(group.name, editGroupName)
+                                onRenameGroup(group.name, editGroupName, editGroupIsHidden)
                             }
                             showEditDialog = false
                             groupToEdit = null

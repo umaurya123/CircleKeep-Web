@@ -71,6 +71,23 @@ val MIGRATION_18_19 = object : Migration(18, 19) {
     }
 }
 
+val MIGRATION_19_20 = object : Migration(19, 20) {
+    override fun migrate(connection: SQLiteConnection) {
+        // Add isHidden to groups table
+        safeAddColumn(connection, "groups", "isHidden", "INTEGER NOT NULL DEFAULT 0")
+
+        // Custom events columns for friends
+        safeAddColumn(connection, "friends", "customEvent1Date", "TEXT NOT NULL DEFAULT ''")
+        safeAddColumn(connection, "friends", "customEvent1Day", "TEXT NOT NULL DEFAULT ''")
+        safeAddColumn(connection, "friends", "customEvent1Month", "TEXT NOT NULL DEFAULT ''")
+        safeAddColumn(connection, "friends", "customEvent1Description", "TEXT NOT NULL DEFAULT ''")
+        safeAddColumn(connection, "friends", "customEvent2Date", "TEXT NOT NULL DEFAULT ''")
+        safeAddColumn(connection, "friends", "customEvent2Day", "TEXT NOT NULL DEFAULT ''")
+        safeAddColumn(connection, "friends", "customEvent2Month", "TEXT NOT NULL DEFAULT ''")
+        safeAddColumn(connection, "friends", "customEvent2Description", "TEXT NOT NULL DEFAULT ''")
+    }
+}
+
 private fun safeAddColumn(connection: SQLiteConnection, tableName: String, columnName: String, type: String) {
     try {
         connection.execSQL("ALTER TABLE `$tableName` ADD COLUMN `$columnName` $type")

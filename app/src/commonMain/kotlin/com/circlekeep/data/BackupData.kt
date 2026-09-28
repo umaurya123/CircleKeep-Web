@@ -3,9 +3,17 @@ package com.circlekeep.data
 import kotlinx.serialization.Serializable
 
 @Serializable
+data class GroupBackup(
+    val name: String,
+    val sortOrder: Int = 0,
+    val isHidden: Boolean = false
+)
+
+@Serializable
 data class BackupData(
     val friendsWithChildren: List<FriendWithChildrenBackup>,
-    val groups: List<String>
+    val groups: List<String> = emptyList(),
+    val groupDetails: List<GroupBackup> = emptyList()
 )
 
 @Serializable
@@ -59,6 +67,14 @@ data class FriendBackup(
     val partnerImageBase64: String? = null,
     val petName: String = "",
     val petImageBase64: String? = null,
+    val customEvent1Date: String = "",
+    val customEvent1Day: String = "",
+    val customEvent1Month: String = "",
+    val customEvent1Description: String = "",
+    val customEvent2Date: String = "",
+    val customEvent2Day: String = "",
+    val customEvent2Month: String = "",
+    val customEvent2Description: String = "",
     val notes: String = "",
     val createdAt: Long = 0L,
     val lastModifiedAt: Long = 0L
