@@ -249,7 +249,7 @@ fun FriendListScreen(
                                         leadingIcon = { Icon(Icons.Rounded.Language, contentDescription = null) },
                                         onClick = {
                                             showMoreMenu = false
-                                            platformUI.openUrl("https://circlekeepapp.com")
+                                            platformUI.openUrl("https://umaurya123.github.io/CircleKeep-Web/")
                                         }
                                     )
                                 }

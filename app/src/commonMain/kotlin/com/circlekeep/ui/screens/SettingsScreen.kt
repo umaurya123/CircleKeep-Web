@@ -257,7 +257,7 @@ fun SettingsScreen(
             }
 
             TextButton(
-                onClick = { platformUI.openUrl("https://circlekeepapp.com") },
+                onClick = { platformUI.openUrl("https://umaurya123.github.io/CircleKeep-Web/") },
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Icon(Icons.Rounded.Language, contentDescription = null)
