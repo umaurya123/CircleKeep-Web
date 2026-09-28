@@ -577,118 +577,6 @@ fun AddEditFriendScreen(
                         com.circlekeep.ui.components.MonthDropdown(value = anniversaryMonth, onValueChange = { anniversaryMonth = it }, modifier = Modifier.weight(0.6f))
                     }
 
-                    Spacer(Modifier.height(8.dp))
-                    Text(strings.customEvents, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                    
-                    // Event 1
-                    Text(strings.customEvent1, style = MaterialTheme.typography.labelLarge)
-                    DatePickerField(
-                        value = customEvent1Date,
-                        onValueChange = { 
-                            customEvent1Date = it
-                            if (it.isBlank()) {
-                                customEvent1Day = ""
-                                customEvent1Month = ""
-                            } else {
-                                try {
-                                    platform.parseDateComponents(it)?.let { (d, m, _) ->
-                                        customEvent1Day = d
-                                        customEvent1Month = m
-                                    }
-                                } catch (_: Exception) {}
-                            }
-                        },
-                        label = strings.customEvent1,
-                        modifier = modifierWithTabHandler
-                    )
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        OutlinedTextField(
-                            value = customEvent1Day, 
-                            onValueChange = { customEvent1Day = it }, 
-                            label = { Text(strings.day) }, 
-                            modifier = Modifier.weight(0.4f).onPreviewKeyEvent { 
-                                if (it.key == Key.Tab && it.type == KeyEventType.KeyDown) {
-                                    focusManager.moveFocus(if (it.isShiftPressed) FocusDirection.Previous else FocusDirection.Next)
-                                    true
-                                } else false
-                            }, 
-                            singleLine = true,
-                            keyboardOptions = KeyboardOptions(
-                                keyboardType = KeyboardType.Number,
-                                imeAction = ImeAction.Next
-                            ),
-                            isError = !isCustomEvent1Valid,
-                            supportingText = { if (!isCustomEvent1Valid) Text(strings.invalidDay) }
-                        )
-                        com.circlekeep.ui.components.MonthDropdown(value = customEvent1Month, onValueChange = { customEvent1Month = it }, modifier = Modifier.weight(0.6f))
-                    }
-                    OutlinedTextField(
-                        value = customEvent1Description, 
-                        onValueChange = { customEvent1Description = it }, 
-                        label = { Text(strings.description) }, 
-                        modifier = modifierWithTabHandler,
-                        singleLine = true,
-                        keyboardOptions = KeyboardOptions(
-                            capitalization = KeyboardCapitalization.Sentences,
-                            imeAction = ImeAction.Next
-                        )
-                    )
-
-                    Spacer(Modifier.height(8.dp))
-                    // Event 2
-                    Text(strings.customEvent2, style = MaterialTheme.typography.labelLarge)
-                    DatePickerField(
-                        value = customEvent2Date,
-                        onValueChange = { 
-                            customEvent2Date = it
-                            if (it.isBlank()) {
-                                customEvent2Day = ""
-                                customEvent2Month = ""
-                            } else {
-                                try {
-                                    platform.parseDateComponents(it)?.let { (d, m, _) ->
-                                        customEvent2Day = d
-                                        customEvent2Month = m
-                                    }
-                                } catch (_: Exception) {}
-                            }
-                        },
-                        label = strings.customEvent2,
-                        modifier = modifierWithTabHandler
-                    )
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        OutlinedTextField(
-                            value = customEvent2Day, 
-                            onValueChange = { customEvent2Day = it }, 
-                            label = { Text(strings.day) }, 
-                            modifier = Modifier.weight(0.4f).onPreviewKeyEvent { 
-                                if (it.key == Key.Tab && it.type == KeyEventType.KeyDown) {
-                                    focusManager.moveFocus(if (it.isShiftPressed) FocusDirection.Previous else FocusDirection.Next)
-                                    true
-                                } else false
-                            }, 
-                            singleLine = true,
-                            keyboardOptions = KeyboardOptions(
-                                keyboardType = KeyboardType.Number,
-                                imeAction = ImeAction.Next
-                            ),
-                            isError = !isCustomEvent2Valid,
-                            supportingText = { if (!isCustomEvent2Valid) Text(strings.invalidDay) }
-                        )
-                        com.circlekeep.ui.components.MonthDropdown(value = customEvent2Month, onValueChange = { customEvent2Month = it }, modifier = Modifier.weight(0.6f))
-                    }
-                    OutlinedTextField(
-                        value = customEvent2Description, 
-                        onValueChange = { customEvent2Description = it }, 
-                        label = { Text(strings.description) }, 
-                        modifier = modifierWithTabHandler,
-                        singleLine = true,
-                        keyboardOptions = KeyboardOptions(
-                            capitalization = KeyboardCapitalization.Sentences,
-                            imeAction = ImeAction.Next
-                        )
-                    )
-
                     Box(modifier = Modifier.fillMaxWidth().clickable { showGroupDialog = true }) {
                         OutlinedTextField(
                             value = selectedGroups.joinToString(", "),
@@ -821,6 +709,118 @@ fun AddEditFriendScreen(
                                 }
                             }
                         }
+
+                        Spacer(Modifier.height(12.dp))
+                        Text(strings.customEvents, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                        
+                        // Event 1
+                        Text(strings.customEvent1, style = MaterialTheme.typography.labelLarge)
+                        DatePickerField(
+                            value = customEvent1Date,
+                            onValueChange = { 
+                                customEvent1Date = it
+                                if (it.isBlank()) {
+                                    customEvent1Day = ""
+                                    customEvent1Month = ""
+                                } else {
+                                    try {
+                                        platform.parseDateComponents(it)?.let { (d, m, _) ->
+                                            customEvent1Day = d
+                                            customEvent1Month = m
+                                        }
+                                    } catch (_: Exception) {}
+                                }
+                            },
+                            label = strings.customEvent1,
+                            modifier = modifierWithTabHandler
+                        )
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            OutlinedTextField(
+                                value = customEvent1Day, 
+                                onValueChange = { customEvent1Day = it }, 
+                                label = { Text(strings.day) }, 
+                                modifier = Modifier.weight(0.4f).onPreviewKeyEvent { 
+                                    if (it.key == Key.Tab && it.type == KeyEventType.KeyDown) {
+                                        focusManager.moveFocus(if (it.isShiftPressed) FocusDirection.Previous else FocusDirection.Next)
+                                        true
+                                    } else false
+                                }, 
+                                singleLine = true,
+                                keyboardOptions = KeyboardOptions(
+                                    keyboardType = KeyboardType.Number,
+                                    imeAction = ImeAction.Next
+                                ),
+                                isError = !isCustomEvent1Valid,
+                                supportingText = { if (!isCustomEvent1Valid) Text(strings.invalidDay) }
+                            )
+                            com.circlekeep.ui.components.MonthDropdown(value = customEvent1Month, onValueChange = { customEvent1Month = it }, modifier = Modifier.weight(0.6f))
+                        }
+                        OutlinedTextField(
+                            value = customEvent1Description, 
+                            onValueChange = { customEvent1Description = it }, 
+                            label = { Text(strings.description) }, 
+                            modifier = modifierWithTabHandler,
+                            singleLine = true,
+                            keyboardOptions = KeyboardOptions(
+                                capitalization = KeyboardCapitalization.Sentences,
+                                imeAction = ImeAction.Next
+                            )
+                        )
+
+                        Spacer(Modifier.height(8.dp))
+                        // Event 2
+                        Text(strings.customEvent2, style = MaterialTheme.typography.labelLarge)
+                        DatePickerField(
+                            value = customEvent2Date,
+                            onValueChange = { 
+                                customEvent2Date = it
+                                if (it.isBlank()) {
+                                    customEvent2Day = ""
+                                    customEvent2Month = ""
+                                } else {
+                                    try {
+                                        platform.parseDateComponents(it)?.let { (d, m, _) ->
+                                            customEvent2Day = d
+                                            customEvent2Month = m
+                                        }
+                                    } catch (_: Exception) {}
+                                }
+                            },
+                            label = strings.customEvent2,
+                            modifier = modifierWithTabHandler
+                        )
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            OutlinedTextField(
+                                value = customEvent2Day, 
+                                onValueChange = { customEvent2Day = it }, 
+                                label = { Text(strings.day) }, 
+                                modifier = Modifier.weight(0.4f).onPreviewKeyEvent { 
+                                    if (it.key == Key.Tab && it.type == KeyEventType.KeyDown) {
+                                        focusManager.moveFocus(if (it.isShiftPressed) FocusDirection.Previous else FocusDirection.Next)
+                                        true
+                                    } else false
+                                }, 
+                                singleLine = true,
+                                keyboardOptions = KeyboardOptions(
+                                    keyboardType = KeyboardType.Number,
+                                    imeAction = ImeAction.Next
+                                ),
+                                isError = !isCustomEvent2Valid,
+                                supportingText = { if (!isCustomEvent2Valid) Text(strings.invalidDay) }
+                            )
+                            com.circlekeep.ui.components.MonthDropdown(value = customEvent2Month, onValueChange = { customEvent2Month = it }, modifier = Modifier.weight(0.6f))
+                        }
+                        OutlinedTextField(
+                            value = customEvent2Description, 
+                            onValueChange = { customEvent2Description = it }, 
+                            label = { Text(strings.description) }, 
+                            modifier = modifierWithTabHandler,
+                            singleLine = true,
+                            keyboardOptions = KeyboardOptions(
+                                capitalization = KeyboardCapitalization.Sentences,
+                                imeAction = ImeAction.Next
+                            )
+                        )
                     }
                     
                     TextButton(

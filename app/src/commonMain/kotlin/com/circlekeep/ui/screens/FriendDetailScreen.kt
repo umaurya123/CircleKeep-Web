@@ -229,6 +229,23 @@ fun FriendDetailScreen(
                     DetailRow(Icons.Rounded.People, friendWithChildren.friend.siblings, label = strings.siblings)
                     DetailRow(Icons.Rounded.Group, friendWithChildren.friend.groups.joinToString(", "))
                     
+                    if (friendWithChildren.friend.petName.isNotBlank()) {
+                        DetailRow(Icons.Rounded.Pets, friendWithChildren.friend.petName, label = strings.petName)
+                        val resolvedPetUri = platform.resolveSharedPath(friendWithChildren.friend.petImageUri)
+                        if (resolvedPetUri != null) {
+                            Card(modifier = Modifier.padding(start = 44.dp, top = 4.dp, bottom = 8.dp).size(100.dp)) {
+                                AsyncImage(
+                                    model = resolvedPetUri,
+                                    contentDescription = null,
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentScale = ContentScale.Crop
+                                )
+                            }
+                        }
+                    }
+
+                    DetailRow(Icons.AutoMirrored.Rounded.Notes, friendWithChildren.friend.notes)
+
                     val f = friendWithChildren.friend
                     val hasCustomEvent1 = f.customEvent1Date.isNotBlank() || f.customEvent1Day.isNotBlank() || f.customEvent1Description.isNotBlank()
                     val hasCustomEvent2 = f.customEvent2Date.isNotBlank() || f.customEvent2Day.isNotBlank() || f.customEvent2Description.isNotBlank()
@@ -259,23 +276,6 @@ fun FriendDetailScreen(
                             DetailRow(Icons.Rounded.Event, event2DateText, label = event2Label)
                         }
                     }
-                    
-                    if (friendWithChildren.friend.petName.isNotBlank()) {
-                        DetailRow(Icons.Rounded.Pets, friendWithChildren.friend.petName, label = strings.petName)
-                        val resolvedPetUri = platform.resolveSharedPath(friendWithChildren.friend.petImageUri)
-                        if (resolvedPetUri != null) {
-                            Card(modifier = Modifier.padding(start = 44.dp, top = 4.dp, bottom = 8.dp).size(100.dp)) {
-                                AsyncImage(
-                                    model = resolvedPetUri,
-                                    contentDescription = null,
-                                    modifier = Modifier.fillMaxSize(),
-                                    contentScale = ContentScale.Crop
-                                )
-                            }
-                        }
-                    }
-
-                    DetailRow(Icons.AutoMirrored.Rounded.Notes, friendWithChildren.friend.notes)
 
                     Spacer(Modifier.height(16.dp))
                     Text(
